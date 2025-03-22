@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ThreadFrequencyControl</class>
+ <widget class="QWidget" name="ThreadFrequencyControl">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>855</width>
+    <height>180</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/*-----QSlider-----*/
+
+QSlider:horizontal {
+    min-height: 14px;
+	background-color: transparent;
+}
+
+QSlider::groove:horizontal 
+{
+	background-color: transparent;
+	height: 4px;
+}
+
+
+QSlider::sub-page:horizontal 
+{
+	background-color: gray;
+}
+
+
+QSlider::add-page:horizontal 
+{
+	background-color: #363535;
+}
+
+QSlider::handle:horizontal 
+{
+	width: 12px;
+    margin-top: -5px;
+    margin-bottom: -5px;
+    border-radius: 5px;
+	background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.6 rgba(210, 210, 210, 255), stop:0.7 rgba(210, 210, 210, 100));
+}
+
+
+QSlider::handle:horizontal:hover 
+{
+	 background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.6 rgba(255, 255, 255, 255), stop:0.7 rgba(255, 255, 255, 100));
+}
+
+
+QSlider::sub-page:horizontal:disabled 
+{
+	background-color: gray;
+	border-color: gray;
+}
+
+
+QSlider::add-page:horizontal:disabled 
+{
+	background-color: #363535;
+	border-color: #363535;
+}
+
+
+QSlider::handle:horizontal:disabled 
+{
+	background-color: gray;
+	border: 1px solid gray;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Core</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label_CPUMinFreqScaling">
+            <property name="text">
+             <string>Min</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLCDNumber" name="lcdNumber_CPUMinFreqScaling">
+            <property name="segmentStyle">
+             <enum>QLCDNumber::SegmentStyle::Flat</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QSlider" name="horizontalSlider_CPUMinFreqScaling">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_CPUMaxFreqScaling">
+            <property name="text">
+             <string>Max</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLCDNumber" name="lcdNumber_CPUMaxFreqScaling">
+            <property name="segmentStyle">
+             <enum>QLCDNumber::SegmentStyle::Flat</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QSlider" name="horizontalSlider_CPUMaxFreqScaling">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

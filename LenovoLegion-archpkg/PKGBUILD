@@ -1,0 +1,48 @@
+# Maintainer: Jaroslav Bolek <jarris@post.cz>
+pkgname=LenovoLegion
+pkgver=0.9.9
+pkgrel=1
+pkgdesc="Lenovo Legion Pro 7 16IRX9H driver"
+arch=("x86_64")
+url="git+ssh://git@github.com/bolekjar/LenovoLegion.git"
+license=('GPL3')
+depends=("qt6-5compat" "dkms")
+source=("$pkgname-$pkgver::$url")
+sha256sums=('SKIP')
+install=default.install
+
+package() {
+
+  #prepare directories
+  mkdir -p $pkgdir/opt/$pkgname-$pkgver
+  mkdir -p $pkgdir/usr/src/$pkgname-$pkgver
+  mkdir -p $pkgdir/usr/lib/systemd/system/
+  mkdir -p $pkgdir/etc/modprobe.d/
+  mkdir -p $pkgdir/etc/modules-load.d/
+  mkdir -p $pkgdir/usr/share/applications/
+
+
+  ln -s $pkgname-$pkgver $pkgdir/opt/$pkgname
+
+  #dms driver
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/* $pkgdir/usr/src/$pkgname-$pkgver
+
+  #settings
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/blacklist-lenovo-legion.conf $pkgdir/etc/modprobe.d/
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/lenovo-legion.conf $pkgdir/etc/modules-load.d/
+
+  #daemon, gui
+  qmake6 $srcdir/$pkgname-$pkgver/$pkgname/ -o $srcdir/$pkgname-$pkgver/$pkgname/Makefile
+  make -C $srcdir/$pkgname-$pkgver/$pkgname/
+
+  #daemon, gui
+  cp -r $srcdir/$pkgname-$pkgver/$pkgname/Installation/* $pkgdir/opt/$pkgname-$pkgver
+  chmod 777 $pkgdir/opt/$pkgname-$pkgver/log
+  chmod 777 $pkgdir/opt/$pkgname-$pkgver/data
+
+  #daemon setings
+  cp $srcdir/$pkgname-$pkgver/$pkgname/$pkgname-Daemon/lenovo-legion-daemon.service $pkgdir/usr/lib/systemd/system/
+
+  #kde menu entry
+  cp $srcdir/$pkgname-$pkgver/$pkgname/$pkgname-Application/LenovoLegion.desktop $pkgdir/usr/share/applications/
+}
