@@ -12,10 +12,12 @@
 namespace LenovoLegionDaemon {
 
 
-SysFsDriverACPIPlatformProfile::SysFsDriverACPIPlatformProfile(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/firmware/acpi/",{"platform-profile"},parrent) {}
+SysFsDriverACPIPlatformProfile::SysFsDriverACPIPlatformProfile(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/firmware/acpi/",{"platform-profile",{}},parrent) {}
 
 void SysFsDriverACPIPlatformProfile::init()
 {
+    LOG_T(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(std::filesystem::path(m_path)))
@@ -28,22 +30,22 @@ void SysFsDriverACPIPlatformProfile::init()
         }
         else
         {
-            LOG_D(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
+            LOG_T(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
         }
     }
     else
     {
-        LOG_D(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
     }
 }
 
 void SysFsDriverACPIPlatformProfile::handleKernelEvent(const KernelEvent::Event &event)
 {
-    LOG_D(QString("Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
+    LOG_D(__PRETTY_FUNCTION__ + QString(": Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 
@@ -52,7 +54,8 @@ void SysFsDriverACPIPlatformProfile::handleKernelEvent(const KernelEvent::Event 
         emit kernelEvent({
             .m_driverName = DRIVER_NAME,
             .m_action = SubsystemEvent::Action::CHANGED,
-            .m_DriverSpecificAction = "change"
+            .m_DriverSpecificEventType = "change",
+            .m_DriverSpecificEventValue = {}
         });
     }
     else
@@ -63,7 +66,8 @@ void SysFsDriverACPIPlatformProfile::handleKernelEvent(const KernelEvent::Event 
         emit kernelEvent({
             .m_driverName = DRIVER_NAME,
             .m_action = SubsystemEvent::Action::RELOADED,
-            .m_DriverSpecificAction = "reloaded"
+            .m_DriverSpecificEventType = "reloaded",
+            .m_DriverSpecificEventValue = {}
         });
     }
 }

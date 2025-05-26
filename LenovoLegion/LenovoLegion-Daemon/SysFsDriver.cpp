@@ -10,7 +10,7 @@
 
 namespace LenovoLegionDaemon {
 
-SysFsDriver::SysFsDriver(const QString& name,const std::filesystem::path& path,const KernelEvent::Filter& filter,QObject *parent) : QObject (parent), m_name(name),m_path(path),m_filter(filter) {}
+SysFsDriver::SysFsDriver(const QString& name,const std::filesystem::path& path,const KernelEvent::Filter& filter,QObject *parent,QString module) : QObject (parent), m_name(name),m_path(path),m_filter(filter),m_module(module.isEmpty() ? name : module) {}
 
 void SysFsDriver::clean()
 {
@@ -20,7 +20,7 @@ void SysFsDriver::clean()
 
 bool SysFsDriver::isLoaded() const
 {
-    return m_descriptor.empty() && m_descriptorsInVector.empty();
+    return !m_descriptor.empty() || !m_descriptorsInVector.empty();
 }
 
 void SysFsDriver::validate() const
@@ -55,6 +55,14 @@ const SysFsDriver::DescriptorsInVectorType &SysFsDriver::descriptorsInVector() c
     if(m_descriptorsInVector.empty())
     {
         THROW_EXCEPTION(exception_T,ERROR_CODES::DRIVER_NOT_AVAILABLE,"Driver " + m_name.toStdString() + " is not loaded !");
+    }
+
+    for (const auto& descriptor : m_descriptorsInVector) {
+
+        if(descriptor.isEmpty())
+        {
+            THROW_EXCEPTION(exception_T,ERROR_CODES::DRIVER_NOT_AVAILABLE,"Driver " + m_name.toStdString() + " is not loaded !");
+        }
     }
 
     return m_descriptorsInVector;

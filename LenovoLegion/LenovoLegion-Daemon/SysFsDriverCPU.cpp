@@ -16,6 +16,8 @@ SysFsDriverCPU::SysFsDriverCPU(QObject * parrent) : SysFsDriver(DRIVER_NAME,"/sy
 
 void SysFsDriverCPU::init()
 {
+    LOG_T(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(m_path))
@@ -44,12 +46,12 @@ void SysFsDriverCPU::init()
         }
         else
         {
-            LOG_D(QString("CPU SMT driver not found in path: ") + std::filesystem::path(m_path).append("smt").c_str());
+            LOG_T(QString("CPU SMT driver not found in path: ") + std::filesystem::path(m_path).append("smt").c_str());
         }
     }
     else
     {
-        LOG_D(QString("CPU driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("CPU driver not found in path: ") + m_path.c_str());
     }
 }
 

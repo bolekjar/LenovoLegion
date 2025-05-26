@@ -42,7 +42,7 @@ ThreadFrequency::ThreadFrequency(const QString &title, int min, int max, QWidget
 
     axisV.first()->setRange(min, max);
     axisV.first()->setLabelsVisible(false);
-    axisV.first()->setGridLineVisible(false);
+    axisV.first()->setGridLineVisible(true);
     axisV.first()->setLineVisible(false);
 
 
@@ -61,8 +61,8 @@ ThreadFrequency::ThreadFrequency(const QString &title, int min, int max, QWidget
     charView->setContentsMargins(0,0,0,0);
     charView->setRenderHint(QPainter::Antialiasing);
 
-    ui->verticalLayout->addWidget(charView);
-    ui->verticalLayout->setContentsMargins(0,0,0,0);
+    ui->horizontalLayout_ThreadFrequency->addWidget(charView);
+    ui->horizontalLayout_ThreadFrequency->setContentsMargins(0,0,0,0);
 
     refreshToolTip();
 }
@@ -80,7 +80,7 @@ void ThreadFrequency::setScalingCurFreq(int freq)
     m_barSet->append(freq);
     m_chart->setTitle(m_title + QString(" [%1 MHz]").arg(freq,4,10,QChar('0')));
 
-    ui->verticalLayout->itemAt(0)->widget()->repaint();
+    ui->horizontalLayout_ThreadFrequency->itemAt(0)->widget()->repaint();
     refreshToolTip();
 }
 
@@ -116,7 +116,7 @@ void ThreadFrequency::setMaxFreq(int freq)
 
 void ThreadFrequency::refreshToolTip()
 {
-    ui->verticalLayout->itemAt(0)->widget()->setToolTip(
+    ui->horizontalLayout_ThreadFrequency->itemAt(0)->widget()->setToolTip(
         QString("Current CPU Frequency: %1 MHz\n"
                 "Scaling Min Frequency: %2 MHz\n"
                 "Scaling Max Frequency: %3 MHz\n"

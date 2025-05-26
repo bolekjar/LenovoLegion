@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
         bj::framework::Application app(std::make_unique<LenovoLegionGui::Application>(argc,argv),bj::framework::Application::apps_names[0]);
 
 #ifdef QT_NO_DEBUG
-        app.setLogingSeverityLevel(bolek::framework::Logger::SEVERITY_BITSET(
+        app.setLogingSeverityLevel(bj::framework::Logger::SEVERITY_BITSET(
              (1 << bj::framework::Logger::SEVERITY::INFO)     |
              (1 << bj::framework::Logger::SEVERITY::WARNING)  |
              (1 << bj::framework::Logger::SEVERITY::ERROR)

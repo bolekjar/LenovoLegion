@@ -11,7 +11,6 @@
 
 #include <Core/ExceptionBuilder.h>
 
-#include <ControlData.h>
 #include <Message.h>
 
 #include <QObject>
@@ -41,37 +40,9 @@ public:
     virtual ~ProtocolProcessor();
 
 
-    /*
-     * RequestResponse
-     */
-    LenovoLegionDaemon::HWMonitoring::DataInfo                  sendRequestSensorData();
-    LenovoLegionDaemon::PowerProfile::Control::DataInfo         sendRequestPoowerProfileControlData();
+    QByteArray getDataRequest(quint8 dataType, const QByteArray& data = {});
+    QByteArray setDataRequest(quint8 dataType, const QByteArray& data);
 
-    LenovoLegionDaemon::PowerControl::CPU::DataInfo             sendRequestCPUControlData();
-    LenovoLegionDaemon::PowerControl::GPU::DataInfo             sendRequestGPUControlData();
-    LenovoLegionDaemon::FanControl::CurveControl::DataInfo      sendRequestFanCurveControlData();
-    LenovoLegionDaemon::FanControl::Control::DataInfo           sendRequestFanControlData();
-    LenovoLegionDaemon::Batery::DataInfo                        sendRequestBateryControlData();
-
-    LenovoLegionDaemon::CPUXFreqControl::DataInfo               sendRequestCPUsInfoData();
-    LenovoLegionDaemon::CPUTopology::Heterogeneous::DataInfo    sendRequestCPUHeterogenousTopologyData();
-    LenovoLegionDaemon::CPUTopology::Homogeneous::DataInfo      sendRequestCPUHomogeneousTopologyData();
-
-    LenovoLegionDaemon::CPUXControl::DataInfo                   sendRequestCPUsInfoControlData();
-
-    LenovoLegionDaemon::CPUSMTControl::DataInfo                 sendRequestCPUSMTControlData();
-
-    /*
-     * Request without response
-     */
-    void sendRequestSetPowerProfileControlData(const LenovoLegionDaemon::PowerProfile::Control::DataControl &data);
-    void sendRequestSetCPUControlData(const LenovoLegionDaemon::PowerControl::CPU::DataControl &data);
-    void sendRequestSetGPUControlData(const LenovoLegionDaemon::PowerControl::GPU::DataControl &data);
-    void sendRequestSetFanCurveControlData(const LenovoLegionDaemon::FanControl::CurveControl::DataControl &data);
-    void sendRequestSetFanControlData(const LenovoLegionDaemon::FanControl::Control::DataControl &data);
-    void sendRequestSetCPUsFreqControlData(const LenovoLegionDaemon::CPUXFreqControl::DataControl &data);
-    void sendRequestSetCPUsControlData(const LenovoLegionDaemon::CPUXControl::DataControl &data);
-    void sendRequestSetCPUSMTControlData(const LenovoLegionDaemon::CPUSMTControl::DataControl &data);
 };
 
 

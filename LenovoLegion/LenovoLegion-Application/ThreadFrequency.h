@@ -11,6 +11,7 @@
 
 #include <QtCharts/QtCharts>
 
+
 namespace Ui {
 class ThreadFrequency;
 }

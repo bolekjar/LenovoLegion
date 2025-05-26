@@ -29,7 +29,6 @@ class SysFsDriverManager : public QObject
 private:
 
     const static SysFsDriver::KernelEvent::Filter MODULE_SUBSYSTEM_EVENT_FILTER;
-
 public:
 
     DEFINE_EXCEPTION(SysFsDriverManager);
@@ -48,7 +47,7 @@ public:
             REMOVE,
         };
 
-        QString m_driverName;
+        QString m_moduleName;
         Action  m_action;
     };
 
@@ -67,10 +66,12 @@ public:
 
     void  blockKernelEvent(const QString& driverName,bool block);
     void  blockSignals(const QString& driverName,bool block);
+    void  refreshDriver(const QString& driverName);
 
     const SysFsDriver::DescriptorType&          getDriverDesriptor(const QString& driverName) const;
     const SysFsDriver::DescriptorsInVectorType& getDriverDescriptorsInVector(const QString& driverName) const;
 
+    void processAllUdevEvents(int timeoutInMiliseconds);
 
 private slots:
 
@@ -85,6 +86,7 @@ signals:
 private:
 
     void addUdevMonitorFilter(const SysFsDriver::KernelEvent::Filter& filter);
+    void reconnectUdevMonitor();
 
 private:
 

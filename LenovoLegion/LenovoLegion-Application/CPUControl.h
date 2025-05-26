@@ -8,7 +8,11 @@
 #pragma once
 
 #include "WidgetMessage.h"
-#include <DataProvider.h>
+#include <Core/ExceptionBuilder.h>
+
+
+#include "../LenovoLegion-PrepareBuild/CPUOptions.pb.h"
+#include "../LenovoLegion-PrepareBuild/CPUTopology.pb.h"
 
 #include <QWidget>
 
@@ -18,21 +22,29 @@ class CPUControl;
 
 namespace LenovoLegionGui {
 
-class CPUControlDataProvider;
-
-
+class DataProvider;
 class CPUControl : public QWidget
 {
     Q_OBJECT
+
+public:
+    DEFINE_EXCEPTION(CPUControl)
+
+    enum ERROR_CODES : int {
+        DATA_NOT_READY = -1
+    };
+
+private:
+
+    static const QMap<QString,legion::messages::CPUOptions::CPUX> CPU_CONTROL_PRESETS;
 
 public:
 
     static const QString NAME;
 
 
-    static const QMap<QString,LenovoLegionDaemon::CPUXControl::DataControl::CPUX> CPU_CONTROL_PRESETS;
-    static const LenovoLegionDaemon::CPUSMTControl::DataControl                   SMT_ON_DATA;
-    static const LenovoLegionDaemon::CPUSMTControl::DataControl                   SMT_OFF_DATA;
+    static const legion::messages::CPUSMT   SMT_ON_DATA;
+    static const legion::messages::CPUSMT   SMT_OFF_DATA;
 
     static const QString APPLY_TO_ALL;
     static const QString APPLY_TO_ALL_ENABLED;
@@ -41,11 +53,21 @@ public:
     static const QString APPLY_TO_ALL_DISABLED;
 
 
+    static constexpr std::string_view POWER_SAVE    = "POWER_SAVE";
+    static constexpr std::string_view PERFORMANCE   = "PERFORMANCE";
+    static constexpr std::string_view ONDEMAND      = "ONDEMAND";
+    static constexpr std::string_view OFF           = "OFF";
+
+
 public:
-    explicit CPUControl(CPUControlDataProvider *dataProvider,QWidget *parent = nullptr);
+    explicit CPUControl(DataProvider *dataProvider,QWidget *parent = nullptr);
     ~CPUControl();
 
     void refresh();
+
+
+    static legion::messages::CPUOptions::CPUX getCpuControlPreset(const QString &presetName,const legion::messages::CPUOptions::CPUX &dataInfo);
+
 
 signals:
 
@@ -62,7 +84,7 @@ private slots:
 
     void on_pushButton_CPUControlApply_clicked();
 
-    void on_checkBox_DisableSMT_checkStateChanged(const Qt::CheckState &arg1);
+    void on_checkBox_DisableSMP_checkStateChanged(const Qt::CheckState &arg1);
 
     void on_comboBoxApplyTo_currentTextChanged(const QString &arg1);
 
@@ -77,12 +99,11 @@ private:
 private:
     Ui::CPUControl *ui;
 
-    CPUControlDataProvider*  m_dataProvider;
+    DataProvider*  m_dataProvider;
 
-    LenovoLegionDaemon::CPUXControl::DataInfo                           m_cpuInfoData;
-    LenovoLegionDaemon::CPUTopology::Heterogeneous::DataInfo            m_cpuHetTopology;
-    LenovoLegionDaemon::CPUTopology::Homogeneous::DataInfo              m_cpuHomTopology;
-    LenovoLegionDaemon::CPUSMTControl::DataInfo                         m_cpuSMTControlData;
+    legion::messages::CPUOptions            m_cpuInfoData;
+    legion::messages::CPUTopology           m_cpuTopology;
+    legion::messages::CPUSMT                m_cpuSMTControlData;
 
 };
 

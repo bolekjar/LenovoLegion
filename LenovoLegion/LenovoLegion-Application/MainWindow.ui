@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1711</width>
-    <height>1240</height>
+    <width>1483</width>
+    <height>961</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Lenovo Legion</string>
+   <string>Lenovo Legion Linux Toolkit</string>
   </property>
   <property name="windowIcon">
    <iconset resource="Resources.qrc">
@@ -32,659 +32,87 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <property name="styleSheet">
-   <string notr="true">/*Copyright (c) DevSec Studio. All rights reserved.
-
-MIT License
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the &quot;Software&quot;), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/*-----QWidget-----*/
-QWidget
-{
-	background-color: #b0b0b0;
-	color: #ffffff;
-	border-color: #000000;
-
-}
-
-
-
-/*-----QLabel-----*/
-QLabel
-{
-	background-color: transparent;
-	color: #000;
-
-}
-
-
-QLabel::disabled
-{
-	background-color: transparent;
-	color: gray;
-
-}
-
-
-
-/*-----QMenuBar-----*/
-QMenuBar
-{
-	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(227, 227, 228, 255),stop:1 rgba(213, 213, 213, 255));
-	color: #000;
-	font-weight: bold;
-
-}
-
-
-QMenuBar::disabled
-{
-	background-color: #404040;
-	color: #656565;
-	border-color: #051a39;
-
-}
-
-
-QMenuBar::item
-{
-    background-color: transparent;
-
-}
-
-
-QMenuBar::item:selected
-{
-    background-color: #bebebe;
-	color: #000;
-
-}
-
-
-QMenuBar::item:pressed
-{
-    background-color: #a0a0a0;
-    border: 0px solid;
-    margin-bottom: -1px;
-    padding-bottom: 1px;
-
-}
-
-
-/*-----QMenuBar-----*/
-QMenuBar
-{
-	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(156, 156, 156, 255),stop:0.509615 rgba(216, 216, 216, 255));
-	color: #000;
-	border-color: #000000;
-
-}
-
-
-QMenuBar::item
-{
-    background-color: transparent;
-
-}
-
-
-QMenuBar::item:disabled
-{
-    background-color: transparent;
-	color: gray;
-
-}
-
-
-QMenuBar::item:selected
-{
-    background-color: gray;
-
-}
-
-
-QMenuBar::item:pressed
-{
-    background-color: darkgray;
-    border: 1px solid #794f34;
-    margin-bottom: -1px;
-    padding-bottom: 1px;
-
-}
-
-
-/*-----QMenu-----*/
-QMenu
-{
-    background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0.00480769 rgba(89, 89, 89, 255),stop:1 rgba(113, 113, 113, 255));
-    border: 1px solid;
-    color: #fff;
-
-}
-
-
-QMenu::separator
-{
-    height: 1px;
-    background-color: #000;
-    color: #ffffff;
-    padding-left: 4px;
-
-}
-
-
-QMenu::item
-{
-    min-width : 150px;
-    padding: 3px 20px 3px 20px;
-
-}
-
-
-QMenu::item:selected
-{
-    background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(50, 50, 50, 255),stop:0.504808 rgba(94, 94, 94, 255),stop:1 rgba(58, 58, 58, 255));
-    color: #ffffff;
-
-}
-
-
-QMenu::item:disabled
-{
-    color: #262626;
-
-}
-
-
-
-
-/*-----QToolTip-----*/
-QToolTip
-{
-	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(207, 208, 216, 255),stop:1 rgba(152, 153, 159, 255));
-	color: #000;
-	border: 1px solid #4e4e4d;
-	font-weight: bold;
-
-}
-
-
-/*-----QPushButton-----*/
-QPushButton
-{
-	background-color: #b0b0b0;
-	color: #000000;
-	border: 1px solid #888888;
-	border-radius: 14px;
-	padding: 6px;
-
-}
-
-
-QPushButton::hover
-{
-	background-color: #cbccd4;
-	border: 1px solid #888888;
-
-}
-
-
-QPushButton::pressed
-{
-	background-color: #787878;
-
-}
-
-
-QPushButton::checked
-{
-	background-color: #787878;
-
-}
-
-
-/*-----QLineEdit-----*/
-QLineEdit
-{
-	background-color: #e6e6e6;
-	color: #000;
-	font-weight: bold;
-	border-style: solid;
-	border-width: 2px;
-	border-color: #0a84ff;
-	border-radius: 4px;
-	padding: 5px;
-
-}
-
-/*-----QTabBar-----*/
-QTabBar::tab
-{
-	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(227, 227, 227, 255),stop:1 rgba(187, 187, 187, 255));
-	color: #000;
-	border-style: solid;
-	border-width: 1px;
-	border-color: #666;
-	border-bottom: none;
-	padding: 5px;
-	padding-left: 15px;
-	padding-right: 15px;
-  	border-radius: 5px;
-}
-
-
-QTabWidget::pane 
-{
-	background-color: #666;;
-	border: 1px solid #666;
-	top: 1px;
-
-}
-
-
-QTabBar::tab:last
-{
-	margin-right: 0; 
-
-}
-
-
-QTabBar::tab:first:!selected
-{
-	background-color: #666666;
-	margin-left: 0px;
-
-}
-
-
-QTabBar::tab:!selected
-{
-	color: #b1b1b1;
-	border-bottom-style: solid;
-	background-color: #666666;
-
-}
-
-
-QTabBar::tab:selected
-{
-	margin-top: 0px;
-
-}
-
-
-QTabBar::tab:!selected:hover
-{
-	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(127, 127, 127, 255),stop:1 rgba(87, 87, 87, 255));
-	color: #000;
-
-}
-
-/*-----QScrollBar-----*/
-QScrollBar:vertical 
-{
-   border: none;
-   width: 10px;
-
-}
-
-
-QScrollBar:horizontal 
-{
-   border: none;
-   height: 10px;
-
-}
-
-
-QScrollBar::handle:vertical,
-QScrollBar::handle:horizontal
-{
-   border: none;
-   border-radius : 0px;
-   background-color: #7a7a7a;
-   min-height: 80px;
-   width : 12px;
-
-}
-
-
-QScrollBar::handle:vertical:pressed,
-QScrollBar::handle:horizontal:pressed
-{
-   background-color: #5d5f60; 
-
-}
-
-
-QScrollBar::handle:vertical:hover,
-QScrollBar::handle:horizontal:hover
-{
-   background-color: #5d5f60; 
-
-}
-
-
-QScrollBar::add-line:vertical,
-QScrollBar::add-line:horizontal
-{
-   border: none;
-   background: transparent;
-   height: 0px;
-   subcontrol-position: bottom;
-   subcontrol-origin: margin;
-
-}
-
-
-QScrollBar::add-line:vertical:hover,
-QScrollBar::add-line:horizontal:hover
-{
-   background-color: transparent;
-
-}
-
-
-QScrollBar::add-line:vertical:pressed, 
-QScrollBar::add-line:horizontal:pressed
-{
-   background-color: #3f3f3f;
-
-}
-
-
-QScrollBar::sub-line:vertical,
-QScrollBar::sub-line:horizontal
-{
-   border: none;
-   background: transparent;
-   height: 0px;
-
-}
-
-
-QScrollBar::sub-line:vertical:hover,
-QScrollBar::sub-line:horizontal:hover
-{
-   background-color: transparent;
-
-}
-
-
-QScrollBar::sub-line:vertical:pressed,
-QScrollBar::sub-line:horizontal:pressed
-{
-   background-color: #3f3f3f;
-
-}
-
-
-QScrollBar::up-arrow:vertical,
-QScrollBar::up-arrow:horizontal
-{
-   width: 0px;
-   height: 0px;
-   background: transparent;
-
-}
-
-
-QScrollBar::down-arrow:vertical, 
-QScrollBar::down-arrow:horizontal
-{
-   width: 0px;
-   height: 0px;
-   background: transparent;
-
-}
-
-
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
-{
-   background-color: white;
-	
-}
-
-/*-----QSlider-----*/
-
-QSlider:horizontal {
-    min-height: 28px;
-}
-
-QSlider::groove:horizontal 
-{
-	background-color: transparent;
-	height: 4px;
-}
-
-
-QSlider::sub-page:horizontal 
-{
-	background-color: gray;
-}
-
-
-QSlider::add-page:horizontal 
-{
-	background-color: #363535;
-}
-
-
-QSlider::handle:horizontal 
-{
-	width: 25px;
-    margin-top: -10px;
-    margin-bottom: -10px;
-    border-radius: 10px;
-	background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.6 rgba(210, 210, 210, 255), stop:0.7 rgba(210, 210, 210, 100));
-}
-
-
-QSlider::handle:horizontal:hover 
-{
-	 background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.6 rgba(255, 255, 255, 255), stop:0.7 rgba(255, 255, 255, 100));
-}
-
-
-QSlider::sub-page:horizontal:disabled 
-{
-	background-color: gray;
-	border-color: gray;
-}
-
-
-QSlider::add-page:horizontal:disabled 
-{
-	background-color: #363535;
-	border-color: #363535;
-}
-
-
-QSlider::handle:horizontal:disabled 
-{
-	background-color: gray;
-	border: 1px solid gray;
-}
-
-QSlider:vertical {
-    min-width: 28px;
-}
-
-QSlider::groove:vertical {
-    width: 4px;
-    background-color: transparent;
-}
-
-QSlider::handle:vertical {
-    height: 25px;
-    margin-left: -10px;
-    margin-right: -10px;
-    border-radius: 10px;
-    background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.6 rgba(210, 210, 210, 255), stop:0.7 rgba(210, 210, 210, 100));
-}
-
-QSlider::handle:vertical:hover {
-    background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.6 rgba(255, 255, 255, 255), stop:0.7 rgba(255, 255, 255, 100));
-}
-
-QSlider::sub-page:vertical 
-{
-	background-color: #363535;
-	margin: 4px;
-}
-
-
-QSlider::add-page:vertical 
-{
-	background-color: transparent;
-	background-color: gray;
-}
-
-
-/*-----QStatusBar-----*/
-QStatusBar
-{
-	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(123, 123, 123, 255),stop:0.509615 rgba(116, 116, 116, 255));
-	color: #000;
-	border-color: #000000;
-
-}
-
-/*-----QComboBox-----*/
-QComboBox
-{
-    background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(84, 84, 84, 255),stop:1 rgba(59, 59, 59, 255));
-    border: 1px solid #000;
-    padding-left: 6px;
-    color: #ffffff;
-    height: 20px;
-
-}
-
-
-QComboBox::disabled
-{
-	background-color: #404040;
-	color: #656565;
-	border-color: #051a39;
-
-}
-
-
-QComboBox:on
-{
-    background-color: gray;
-	color: #000;
-
-}
-
-
-QComboBox QAbstractItemView
-{
-    background-color: #383838;
-    color: #ffffff;
-    border: 1px solid black;
-    selection-background-color: #b78620;
-    outline: 0;
-
-}
-
-
-QComboBox::drop-down
-{
-	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(57, 57, 57, 255),stop:1 rgba(50, 50, 50, 255));
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-    border-left-width: 1px;
-    border-left-color: black;
-    border-left-style: solid; 
-
-}
-
-
-QComboBox::down-arrow
-{
-    image: url(://arrow-down.png);
-    width: 8px;
-    height: 8px;
-}
-
-QLCDNumber{
-  background-color: gray;
-  border: 2px solid rgb(113, 113, 113);
-  border-width: 2px;
-  border-radius: 10px;
-  color: rgb(0, 0, 0);
-}</string>
+  <property name="iconSize">
+   <size>
+    <width>18</width>
+    <height>18</height>
+   </size>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
+  </property>
+  <property name="animated">
+   <bool>false</bool>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::TabShape::Rounded</enum>
+  </property>
+  <widget class="QWidget" name="mainWidget">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#mainWidget {
+	background-color: rgba(#fff, 0.5);
+}</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="95,5">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_PowerProfiles"/>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_HWMonitoring"/>
-        </item>
-        <item>
-         <widget class="QTabWidget" name="tabWidget_Controls">
-          <property name="styleSheet">
-           <string notr="true"/>
-          </property>
-          <property name="tabShape">
-           <enum>QTabWidget::TabShape::Rounded</enum>
-          </property>
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-          <property name="usesScrollButtons">
-           <bool>true</bool>
-          </property>
-          <property name="documentMode">
-           <bool>false</bool>
-          </property>
-          <property name="tabsClosable">
-           <bool>false</bool>
-          </property>
-          <property name="tabBarAutoHide">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
+     <layout class="QHBoxLayout" name="toolBar_HBoxLayout"/>
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox_Notification">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="title">
-       <string>Notifications</string>
+       <string notr="true">Notifications</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_Notification">
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="topMargin">
+          <number>20</number>
+         </property>
+         <property name="rightMargin">
+          <number>20</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
          <item>
           <widget class="QLabel" name="label_DaemonStatus">
            <property name="text">
@@ -715,39 +143,58 @@ QLCDNumber{
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1711</width>
-     <height>22</height>
-    </rect>
+  <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
-   <widget class="QMenu" name="menuOptimize">
-    <property name="title">
-     <string>Optimize</string>
-    </property>
-    <widget class="QMenu" name="menuGame">
-     <property name="title">
-      <string>Game </string>
-     </property>
-     <addaction name="actionMaximum_Game"/>
-     <addaction name="actionOptimum_Game"/>
-     <addaction name="actionSilent_Game"/>
-    </widget>
-    <widget class="QMenu" name="menuMulticore">
-     <property name="title">
-      <string>Multicore</string>
-     </property>
-     <addaction name="actionMaximum_Multicore"/>
-     <addaction name="actionOptimum_Multicore"/>
-     <addaction name="actionSilent_Multicore"/>
-    </widget>
-    <addaction name="menuGame"/>
-    <addaction name="menuMulticore"/>
-   </widget>
-   <addaction name="menuOptimize"/>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>60</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::ContextMenuPolicy::PreventContextMenu</enum>
+   </property>
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::ToolBarArea::LeftToolBarArea</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="actionMaximum_Game">
    <property name="text">

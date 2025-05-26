@@ -9,6 +9,7 @@
 
 #include "MainWindow.h"
 #include "AboutWindow.h"
+#include "Settings.h"
 
 #include <Core/ApplicationInterface.h>
 #include <Core/ApplicationModulesLoader.h>
@@ -34,7 +35,7 @@ public:
 
 private:
 
-    bool notify(QObject* receiver, QEvent* event) override;
+    bool notify(QObject* receiver, QEvent* event) noexcept override;
 
     virtual void appRollBackImpl()                                          noexcept override;
     virtual void appStartImpl()                                                      override;
@@ -51,7 +52,17 @@ private slots:
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void onExitActionTriggered();
 
+    void onSettingChanged(LenovoLegionGui::ApplicationSettings::SettingType setting, bool value);
+    void onThemeChanged(LenovoLegionGui::ApplicationSettings::ThemeType theme);
+
 private:
+
+    void loadSettings();
+    void applyStartupSettings();
+    void applyDebugLogging(bool enable);
+    void applyTraceLogging(bool enable);
+    void applyLogging(bool enableDebug, bool enableTrace);
+    void applyTheme(ApplicationSettings::ThemeType theme);
 
     std::unique_ptr<MainWindow>      m_mainWindow;
     std::unique_ptr<AboutWindow>     m_aboutWindow;

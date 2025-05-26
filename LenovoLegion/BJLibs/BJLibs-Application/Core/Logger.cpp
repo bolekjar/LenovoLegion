@@ -22,6 +22,7 @@ QMap<Logger::SEVERITY,QString>  Logger::dictonary = {
         {Logger::SEVERITY::DEBUG,  " <Debug> "  },
         {Logger::SEVERITY::WARNING," <Warning> "},
         {Logger::SEVERITY::ERROR,  " <Error> "  },
+        {Logger::SEVERITY::TRACE,  " <Trace> "  }
 };
 
 void Logger::setSeverity(const SEVERITY_BITSET& severity)
@@ -59,7 +60,7 @@ void Logger::write(const QString &data,SEVERITY severity)
 
     QString text = data;
 
-    text = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss ") + dictonary[severity] + text ;
+    text = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss.zzz ") + dictonary[severity] + text ;
 
     {
         std::unique_lock<std::mutex> m_guard(m_mutex);
@@ -88,7 +89,7 @@ void Logger::write(const std::stringstream &data, Logger::SEVERITY severity)
         THROW_EXCEPTION(exception_T,ERROR_CODES::FILE_OPEN_ERROR,std::string("The log file engine was not initialized : "));
     }
 
-    QString text = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss ") + dictonary[severity] + data.str().c_str();
+    QString text = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss.zzz ") + dictonary[severity] + data.str().c_str();
 
     {
         std::unique_lock<std::mutex> m_guard(m_mutex);

@@ -1,15 +1,16 @@
 # Maintainer: Jaroslav Bolek <jarris@post.cz>
 pkgname=LenovoLegion
-pkgver=0.9.9
+pkgver=1.0.0
 pkgrel=1
-pkgdesc="Lenovo Legion Pro 7 16IRX9H driver"
+pkgdesc="Lenovo Linux Toolkit for Lenovo Legion laptops"
 arch=("x86_64")
-url="git+ssh://git@github.com/bolekjar/LenovoLegion.git"
+url="git+https://github.com/bolekjar/LenovoLegion.git"
 license=('GPL3')
-depends=("qt6-5compat" "dkms")
+depends=("qt6-base" "qt6-5compat" "dkms" "make" "gcc" "qt6-charts" "protobuf" "cuda" "pkgconf")
 source=("$pkgname-$pkgver::$url")
 sha256sums=('SKIP')
 install=default.install
+qmake=qmake6
 
 package() {
 
@@ -20,6 +21,7 @@ package() {
   mkdir -p $pkgdir/etc/modprobe.d/
   mkdir -p $pkgdir/etc/modules-load.d/
   mkdir -p $pkgdir/usr/share/applications/
+  mkdir -p $pkgdir/etc/udev/rules.d/
 
 
   ln -s $pkgname-$pkgver $pkgdir/opt/$pkgname
@@ -30,12 +32,15 @@ package() {
   #settings
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/blacklist-lenovo-legion.conf $pkgdir/etc/modprobe.d/
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/lenovo-legion.conf $pkgdir/etc/modules-load.d/
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/99-rapl-readonly.rules $pkgdir/etc/udev/rules.d
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/rapl-readonly.sh $pkgdir/opt/$pkgname-$pkgver/
+  chmod 755 $pkgdir/opt/$pkgname-$pkgver/rapl-readonly.sh
 
   #daemon, gui
-  qmake6 $srcdir/$pkgname-$pkgver/$pkgname/ -o $srcdir/$pkgname-$pkgver/$pkgname/Makefile
+  $qmake $srcdir/$pkgname-$pkgver/$pkgname/ -o $srcdir/$pkgname-$pkgver/$pkgname/Makefile
   make -C $srcdir/$pkgname-$pkgver/$pkgname/
 
-  #daemon, gui
+  #daemon, gui, dkms
   cp -r $srcdir/$pkgname-$pkgver/$pkgname/Installation/* $pkgdir/opt/$pkgname-$pkgver
   chmod 777 $pkgdir/opt/$pkgname-$pkgver/log
   chmod 777 $pkgdir/opt/$pkgname-$pkgver/data

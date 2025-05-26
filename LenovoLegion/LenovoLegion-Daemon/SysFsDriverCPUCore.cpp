@@ -16,6 +16,8 @@ SysFsDriverCPUCore::SysFsDriverCPUCore(QObject *parrent) : SysFsDriver(DRIVER_NA
 
 void SysFsDriverCPUCore::init()
 {
+    LOG_T(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(std::filesystem::path(m_path)))
@@ -26,7 +28,7 @@ void SysFsDriverCPUCore::init()
     }
     else
     {
-        LOG_D(QString("CPU Core topology driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("CPU Core topology driver not found in path: ") + m_path.c_str());
     }
 }
 

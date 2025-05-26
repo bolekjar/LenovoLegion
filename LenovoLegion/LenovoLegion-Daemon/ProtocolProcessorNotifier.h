@@ -9,16 +9,16 @@
 
 #include "SysFsDriver.h"
 #include "SysFsDriverManager.h"
+#include "DataProviderManager.h"
 
 #include "ProtocolProcessorBase.h"
-#include "ControlDataProvider.h"
 
-
-#include <QLocalSocket>
 
 
 namespace LenovoLegionDaemon {
 
+
+class SysFsDriverManager;
 class ProtocolProcessorNotifier : public ProtocolProcessorBase
 {
     Q_OBJECT
@@ -28,12 +28,13 @@ public:
     enum ERROR_CODES : int {
         UNEXPECTED_MESSAGE = -1,
         WATCHED_PATH_ERROR = -2,
+        SERIALIZE_ERROR    = -3
     };
 
 
 public:
 
-    ProtocolProcessorNotifier(ControlDataProvider* dataProvider,QLocalSocket* clientSocket,QObject* parent = nullptr);
+    ProtocolProcessorNotifier(SysFsDriverManager* sysfsDriverManager,DataProviderManager* dataProviderManger,QLocalSocket* clientSocket,QObject* parent);
     ~ProtocolProcessorNotifier();
 
     virtual void stop()  override;
@@ -42,15 +43,24 @@ public:
 private:
 
     virtual void readyReadHandler() override;
+    virtual void disconnectedHandler() override;
+
+signals:
+
+    void clientDisconnected();
 
 public slots:
 
     void kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent& event);
     void moduleSubsystemHandler(const LenovoLegionDaemon::SysFsDriverManager::ModuleSubsystemEvent& event);
+public:
+
+    static constexpr quint8  m_dataType = 0;
 
 private:
 
-    ControlDataProvider*     m_controlDataProvider;
+    SysFsDriverManager*     m_sysfsDriverManager;
+    DataProviderManager*    m_dataProviderManger;
 };
 
 }
