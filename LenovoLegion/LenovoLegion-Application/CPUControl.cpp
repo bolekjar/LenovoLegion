@@ -408,8 +408,24 @@ void CPUControl::renderData()
     if(m_cpuSMTControlData.m_isAvailable)
     {
         ui->checkBox_DisableSMT->blockSignals(true);
-        ui->checkBox_DisableSMT->setChecked(QString(m_cpuSMTControlData.m_data.m_control).trimmed() == SMT_OFF_DATA.m_data.m_control || m_cpuSMTControlData.m_data.m_active == false);
-        ui->checkBox_DisableSMT->setEnabled(true);
+        if(m_cpuSMTControlData.m_data.m_active)
+        {
+            if(QString(m_cpuSMTControlData.m_data.m_control).trimmed() == SMT_OFF_DATA.m_data.m_control)
+            {
+                m_dataProvider->setCpuSMTControlData(SMT_ON_DATA);
+            }
+
+            ui->checkBox_DisableSMT->setChecked(false);
+        }
+        else
+        {
+            if(QString(m_cpuSMTControlData.m_data.m_control).trimmed() == SMT_ON_DATA.m_data.m_control)
+            {
+                m_dataProvider->setCpuSMTControlData(SMT_OFF_DATA);
+            }
+
+            ui->checkBox_DisableSMT->setChecked(true);
+        }
         ui->checkBox_DisableSMT->blockSignals(false);
     }
     else
