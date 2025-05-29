@@ -34,7 +34,6 @@ ThreadControl::ThreadControl(const QString& title, int index , bool enabled,cons
 
     if(!m_enabled)
     {
-        ui->groupBox->setTitle(title + " - Disabled");
         ui->groupBox->setStyleSheet(QString("QGroupBox {  color : %1; background-color: %2;}").arg("#333066",m_bgcolor));
     }
 }

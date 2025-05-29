@@ -47,7 +47,7 @@ HWMonitoring::HWMonitoring(HWMonitoringDataProvider *dataProvider,QWidget *paren
     });
 
     ui->widget_CPUTemp->init("Temp [%1 °C]",30,100,30,100);
-    ui->widget_CPUPower->init("Power [%1 W]",0,200,0,200);
+    ui->widget_CPUPower->init("Power [%1 W]",0,250,0,250);
 
     quint32 pMin = std::numeric_limits<quint32>::max();
     quint32 pMax = std::numeric_limits<quint32>::min();
@@ -119,7 +119,7 @@ void HWMonitoring::refresh()
                                          0,10,' ',
                                          QString("CPU Power : %1 W\n"
                                                  "CPU Power min: 0 W\n"
-                                                 "CPU Power max: 200 W\n").arg((data.m_intelPowerapRapl.m_data.m_powercapCPUEnergy - m_hwMonitoringData.m_intelPowerapRapl.m_data.m_powercapCPUEnergy)/diff));
+                                                 "CPU Power max: 250 W\n").arg((data.m_intelPowerapRapl.m_data.m_powercapCPUEnergy - m_hwMonitoringData.m_intelPowerapRapl.m_data.m_powercapCPUEnergy)/diff));
         }
         else
         {
@@ -127,7 +127,7 @@ void HWMonitoring::refresh()
                                          0,10,' ',
                                          QString("CPU Power : %1 W\n"
                                                  "CPU Power min: 0 W\n"
-                                                 "CPU Power max: 200 W\n").arg(ui->widget_CPUPower->getValue()));
+                                                 "CPU Power max: 250 W\n").arg(ui->widget_CPUPower->getValue()));
         }
     }
 

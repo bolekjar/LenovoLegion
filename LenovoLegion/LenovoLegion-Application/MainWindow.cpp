@@ -36,9 +36,19 @@ MainWindow::MainWindow(DataProvider *dataProvider, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_dataProvider(dataProvider),
-    m_timerId(-1)
+    m_timerId(-1),
+    m_timerEventCounter(0),
+    m_messageBox(new QMessageBox(QMessageBox::Icon::NoIcon,
+                                 "Lenovo Legion",
+                                 "Lenovo Legion configuration is refresing, please wait...",
+                                 QMessageBox::NoButton,
+                                 this))
 {
     ui->setupUi(this);
+
+    m_messageBox->setStandardButtons(QMessageBox::NoButton);
+    m_messageBox->setWindowModality(Qt::WindowModality::ApplicationModal);
+
 
     /*
      * Set default values
@@ -115,17 +125,25 @@ void MainWindow::addModules(std::unique_ptr<bj::framework::ApplicationModulesHan
 
 void MainWindow::timerEvent(QTimerEvent *)
 {
-    if(!m_tasksBasedOnTimer.empty())
+    if(!m_evaluateAsyncTasks.empty())
     {
-        m_tasksBasedOnTimer.front()();
-        m_tasksBasedOnTimer.pop_front();
+        m_evaluateAsyncTasks.front()();
+        m_evaluateAsyncTasks.pop_front();
         return;
     }
+
+    if(m_timerEventCounter > (TIMER_EVENT_IN_MS * 5/ 1000))
+    {
+       m_messageBox->hide();
+    }
+
 
     if(ui->horizontalLayout_HWMonitoring->itemAt(0) != nullptr)
     {
         dynamic_cast<HWMonitoring*>(ui->horizontalLayout_HWMonitoring->itemAt(0)->widget())->refresh();
     }
+
+    m_timerEventCounter++;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -220,8 +238,9 @@ void MainWindow::on_dataProviderEvent(const LenovoLegionGui::DataProvider::Messa
 
     case DataProvider::Message::Type::NOTIFICATION_CLIENT_IS_CONNECTED:
     {
-
-        evaluateAllTasks(m_refreshGuiEleamentsTasks);
+        evaluateTasksAsync({[this]{
+            evaluateTasks(m_refreshGuiEleamentsTasks);
+        }});
 
         /*
          * Set timer for monitoring data
@@ -236,12 +255,13 @@ void MainWindow::on_dataProviderEvent(const LenovoLegionGui::DataProvider::Messa
     break;
     case DataProvider::Message::Type::NOTIFICATION_CLIENT_IS_DISCONNECTED:
     {
-        evaluateAllTasks(m_removeGuiEleamentsTasks);
+        evaluateTasks(m_removeGuiEleamentsTasks);
 
         /*
          * Kill timer
          */
-        killTimer(m_timerId);m_timerId = -1;
+        killTimer(m_timerId);m_timerId = -1;m_timerEventCounter = 0;m_evaluateAsyncTasks.clear();
+
 
         /*
          * Set status
@@ -251,27 +271,55 @@ void MainWindow::on_dataProviderEvent(const LenovoLegionGui::DataProvider::Messa
     break;   
     case LenovoLegionGui::DataProvider::Message::Type::NOTIFICATION_POWER_PROFILE_CHANGED:
     {
-        dynamic_cast<PowerProfileControl*>(ui->verticalLayout_PowerProfiles->itemAt(0)->widget())->refresh();
+        if(ui->verticalLayout_PowerProfiles->itemAt(0) != nullptr)
+        {
+            dynamic_cast<PowerProfileControl*>(ui->verticalLayout_PowerProfiles->itemAt(0)->widget())->refresh();
+        }
     }
     break;
     case LenovoLegionGui::DataProvider::Message::Type::NOTIFICATION_BATTERY_STATUS_CHANGED:
     {
-        dynamic_cast<BateryStatus*>(ui->horizontalLayout_BateryStatus->itemAt(0)->widget())->refresh();
+        if(ui->horizontalLayout_BateryStatus->itemAt(0) != nullptr)
+        {
+            dynamic_cast<BateryStatus*>(ui->horizontalLayout_BateryStatus->itemAt(0)->widget())->refresh();
+        }
     }
     break;
     case LenovoLegionGui::DataProvider::Message::Type::NOTIFICATION_LENOVO_DRIVER_ADDED:
     {
-        evaluateAllTasks(m_refreshGuiEleamentsTasks);
+        evaluateTasks({[this]{
+            blockDataProviderSignals(true);
+            evaluateTasks(m_removeGuiEleamentsTasks);
+        }});
+        evaluateTasksAsync({[this]{
+            evaluateTasks(m_refreshGuiEleamentsTasks);
+            blockDataProviderSignals(false);
+        }});
     }
     break;
     case LenovoLegionGui::DataProvider::Message::Type::NOTIFICATION_LENOVO_DRIVER_REMOVED:
     {
-        evaluateAllTasks(m_refreshGuiEleamentsTasks);
+        evaluateTasks({[this]{
+            blockDataProviderSignals(true);
+            evaluateTasks(m_removeGuiEleamentsTasks);
+        }});
+        evaluateTasksAsync({[this]{
+            evaluateTasks(m_refreshGuiEleamentsTasks);
+            blockDataProviderSignals(false);
+        }});
     }
     break;
     case LenovoLegionGui::DataProvider::Message::Type::NOTIFICATION_CPU_X_LIST_RELOADED:
     {
-        evaluateAllTasks(m_refreshGuiEleamentsTasks);
+        evaluateTasks({[this]{
+            blockDataProviderSignals(true);
+            evaluateTasks(m_removeGuiEleamentsTasks);
+        }});
+
+        evaluateTasksAsync({[this]{
+            evaluateTasks(m_refreshGuiEleamentsTasks);
+            blockDataProviderSignals(false);
+        }});
     }
     break;
     }
@@ -283,18 +331,21 @@ void MainWindow::on_widgetEvent(const WidgetMessage &event)
     {
         if(event.m_message == WidgetMessage::Message::POWER_PROFILE_CHANGED_CUSTOM)
         {
-            evaluateAllTasks(m_refreshGuiPPCustomTasks);
+            evaluateTasks(m_removeGuiPPTasks);
+            evaluateTasksAsync({[this]{
+                evaluateTasks(m_refreshGuiPPCustomTasks);
+            }});
         }
 
         if(event.m_message == WidgetMessage::Message::POWER_PROFILE_CHANGED)
         {
-            evaluateAllTasks(m_removeGuiPPTasks);
+            evaluateTasks(m_removeGuiPPTasks);
         }
 
         if(event.m_message == WidgetMessage::Message::POWER_PROFILE_NOT_AVAILABLE)
         {
-            evaluateAllTasks(m_removeGuiPPTasks);
-            evaluateAllTasks({[this]{removeLayoutItem(ui->verticalLayout_PowerProfiles->takeAt(0));}});
+            evaluateTasks(m_removeGuiPPTasks);
+            evaluateTasks({[this]{removeLayoutItem(ui->verticalLayout_PowerProfiles->takeAt(0));}});
         }
     }
 
@@ -302,7 +353,14 @@ void MainWindow::on_widgetEvent(const WidgetMessage &event)
     {
         if(event.m_message == WidgetMessage::Message::CPU_CONTROL_CHANGED)
         {
-            evaluateAllTasks(m_refreshGuiEleamentsTasks);
+            evaluateTasks({[this]{
+                blockDataProviderSignals(true);
+                evaluateTasks(m_removeGuiEleamentsTasks);
+            }});
+            evaluateTasksAsync({[this]{
+                evaluateTasks(m_refreshGuiEleamentsTasks);
+                blockDataProviderSignals(false);
+            }});
         }
     }
 
@@ -310,7 +368,7 @@ void MainWindow::on_widgetEvent(const WidgetMessage &event)
     {
         if(event.m_message == WidgetMessage::Message::CPU_FREQ_CONTROL_APPLY)
         {
-            evaluateAllTasks({[this]{
+            evaluateTasks({[this]{
                 removeLayoutItem(ui->horizontalLayout_HWMonitoring->takeAt(0));
                 addHBoxLayoutWidget(new HWMonitoring(m_dataProvider->getHWMonitoringDataProvider(),this),*ui->horizontalLayout_HWMonitoring);
             }});
@@ -360,12 +418,31 @@ void MainWindow::removeLayoutItem(QLayoutItem *layout)
     }
 }
 
-void MainWindow::evaluateAllTasks(std::list<std::function<void ()> > tasks)
+void MainWindow::evaluateTasks(const std::list<std::function<void ()> >& tasks)
 {
+    if(m_messageBox->isHidden())
+    {
+        m_messageBox->show();
+    }
+
     for(auto & task: tasks)
     {
         task();
     }
+
+    m_timerEventCounter = 0;
+}
+
+void MainWindow::evaluateTasksAsync(const std::list<std::function<void ()> >& tasks)
+{
+    if(m_messageBox->isHidden())
+    {
+        m_messageBox->show();
+    }
+
+    insertTasksBack(m_evaluateAsyncTasks,tasks);
+
+    m_timerEventCounter = 0;
 }
 
 void MainWindow::insertTasksBack(std::list<std::function<void ()> > &tasks, const std::list<std::function<void ()> > &tasksToInsert)
@@ -391,75 +468,82 @@ void MainWindow::optimize(const LenovoLegionDaemon::CPUSMTControl::DataControl  
                           const LenovoLegionDaemon::PowerControl::GPU::DataControl      &powerGPU
                           )
 {
-    blockDataProviderSignals(true);
+    evaluateTasks({[this]{
+        blockDataProviderSignals(true);
+        evaluateTasks(m_removeGuiEleamentsTasks);
+    }});
 
-    evaluateAllTasks(m_removeGuiEleamentsTasks);
 
-    auto cleanup = qScopeGuard([this] {
-        evaluateAllTasks(m_refreshGuiEleamentsTasks);
+    evaluateTasksAsync({[this,smt,performance,efficient,freqPerformance,freqEfficient,powerCPU,powerGPU]{
+        setTheValueWithTimeout([this] {
+            m_dataProvider->getPowerProfileControlDataProvider()->setPowerProfileData(LenovoLegionDaemon::PowerProfile::Control::getDataControl(LenovoLegionDaemon::PowerProfile::Control::PowerProfiles::POWER_PROFILE_CUSTOM));
+        }, [this] {
+                                   return m_dataProvider->getPowerProfileControlDataProvider()->getPowerProfileData().m_data.m_profile == LenovoLegionDaemon::PowerProfile::Control::PowerProfiles::POWER_PROFILE_CUSTOM;
+                               });
+
+
+        setTheValueWithTimeout([this] {
+            m_dataProvider->getCPUControlDataProvider()->setCpuSControlData(LenovoLegionDaemon::CPUXControl::getDataControl(LenovoLegionDaemon::CPUXControl::DataControl::CPUX{.m_Governor = "ondeamand",.m_cpuOnline = true}));
+        }, [] {
+                                   return true;
+                               });
+
+
+
+        setTheValueWithTimeout([this,smt] {
+            m_dataProvider->getCPUControlDataProvider()->setCpuSMTControlData(smt);
+        }, [] {
+                                   return true;
+                               });
+
+        setTheValueWithTimeout([this,performance] {
+            m_dataProvider->getCPUControlDataProvider()->setCpuSControlData(LenovoLegionDaemon::CPUXControl::getDataControl(
+                m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData(),
+                m_dataProvider->getCPUControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusCore,
+                performance));
+        }, [] {
+                                   return true;
+                               });
+
+        setTheValueWithTimeout([this,efficient] {
+            m_dataProvider->getCPUControlDataProvider()->setCpuSControlData(LenovoLegionDaemon::CPUXControl::getDataControl(
+                m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData(),
+                m_dataProvider->getCPUControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusAtom,
+                efficient));
+        }, [] {
+                                   return true;
+                               });
+
+        setTheValueWithTimeout([this,freqPerformance] {
+            m_dataProvider->getCPUFrequencyControlDataProvider()->setCpuFreqControlData(LenovoLegionDaemon::CPUXFreqControl::getDataControl(
+                m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUsInfoData(),
+                m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusCore,
+                freqPerformance));
+        }, [] {
+                                   return true;
+                               });
+
+        setTheValueWithTimeout([this,freqEfficient] {
+            m_dataProvider->getCPUFrequencyControlDataProvider()->setCpuFreqControlData(LenovoLegionDaemon::CPUXFreqControl::getDataControl(
+                m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUsInfoData(),
+                m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusAtom,
+                freqEfficient));
+        }, [] {
+                                   return true;
+                               });
+
+        setTheValueWithTimeout([this,powerCPU,powerGPU] {
+            m_dataProvider->getPowerControlDataProvider()->setCpuControlData(powerCPU);
+            m_dataProvider->getPowerControlDataProvider()->setGpuControlData(powerGPU);
+        }, [] {
+                                   return true;
+                               });
+    }});
+
+    evaluateTasksAsync({[this]{
+        evaluateTasks(m_refreshGuiEleamentsTasks);
         blockDataProviderSignals(false);
-    });
-
-    setTheValueWithTimeout([this] {
-        m_dataProvider->getPowerProfileControlDataProvider()->setPowerProfileData(LenovoLegionDaemon::PowerProfile::Control::getDataControl(LenovoLegionDaemon::PowerProfile::Control::PowerProfiles::POWER_PROFILE_CUSTOM));
-    }, [this] {
-                               return m_dataProvider->getPowerProfileControlDataProvider()->getPowerProfileData().m_data.m_profile == LenovoLegionDaemon::PowerProfile::Control::PowerProfiles::POWER_PROFILE_CUSTOM;
-                           });
-
-    setTheValueWithTimeout([this] {
-        m_dataProvider->getCPUControlDataProvider()->setCpuSControlData(LenovoLegionDaemon::CPUXControl::getDataControl(LenovoLegionDaemon::CPUXControl::DataControl::CPUX{.m_Governor = "ondeamand",.m_cpuOnline = true}));
-    }, [] {
-                               return true;
-                           });
-
-    setTheValueWithTimeout([this,&smt] {
-        m_dataProvider->getCPUControlDataProvider()->setCpuSMTControlData(smt);
-    }, [] {
-                               return true;
-                           });
-
-    setTheValueWithTimeout([this,&performance] {
-        m_dataProvider->getCPUControlDataProvider()->setCpuSControlData(LenovoLegionDaemon::CPUXControl::getDataControl(
-            m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData(),
-            m_dataProvider->getCPUControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusCore,
-            performance));
-    }, [] {
-                               return true;
-                           });
-
-    setTheValueWithTimeout([this,&efficient] {
-        m_dataProvider->getCPUControlDataProvider()->setCpuSControlData(LenovoLegionDaemon::CPUXControl::getDataControl(
-            m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData(),
-            m_dataProvider->getCPUControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusAtom,
-            efficient));
-    }, [] {
-                               return true;
-                           });
-
-    setTheValueWithTimeout([this,freqPerformance] {
-        m_dataProvider->getCPUFrequencyControlDataProvider()->setCpuFreqControlData(LenovoLegionDaemon::CPUXFreqControl::getDataControl(
-            m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUsInfoData(),
-            m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusCore,
-            freqPerformance));
-    }, [] {
-                               return true;
-                           });
-
-    setTheValueWithTimeout([this,freqEfficient] {
-        m_dataProvider->getCPUFrequencyControlDataProvider()->setCpuFreqControlData(LenovoLegionDaemon::CPUXFreqControl::getDataControl(
-            m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUsInfoData(),
-            m_dataProvider->getCPUFrequencyControlDataProvider()->getCPUHeterogenousTopologyData().m_data.m_ActiveCpusAtom,
-            freqEfficient));
-    }, [] {
-                               return true;
-                           });
-
-    setTheValueWithTimeout([this,&powerCPU,&powerGPU] {
-        m_dataProvider->getPowerControlDataProvider()->setCpuControlData(powerCPU);
-        m_dataProvider->getPowerControlDataProvider()->setGpuControlData(powerGPU);
-    }, [] {
-                               return true;
-                           });
+    }});
 }
 
 

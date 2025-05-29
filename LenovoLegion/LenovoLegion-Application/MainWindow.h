@@ -18,6 +18,7 @@
 #include <QString>
 #include <QLayoutItem>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include <list>
 
@@ -97,7 +98,9 @@ private:
     void removeAllControlTabs();
     void removeLayoutItem(QLayoutItem* layout);
 
-    void evaluateAllTasks(std::list<std::function< void ()>> tasks);
+    void evaluateTasks(const std::list<std::function<void ()> > &tasks);
+    void evaluateTasksAsync(const std::list<std::function<void ()> > &tasks);
+
     void insertTasksBack(std::list<std::function< void ()>>& tasks, const std::list<std::function< void ()>>& tasksToInsert);
     void insertTasksFront(std::list<std::function< void ()>>& tasks, const std::list<std::function< void ()>>& tasksToInsert);
 
@@ -138,9 +141,14 @@ private:
     int m_timerId;
 
     /*
-     * Tasks evaluated in timer event
+     * Timer event counter
      */
-    std::list<std::function< void ()>>  m_tasksBasedOnTimer;
+    quint64 m_timerEventCounter;
+
+    /*
+     * Message box
+     */
+    QMessageBox* m_messageBox;
 
     /*
      * Tasks for GUI refresh
@@ -155,6 +163,8 @@ private:
     std::list<std::function< void ()>>  m_addGuiEleamentsTasks;
     std::list<std::function< void ()>>  m_addGuiPPCustomTasks;
     std::list<std::function< void ()>>  m_addGuiPPTasks;
+
+    std::list<std::function< void ()>>  m_evaluateAsyncTasks;
 };
 
 template<class T>
