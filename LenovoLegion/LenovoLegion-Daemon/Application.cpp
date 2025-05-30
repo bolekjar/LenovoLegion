@@ -265,9 +265,9 @@ void Application::saveCurrentConfiguration()
 {
     try {
         saveCurrentPowerProfile();
-    } catch(const SysFsDriver::exception_T& ex)
+    } catch(const ControlDataException& ex)
     {
-        if(ex.errcodeInfo().value() == SysFsDriver::DRIVER_NOT_AVAILABLE)
+        if(ex.errcodeInfo().value() == ControlDataException::ERROR_CODES::NOT_AVAILABLE)
         {
             LOG_W("SysFs driver not available, power profile not saved!");
         }
@@ -278,9 +278,9 @@ void Application::saveCurrentConfiguration()
     }
     try {
         saveCurrentCPUsControlProfile();
-    } catch(const SysFsDriver::exception_T& ex)
+    } catch(const ControlDataException& ex)
     {
-        if(ex.errcodeInfo().value() == SysFsDriver::DRIVER_NOT_AVAILABLE)
+        if(ex.errcodeInfo().value() == ControlDataException::ERROR_CODES::NOT_AVAILABLE)
         {
             LOG_W("SysFs driver not available, CPU control profile not saved!");
         }
@@ -294,7 +294,7 @@ void Application::saveCurrentConfiguration()
 
 void Application::saveCurrentPowerProfile()
 {
-    SettingsSaverPowerProfiles().saverPowerProfile({.m_data = SysFsDataProvider(m_sysFsDriverManager).getPowerProfileData().m_data});
+    SettingsSaverPowerProfiles().saverPowerProfile(PowerProfile::Control::getDataControl(SysFsDataProvider(m_sysFsDriverManager).getPowerProfileData()));
 }
 
 void Application::saveCurrentCPUsControlProfile()
