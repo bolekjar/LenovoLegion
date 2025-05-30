@@ -15,7 +15,7 @@ namespace  LenovoLegionGui {
 Settings::Settings(const QString &group):
     m_settings(QString(bj::framework::Application::data_dir).append("/LenovoLegionGui.ini"),QSettings::IniFormat)
 {
-    m_settings.setValue("jbolek.cz","LenovoLegionGui");
+    m_settings.setValue("https://github.com/bolekjar/LenovoLegion","LenovoLegionGui");
     m_settings.beginGroup(group);
 }
 
