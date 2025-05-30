@@ -14,7 +14,7 @@ namespace  LenovoLegionDaemon {
 Settings::Settings(const QString &group):
     m_settings(QCoreApplication::applicationDirPath().append(QDir::separator()).append(bj::framework::Application::data_dir).append(QDir::separator()).append("/LenovoLegion-Daemon.ini"),QSettings::IniFormat)
 {
-    m_settings.setValue("https://github.com/bolekjar/LenovoLegion","LenovoLegion-Daemon");
+    m_settings.setValue("LenovoLegion","LenovoLegion-Daemon");
     m_settings.beginGroup(group);
 }
 
