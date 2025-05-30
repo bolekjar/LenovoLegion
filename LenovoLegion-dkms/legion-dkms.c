@@ -13,12 +13,13 @@
 #include "legion-wmi.h"
 #include "legion-wmi-gamezone.h"
 #include "legion-wmi-driver.h"
+#include "legion-pprof.h"
+
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/device.h>
 #include <linux/acpi.h>
 #include <linux/dmi.h>
-#include "legion-pprof.h"
 
 
 static const struct dmi_system_id supported_models[] = {
@@ -78,13 +79,22 @@ static int legion_probe(struct platform_device *pdev)
 
     platform_set_drvdata(pdev, data);
 
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	err = legion_platform_profile_init(&pdev->dev);
 	if (err) {
 		dev_err(&pdev->dev, "\tFailed to create platform profile interface: %d\n", err);
 		goto err_platform_profile;
 	}
 	dev_info(&pdev->dev,"\tPlatform profile interface was created\n");
+#else
+	err = legion_platform_profile_init(data);
+	if (err) {
+		dev_err(&pdev->dev, "\tFailed to create platform profile interface: %d\n", err);
+		goto err_platform_profile;
+	}
+	dev_info(&pdev->dev,"\tPlatform profile interface was created\n");
+#endif
+
 
     err = legion_wmi_driver_init(&pdev->dev);
     if (err != 0) {
@@ -112,7 +122,7 @@ static int legion_probe(struct platform_device *pdev)
     return err;
 
 err_wmi:
-	legion_platform_profile_exit(&pdev->dev);
+	legion_platform_profile_exit();
 err_platform_profile:
 	legion_hwmon_exit(&pdev->dev);
 err_hwmon_init:
@@ -137,7 +147,7 @@ static void legion_remove(struct platform_device *pdev)
     legion_wmi_driver_exit();
     dev_info(&pdev->dev, "\tWMI interface was removed\n");
 
-    legion_platform_profile_exit(&pdev->dev);
+    legion_platform_profile_exit();
     dev_info(&pdev->dev, "\tPlatform profile interface was removed\n");
 
     dev_info(&pdev->dev, "Legion Pro 7 16IRX9H platform driver was removed\n");

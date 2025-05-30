@@ -75,7 +75,11 @@ static void legion_wmi_notify(struct wmi_device *wdev, union acpi_object *data)
 	}
 
 send_notification:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	platform_profile_notify(((struct legion_data*)dev_get_drvdata(wpriv->parent))->pprof_device);
+#else
+	platform_profile_notify();
+#endif
 	return;
 send_notification_cycle:
 	platform_profile_cycle();

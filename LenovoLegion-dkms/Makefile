@@ -1,6 +1,6 @@
 SHELL := /bin/bash
-KERNELVERSION  ?= $(shell uname --kernel-release)
-KSRC := /lib/modules/$(KERNELVERSION)/build
+KERNEL_VERSION  ?= $(shell uname --kernel-release)
+KSRC := /lib/modules/$(KERNEL_VERSION)/build
 
 obj-m := lenovo_legion.o 
 lenovo_legion-objs := legion-dkms.o legion-wmi-other.o legion-hwmon.o legion-sysfs.o legion-wmi-gamezone.o legion-ec.o legion-wmi.o legion-fancurve.o legion-wmi-driver.o legion-pprof.o

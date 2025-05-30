@@ -14,8 +14,16 @@
 
 #include <linux/device.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 
 int  legion_platform_profile_init(struct device *parent);
-void legion_platform_profile_exit(struct device *parent);
+
+#else
+
+int  legion_platform_profile_init(struct legion_data *data);
+
+#endif
+
+void legion_platform_profile_exit(void);
 
 #endif /* LEGION_PPROF_H_ */

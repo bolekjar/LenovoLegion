@@ -70,8 +70,11 @@ static ssize_t fan_mode_store(struct device *dev,
 		return err;
 	}
 
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
     platform_profile_notify(priv->pprof_device);
+#else
+    platform_profile_notify();
+#endif
 
     return count;
 }
