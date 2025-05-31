@@ -1,6 +1,6 @@
 # Maintainer: Jaroslav Bolek <jarris@post.cz>
 pkgname=LenovoLegion
-pkgver=0.9.9
+pkgver=1.0.0
 pkgrel=1
 pkgdesc="Lenovo Legion Pro 7 16IRX9H driver"
 arch=("x86_64")
