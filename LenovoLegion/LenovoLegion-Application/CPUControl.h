@@ -25,12 +25,15 @@ class CPUControl : public QWidget
 {
     Q_OBJECT
 
+private:
+
+    static const QMap<QString,LenovoLegionDaemon::CPUXControl::DataControl::CPUX> CPU_CONTROL_PRESETS;
+
 public:
 
     static const QString NAME;
 
 
-    static const QMap<QString,LenovoLegionDaemon::CPUXControl::DataControl::CPUX> CPU_CONTROL_PRESETS;
     static const LenovoLegionDaemon::CPUSMTControl::DataControl                   SMT_ON_DATA;
     static const LenovoLegionDaemon::CPUSMTControl::DataControl                   SMT_OFF_DATA;
 
@@ -41,11 +44,21 @@ public:
     static const QString APPLY_TO_ALL_DISABLED;
 
 
+    static constexpr std::string_view POWER_SAVE    = "POWER_SAVE";
+    static constexpr std::string_view PERFORMANCE   = "PERFORMANCE";
+    static constexpr std::string_view ONDEMAND      = "ONDEMAND";
+    static constexpr std::string_view OFF           = "OFF";
+
+
 public:
     explicit CPUControl(CPUControlDataProvider *dataProvider,QWidget *parent = nullptr);
     ~CPUControl();
 
     void refresh();
+
+
+    static LenovoLegionDaemon::CPUXControl::DataControl::CPUX getCpuControlPreset(const QString &presetName,const LenovoLegionDaemon::CPUXControl::DataInfo::CPUX &dataInfo);
+
 
 signals:
 

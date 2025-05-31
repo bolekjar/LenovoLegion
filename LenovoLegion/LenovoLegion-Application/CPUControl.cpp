@@ -18,10 +18,10 @@ namespace LenovoLegionGui {
 QString const CPUControl::NAME      =   "CPU Control";
 
 const QMap<QString,LenovoLegionDaemon::CPUXControl::DataControl::CPUX>CPUControl::CPU_CONTROL_PRESETS = {
-    {"PERFORMANCE",{.m_Governor = "performance",.m_cpuOnline = true}},
-    {"POWER_SAVE", {.m_Governor = "powersave",.m_cpuOnline = true}},
-    {"ONDEMAND",{.m_Governor = "ondemand",.m_cpuOnline = true}},
-    {"OFF",{.m_Governor = "ondemand",.m_cpuOnline = false}}
+    {CPUControl::PERFORMANCE.data(),{.m_Governor = "performance",.m_cpuOnline = true}},
+    {CPUControl::POWER_SAVE.data(), {.m_Governor = "powersave"  ,.m_cpuOnline = true}},
+    {CPUControl::ONDEMAND.data(),   {.m_Governor = "ondemand"   ,.m_cpuOnline = true}},
+    {CPUControl::OFF.data(),        {.m_Governor = "powersave"  ,.m_cpuOnline = false}}
 };
 
 
@@ -42,6 +42,29 @@ const LenovoLegionDaemon::CPUSMTControl::DataControl CPUControl::SMT_OFF_DATA = 
         .m_control = "off"
     }
 };
+
+LenovoLegionDaemon::CPUXControl::DataControl::CPUX CPUControl::getCpuControlPreset(const QString &presetName,const LenovoLegionDaemon::CPUXControl::DataInfo::CPUX &dataInfo)
+{
+    auto availableGovernors = QString(dataInfo.m_availableGovernors).trimmed().split(' ');
+
+    if(CPU_CONTROL_PRESETS.contains(presetName))
+    {
+        LenovoLegionDaemon::CPUXControl::DataControl::CPUX cpuControl = CPU_CONTROL_PRESETS.value(presetName);
+
+        if(availableGovernors.contains(cpuControl.m_Governor))
+        {
+            return cpuControl;
+        }
+        else
+        {
+            LenovoLegionDaemon::CPUXControl::DataControl::CPUX cpuX = LenovoLegionDaemon::CPUXControl::getDataControl(dataInfo);
+            cpuX.m_cpuOnline = cpuControl.m_cpuOnline;
+            return cpuX;
+        }
+    }
+
+    return LenovoLegionDaemon::CPUXControl::getDataControl(dataInfo);
+}
 
 CPUControl::CPUControl(CPUControlDataProvider *dataProvider, QWidget *parent)
     : QWidget(parent)

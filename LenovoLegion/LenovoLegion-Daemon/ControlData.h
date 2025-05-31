@@ -492,6 +492,7 @@ struct CPUXControl {
             dst.m_cpuOnline = src.m_cpuOnline;
             memcpy(dst.m_Governor,src.m_Governor,sizeof(dst.m_Governor) * sizeof(dst.m_Governor[0]));
         }
+
     };
 
     static void forAllCpu(const std::function<bool (const DataInfo::CPUX&,const size_t)> &func, const std::array<DataInfo::CPUX,MAX_SUPPORTED_CPUS> &cpus)
@@ -570,6 +571,16 @@ struct CPUXControl {
         DataControl dataControl;
         dataControl.m_data.m_cpus.fill(value);
         return dataControl;
+    }
+
+    static DataControl::CPUX getDataControl(const DataInfo::CPUX& value)
+    {
+        DataControl::CPUX data;
+
+        data.m_cpuOnline = value.m_cpuOnline;
+        memcpy(data.m_Governor,value.m_Governor,sizeof(data.m_Governor) * sizeof(data.m_Governor[0]));
+
+        return data;
     }
 
     static DataControl getDataControl(const DataInfo& dataControl,const std::array<CPUTopology::ActiveCPUsRange,MAX_SUPPORTED_CPUS> &cpuRange,const DataControl::CPUX& value)

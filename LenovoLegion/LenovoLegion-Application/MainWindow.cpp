@@ -159,8 +159,8 @@ void MainWindow::on_actionMaximum_Game_triggered(bool)
 {
     optimize(
         CPUControl::SMT_OFF_DATA,
-        CPUControl::CPU_CONTROL_PRESETS["PERFORMANCE"],
-        CPUControl::CPU_CONTROL_PRESETS["OFF"],
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
+        CPUControl::getCpuControlPreset(CPUControl::OFF.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
         CPUFrequencyControl::CPUFREQ_PRESETS["MAX_MAX"],
         CPUFrequencyControl::CPUFREQ_PRESETS["MAX_MAX"],
         PowerControl::CPU_PRESETS["MAXIMUM_GAME"],
@@ -172,8 +172,8 @@ void MainWindow::on_actionOptimum_Game_triggered(bool)
 {
     optimize(
         CPUControl::SMT_OFF_DATA,
-        CPUControl::CPU_CONTROL_PRESETS["PERFORMANCE"],
-        CPUControl::CPU_CONTROL_PRESETS["OFF"],
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
+        CPUControl::getCpuControlPreset(CPUControl::OFF.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
         CPUFrequencyControl::CPUFREQ_PRESETS["4000_4000"],
         CPUFrequencyControl::CPUFREQ_PRESETS["4000_400"],
         PowerControl::CPU_PRESETS["MAXIMUM_GAME"],
@@ -185,8 +185,8 @@ void MainWindow::on_actionSilent_Game_triggered(bool)
 {
     optimize(
         CPUControl::SMT_OFF_DATA,
-        CPUControl::CPU_CONTROL_PRESETS["PERFORMANCE"],
-        CPUControl::CPU_CONTROL_PRESETS["OFF"],
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
+        CPUControl::getCpuControlPreset(CPUControl::OFF.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
         CPUFrequencyControl::CPUFREQ_PRESETS["3500_3500"],
         CPUFrequencyControl::CPUFREQ_PRESETS["3500_3500"],
         PowerControl::CPU_PRESETS["MAXIMUM_GAME"],
@@ -198,8 +198,8 @@ void MainWindow::on_actionMaximum_Multicore_triggered(bool)
 {
     optimize(
         CPUControl::SMT_ON_DATA,
-        CPUControl::CPU_CONTROL_PRESETS["ONDEMAND"],
-        CPUControl::CPU_CONTROL_PRESETS["ONDEMAND"],
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
         CPUFrequencyControl::CPUFREQ_PRESETS["MIN_MAX"],
         CPUFrequencyControl::CPUFREQ_PRESETS["MIN_MAX"],
         PowerControl::CPU_PRESETS["MAXIMUM_MULTICORE"],
@@ -211,8 +211,8 @@ void MainWindow::on_actionOptimum_Multicore_triggered(bool)
 {
     optimize(
         CPUControl::SMT_ON_DATA,
-        CPUControl::CPU_CONTROL_PRESETS["ONDEMAND"],
-        CPUControl::CPU_CONTROL_PRESETS["ONDEMAND"],
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
         CPUFrequencyControl::CPUFREQ_PRESETS["MIN_MAX"],
         CPUFrequencyControl::CPUFREQ_PRESETS["MIN_MAX"],
         PowerControl::CPU_PRESETS["OPTIMUM_MULTICORE"],
@@ -224,8 +224,8 @@ void MainWindow::on_actionSilent_Multicore_triggered(bool)
 {
     optimize(
         CPUControl::SMT_ON_DATA,
-        CPUControl::CPU_CONTROL_PRESETS["ONDEMAND"],
-        CPUControl::CPU_CONTROL_PRESETS["ONDEMAND"],
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
+        CPUControl::getCpuControlPreset(CPUControl::PERFORMANCE.data(),m_dataProvider->getCPUControlDataProvider()->getCPUXInfoControlData().m_data.m_cpus.at(0)),
         CPUFrequencyControl::CPUFREQ_PRESETS["MIN_MAX"],
         CPUFrequencyControl::CPUFREQ_PRESETS["MIN_MAX"],
         PowerControl::CPU_PRESETS["SILENT_MULTICORE"],
