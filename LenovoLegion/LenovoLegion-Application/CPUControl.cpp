@@ -404,7 +404,7 @@ void CPUControl::renderData()
     {
         emit widgetEvent( LenovoLegionGui::WidgetMessage {
             .m_widget       = LenovoLegionGui::WidgetMessage::Widget::CPU_CONTROL,
-            .m_message = LenovoLegionGui::WidgetMessage::Message::POWER_PROFILE_NOT_AVAILABLE
+            .m_message = LenovoLegionGui::WidgetMessage::Message::CPU_CONTROL_NOT_AVAILABLE
         });
 
         return;
