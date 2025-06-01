@@ -79,7 +79,7 @@ public:
             CPUX(const SysFsDriver::DescriptorType& descriptor) :
                 m_freq(descriptor),
                 m_topology(descriptor),
-                m_cpuOnline(descriptor["cpuOnline"])
+                m_cpuOnline((descriptor.find("cpuOnline") == descriptor.end()) ? std::optional<std::filesystem::path>() : descriptor["cpuOnline"])
             {}
 
             CPUX(const CPUX& ) = default;
@@ -90,10 +90,10 @@ public:
 
             bool isOnlineAvailable() const
             {
-                return  !m_cpuOnline.empty();
+                return  m_cpuOnline.has_value();
             }
 
-            std::filesystem::path                m_cpuOnline;
+            const std::optional<std::filesystem::path> m_cpuOnline;
         };
 
 

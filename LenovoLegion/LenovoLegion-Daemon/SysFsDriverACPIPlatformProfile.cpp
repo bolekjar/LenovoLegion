@@ -25,6 +25,8 @@ void SysFsDriverACPIPlatformProfile::init()
             LOG_D(QString("Found ACPI platform profile driver in path: ") + m_path.c_str());
 
             m_descriptor["acpiPlatformProfile"] = std::filesystem::path(m_path).append("platform_profile");
+
+            LOG_D(QString("ACPI platform profile driver descriptor added !"));
         }
         else
         {

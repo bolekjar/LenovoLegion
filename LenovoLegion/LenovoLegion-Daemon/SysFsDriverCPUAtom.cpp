@@ -23,6 +23,8 @@ void SysFsDriverCPUAtom::init()
         LOG_D(QString("CPU Atom topology driver found in path: ") + m_path.c_str());
 
         m_descriptor["cpus"] = std::filesystem::path(m_path).append("cpus");
+
+        LOG_D(QString("CPU Atom topology driver descriptor added !"));
     }
     else
     {

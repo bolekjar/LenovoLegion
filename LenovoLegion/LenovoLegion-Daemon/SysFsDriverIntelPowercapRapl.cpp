@@ -23,6 +23,8 @@ void SysFsDriverIntelPowercapRapl::init()
         LOG_D(QString("Found Intel Powercap RAPL driver in path: ") + m_path.c_str());
 
         m_descriptor["powercapCPUEnergy"] = std::filesystem::path(m_path).append("energy_uj");
+
+        LOG_D(QString("Power Intel Powercap RAPL driver descriptor added !"));
     }
     else
     {

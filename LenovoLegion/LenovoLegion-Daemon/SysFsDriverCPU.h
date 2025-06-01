@@ -43,17 +43,17 @@ public:
         struct Smt {
 
             Smt(const SysFsDriver::DescriptorType& descriptor) :
-                m_active(descriptor["smtActive"]),
-                m_control(descriptor["smtControl"])
-            {}
-
-            bool isAvailable() const
+                m_active(descriptor.find("smtActive") == descriptor.end() ? std::optional<std::filesystem::path>() : descriptor["smtActive"]),
+                m_control(descriptor.find("smtControl") == descriptor.end() ? std::optional<std::filesystem::path>() : descriptor["smtControl"])
             {
-                return  !m_active.empty()  || !m_control.empty();
+                if(!m_active.has_value() || !m_active.has_value())
+                {
+                    THROW_EXCEPTION(exception_T,ERROR_CODES::DRIVER_NOT_AVAILABLE,"Driver " + std::string(DRIVER_NAME) + " is not loaded !");
+                }
             }
 
-            const std::filesystem::path m_active;
-            const std::filesystem::path m_control;
+            const std::optional<std::filesystem::path> m_active;
+            const std::optional<std::filesystem::path> m_control;
         };
 
 

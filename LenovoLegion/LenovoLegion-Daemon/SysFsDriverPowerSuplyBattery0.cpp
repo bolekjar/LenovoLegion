@@ -23,6 +23,8 @@ void SysFsDriverPowerSuplyBattery0::init()
         LOG_D(QString("Found Power supply battery driver in path: ") + m_path.c_str());
 
         m_descriptor["powerSuplyBattery0"] = std::filesystem::path(m_path).append("status");
+
+        LOG_D(QString("Power supply battery driver descriptor added !"));
     }
     else
     {

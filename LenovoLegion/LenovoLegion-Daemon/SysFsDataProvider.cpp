@@ -218,7 +218,7 @@ HWMonitoring::DataInfo        SysFsDataProvider::getHWMonitoringData()     const
 
     for(size_t i = 0; i < std::min(cpus.cpuList().size(), data.m_cpusFreq.size()) ; ++i)
     {
-        bool cpuOnline                      = cpus.cpuList().at(i).isOnlineAvailable() ? getData(cpus.cpuList().at(i).m_cpuOnline).toUShort() == 1 : true;
+        bool cpuOnline                      = cpus.cpuList().at(i).isOnlineAvailable() ? getData(cpus.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
 
         if(cpuOnline)
         {
@@ -482,7 +482,7 @@ CPUXFreqControl::DataInfo SysFsDataProvider::getCPUsInfoData() const
 
     for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
     {
-        data.m_data.m_cpus.at(i).m_cpuOnline                      = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline).toUShort() == 1 : true;
+        data.m_data.m_cpus.at(i).m_cpuOnline                      = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
 
         if(data.m_data.m_cpus.at(i).m_cpuOnline)
         {
@@ -530,7 +530,7 @@ CPUXControl::DataInfo SysFsDataProvider::getCPUsInfoControlData() const
 
     for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
     {
-        data.m_data.m_cpus.at(i).m_cpuOnline = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline).toUShort() == 1 : true;
+        data.m_data.m_cpus.at(i).m_cpuOnline = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
 
         if(data.m_data.m_cpus.at(i).m_cpuOnline)
         {
@@ -614,8 +614,8 @@ CPUSMTControl::DataInfo SysFsDataProvider::getCPUSMTControlData() const
     try {
         SysFsDriverCPU::CPU::Smt smtControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverCPU::DRIVER_NAME));
 
-        std::strncpy(data.m_data.m_control, getData(smtControl.m_control).toStdString().c_str(), sizeof(data.m_data.m_control) * sizeof(data.m_data.m_control[0]) - 1);
-        data.m_data.m_active = (getData(smtControl.m_active).toUShort() == 1);
+        std::strncpy(data.m_data.m_control, getData(smtControl.m_control.value()).toStdString().c_str(), sizeof(data.m_data.m_control) * sizeof(data.m_data.m_control[0]) - 1);
+        data.m_data.m_active = (getData(smtControl.m_active.value()).toUShort() == 1);
 
     } catch(SysFsDriver::exception_T& ex)
     {
@@ -715,7 +715,7 @@ void SysFsDataProvider::setCpuControlData(const CPUXControl::DataControl &data)
 
         if(cpuXlist.cpuList().at(i).isOnlineAvailable())
         {
-            setData(cpuXlist.cpuList().at(i).m_cpuOnline,data.m_data.m_cpus.at(i).m_cpuOnline);
+            setData(cpuXlist.cpuList().at(i).m_cpuOnline.value(),data.m_data.m_cpus.at(i).m_cpuOnline);
         }
         setData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingGovernor,std::string(data.m_data.m_cpus.at(i).m_Governor));
     }
@@ -728,7 +728,7 @@ void SysFsDataProvider::setCPUSMTControlData(const CPUSMTControl::DataControl &d
 
     LOG_D("SysFsDataProvider::setCPUSMTControlData()");
 
-    setData(smtControl.m_control,std::string(data.m_data.m_control));
+    setData(smtControl.m_control.value(),std::string(data.m_data.m_control));
 }
 
 QString SysFsDataProvider::getData(const std::filesystem::path &path) const

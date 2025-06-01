@@ -32,6 +32,8 @@ void SysFsDriverCPU::init()
         m_descriptor["possible"] = std::filesystem::path(m_path).append("possible");
         m_descriptor["present"] = std::filesystem::path(m_path).append("present");
 
+        LOG_D(QString("CPU driver descriptor added !"));
+
         /*
          * CPU SMT
          */
@@ -41,6 +43,8 @@ void SysFsDriverCPU::init()
 
             m_descriptor["smtActive"] = std::filesystem::path(m_path).append("smt").append("active");
             m_descriptor["smtControl"] = std::filesystem::path(m_path).append("smt").append("control");
+
+            LOG_D(QString("CPU SMT driver descriptor added !"));
         }
         else
         {

@@ -34,9 +34,11 @@ void SysFsDriverCPUXList::init()
 
                 m_descriptorsInVector.resize(std::max(cpuIndex + 1,m_descriptorsInVector.size()));
 
-                if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("cpufreq")))
+                if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("cpufreq"))   &&
+                   std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology")))
                 {
                     LOG_D(QString("Found CPUX cpufreq driver in path: ") + std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("cpufreq").c_str());
+                    LOG_D(QString("Found CPUX topology driver in path: ") + std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").c_str());
 
                     m_descriptorsInVector[cpuIndex]["affectedCpus"]                    = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("affected_cpus");
                     if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("base_frequency")))
@@ -50,11 +52,7 @@ void SysFsDriverCPUXList::init()
                     m_descriptorsInVector[cpuIndex]["cpuScalingCurFreq"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("scaling_cur_freq");
                     m_descriptorsInVector[cpuIndex]["cpuScalingMinFreq"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("scaling_min_freq");
                     m_descriptorsInVector[cpuIndex]["cpuScalingMaxFreq"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("scaling_max_freq");
-                }
 
-                if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology")))
-                {
-                    LOG_D(QString("Found CPUX topology driver in path: ") + std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").c_str());
 
                     m_descriptorsInVector[cpuIndex]["clusterId"]                       = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("cluster_id");
                     m_descriptorsInVector[cpuIndex]["physicalPackageId"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("physical_package_id");
@@ -66,11 +64,13 @@ void SysFsDriverCPUXList::init()
                     m_descriptorsInVector[cpuIndex]["coreCpusList"]                    = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_cpus_list");
                     m_descriptorsInVector[cpuIndex]["coreSiblingsList"]                = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_siblings_list");
                     m_descriptorsInVector[cpuIndex]["threadSiblingsList"]              = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("thread_siblings_list");
-                }
 
-                if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("online")))
-                {
-                    m_descriptorsInVector[cpuIndex]["cpuOnline"]                      = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("online");
+                    if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("online")))
+                    {
+                        m_descriptorsInVector[cpuIndex]["cpuOnline"]                       = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("online");
+                    }
+
+                    LOG_D(QString("CPUX driver descriptor added for CPU index: ") + QString::number(cpuIndex));
                 }
             }
         }

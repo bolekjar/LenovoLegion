@@ -57,6 +57,14 @@ const SysFsDriver::DescriptorsInVectorType &SysFsDriver::descriptorsInVector() c
         THROW_EXCEPTION(exception_T,ERROR_CODES::DRIVER_NOT_AVAILABLE,"Driver " + m_name.toStdString() + " is not loaded !");
     }
 
+    for (const auto& descriptor : m_descriptorsInVector) {
+
+        if(descriptor.isEmpty())
+        {
+            THROW_EXCEPTION(exception_T,ERROR_CODES::DRIVER_NOT_AVAILABLE,"Driver " + m_name.toStdString() + " is not loaded !");
+        }
+    }
+
     return m_descriptorsInVector;
 }
 
