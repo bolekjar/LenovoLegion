@@ -396,6 +396,20 @@ void CPUControl::forAllCpuDisabledCores(const std::function<bool (const int)> &f
 
 void CPUControl::renderData()
 {
+    if(!m_cpuInfoData.m_isAvailable     ||
+       !m_cpuHetTopology.m_isAvailable  ||
+       !m_cpuHomTopology.m_isAvailable  ||
+       !m_cpuSMTControlData.m_isAvailable
+      )
+    {
+        emit widgetEvent( LenovoLegionGui::WidgetMessage {
+            .m_widget       = LenovoLegionGui::WidgetMessage::Widget::CPU_CONTROL,
+            .m_message = LenovoLegionGui::WidgetMessage::Message::POWER_PROFILE_NOT_AVAILABLE
+        });
+
+        return;
+    }
+
     /*
      * CPU Control Performance GUI elements
      */

@@ -31,7 +31,8 @@ struct WidgetMessage {
         CPU_CONTROL_CHANGED          = 20,
         CPU_CONTROL_NOT_AVAILABLE    = 21,
 
-        CPU_FREQ_CONTROL_APPLY       = 30
+        CPU_FREQ_CONTROL_APPLY          = 30,
+        CPU_FREQ_CONTROL_NOT_AVAILABLE  = 31
     };
 
 

@@ -287,6 +287,19 @@ void CPUFrequencyControl::forAllCPUThreads(const std::function<bool (const Lenov
 
 void CPUFrequencyControl::renderData()
 {
+    if(!m_cpuFreqData.m_isAvailable         ||
+       !m_cpuHetTopologyData.m_isAvailable  ||
+       !m_cpuHomTopologyData.m_isAvailable
+      )
+    {
+        emit widgetEvent( LenovoLegionGui::WidgetMessage {
+            .m_widget  = LenovoLegionGui::WidgetMessage::Widget::CPU_FREQUENCY_CONTROL,
+            .m_message = LenovoLegionGui::WidgetMessage::Message::CPU_FREQ_CONTROL_NOT_AVAILABLE
+        });
+
+        return;
+    }
+
     /*
      * Render CPU Frequency Performance
      */

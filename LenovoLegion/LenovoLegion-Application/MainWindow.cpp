@@ -362,6 +362,11 @@ void MainWindow::on_widgetEvent(const WidgetMessage &event)
                 blockDataProviderSignals(false);
             }});
         }
+
+        if(event.m_message == WidgetMessage::Message::CPU_CONTROL_NOT_AVAILABLE)
+        {
+            evaluateTasks({[this]{removeControlTab(CPUControl::NAME);}});
+        }
     }
 
     if(event.m_widget == WidgetMessage::Widget::CPU_FREQUENCY_CONTROL)
@@ -372,6 +377,11 @@ void MainWindow::on_widgetEvent(const WidgetMessage &event)
                 removeLayoutItem(ui->horizontalLayout_HWMonitoring->takeAt(0));
                 addHBoxLayoutWidget(new HWMonitoring(m_dataProvider->getHWMonitoringDataProvider(),this),*ui->horizontalLayout_HWMonitoring);
             }});
+        }
+
+        if(event.m_message == WidgetMessage::Message::CPU_FREQ_CONTROL_NOT_AVAILABLE)
+        {
+            evaluateTasks({[this]{removeControlTab(CPUFrequencyControl::NAME);}});
         }
     }
 }
