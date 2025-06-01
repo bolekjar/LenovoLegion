@@ -273,9 +273,13 @@ void Application::saveCurrentConfiguration()
         }
         else
         {
-            throw;
+            LOG_W("SysFs driver error, CPU control profile not loaded!");
         }
+    } catch (...)
+    {
+        LOG_W("Unknown error, CPU control profile not loaded!");
     }
+
     try {
         saveCurrentCPUsControlProfile();
     } catch(const ControlDataException& ex)
@@ -286,10 +290,13 @@ void Application::saveCurrentConfiguration()
         }
         else
         {
-            throw;
+            LOG_W("SysFs driver error, CPU control profile not loaded!");
         }
     }
-
+    catch(...)
+    {
+        LOG_W("Unknown error, CPU control profile not loaded!");
+    }
 }
 
 void Application::saveCurrentPowerProfile()
@@ -320,8 +327,11 @@ void Application::loadSavedConfiguration()
         }
         else
         {
-            throw;
+             LOG_W("SysFs driver error, CPU control profile not loaded!");
         }
+    } catch (...)
+    {
+        LOG_W("Unknown error, CPU control profile not loaded!");
     }
 
     /*
@@ -337,8 +347,11 @@ void Application::loadSavedConfiguration()
         }
         else
         {
-            throw;
+             LOG_W("SysFs driver error, CPU control profile not loaded!");
         }
+    } catch(...)
+    {
+        LOG_W("Unknown error, CPU control profile not loaded!");
     }
 }
 
