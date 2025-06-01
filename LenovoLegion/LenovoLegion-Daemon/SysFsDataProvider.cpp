@@ -212,33 +212,45 @@ HWMonitoring::DataInfo        SysFsDataProvider::getHWMonitoringData()     const
         }
     }
 
+    try {
 
-    SysFsDriverCPUXList::CPUXList cpus(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
+        SysFsDriverCPUXList::CPUXList cpus(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
 
 
-    for(size_t i = 0; i < std::min(cpus.cpuList().size(), data.m_cpusFreq.size()) ; ++i)
-    {
-        bool cpuOnline                      = cpus.cpuList().at(i).isOnlineAvailable() ? getData(cpus.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
-
-        if(cpuOnline)
+        for(size_t i = 0; i < std::min(cpus.cpuList().size(), data.m_cpusFreq.size()) ; ++i)
         {
-            data.m_cpusFreq[i].m_isAvailable                    = true;
-            data.m_cpusFreq[i].m_data.m_cpuBaseFreq                    = cpus.cpuList().at(i).m_freq.m_cpuBaseFreq.has_value() ? getData(cpus.cpuList().at(i).m_freq.m_cpuBaseFreq.value()).toUInt() : 0;
-            data.m_cpusFreq[i].m_data.m_cpuInfoMinFreq                 = getData(cpus.cpuList().at(i).m_freq.m_cpuInfoMinFreq).toUInt();
-            data.m_cpusFreq[i].m_data.m_cpuInfoMaxFreq                 = getData(cpus.cpuList().at(i).m_freq.m_cpuInfoMaxFreq).toUInt();
-            data.m_cpusFreq[i].m_data.m_cpuScalingCurFreq              = getData(cpus.cpuList().at(i).m_freq.m_cpuScalingCurFreq).toUInt();
-            data.m_cpusFreq[i].m_data.m_cpuScalingMinFreq              = getData(cpus.cpuList().at(i).m_freq.m_cpuScalingMinFreq).toUInt();
-            data.m_cpusFreq[i].m_data.m_cpuScalingMaxFreq              = getData(cpus.cpuList().at(i).m_freq.m_cpuScalingMaxFreq).toUInt();
+            bool cpuOnline                      = cpus.cpuList().at(i).isOnlineAvailable() ? getData(cpus.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
+
+            if(cpuOnline)
+            {
+                data.m_cpusFreq[i].m_isAvailable                    = true;
+                data.m_cpusFreq[i].m_data.m_cpuBaseFreq                    = cpus.cpuList().at(i).m_freq.m_cpuBaseFreq.has_value() ? getData(cpus.cpuList().at(i).m_freq.m_cpuBaseFreq.value()).toUInt() : 0;
+                data.m_cpusFreq[i].m_data.m_cpuInfoMinFreq                 = getData(cpus.cpuList().at(i).m_freq.m_cpuInfoMinFreq).toUInt();
+                data.m_cpusFreq[i].m_data.m_cpuInfoMaxFreq                 = getData(cpus.cpuList().at(i).m_freq.m_cpuInfoMaxFreq).toUInt();
+                data.m_cpusFreq[i].m_data.m_cpuScalingCurFreq              = getData(cpus.cpuList().at(i).m_freq.m_cpuScalingCurFreq).toUInt();
+                data.m_cpusFreq[i].m_data.m_cpuScalingMinFreq              = getData(cpus.cpuList().at(i).m_freq.m_cpuScalingMinFreq).toUInt();
+                data.m_cpusFreq[i].m_data.m_cpuScalingMaxFreq              = getData(cpus.cpuList().at(i).m_freq.m_cpuScalingMaxFreq).toUInt();
+            }
+            else
+            {
+                data.m_cpusFreq[i].m_isAvailable                    = false;
+                data.m_cpusFreq[i].m_data.m_cpuBaseFreq                    = 0;
+                data.m_cpusFreq[i].m_data.m_cpuInfoMinFreq                 = 0;
+                data.m_cpusFreq[i].m_data.m_cpuInfoMaxFreq                 = 0;
+                data.m_cpusFreq[i].m_data.m_cpuScalingCurFreq              = 0;
+                data.m_cpusFreq[i].m_data.m_cpuScalingMinFreq              = 0;
+                data.m_cpusFreq[i].m_data.m_cpuScalingMaxFreq              = 0;
+            }
+        }
+    } catch(SysFsDriver::exception_T& ex)
+    {
+        if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
+        {
+            data.m_cpusFreq.fill({.m_data = {0,0,0,0,0,0},.m_isAvailable = false});
         }
         else
         {
-            data.m_cpusFreq[i].m_isAvailable                    = false;
-            data.m_cpusFreq[i].m_data.m_cpuBaseFreq                    = 0;
-            data.m_cpusFreq[i].m_data.m_cpuInfoMinFreq                 = 0;
-            data.m_cpusFreq[i].m_data.m_cpuInfoMaxFreq                 = 0;
-            data.m_cpusFreq[i].m_data.m_cpuScalingCurFreq              = 0;
-            data.m_cpusFreq[i].m_data.m_cpuScalingMinFreq              = 0;
-            data.m_cpusFreq[i].m_data.m_cpuScalingMaxFreq              = 0;
+            throw;
         }
     }
 
@@ -477,38 +489,49 @@ CPUXFreqControl::DataInfo SysFsDataProvider::getCPUsInfoData() const
 
     LOG_D("SysFsDataProvider::getCPUsInfoData()");
 
+    try {
+        SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
 
-    SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
-
-    for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
-    {
-        data.m_data.m_cpus.at(i).m_cpuOnline                      = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
-
-        if(data.m_data.m_cpus.at(i).m_cpuOnline)
+        for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
         {
-            data.m_data.m_cpus.at(i).m_cpuBaseFreq                    = cpuXlist.cpuList().at(i).m_freq.m_cpuBaseFreq.has_value() ? getData(cpuXlist.cpuList().at(i).m_freq.m_cpuBaseFreq.value()).toUInt() : 0;
-            data.m_data.m_cpus.at(i).m_cpuInfoMinFreq                 = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuInfoMinFreq).toUInt();
-            data.m_data.m_cpus.at(i).m_cpuInfoMaxFreq                 = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuInfoMaxFreq).toUInt();
-            data.m_data.m_cpus.at(i).m_cpuScalingCurFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingCurFreq).toUInt();
-            data.m_data.m_cpus.at(i).m_cpuScalingMinFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingMinFreq).toUInt();
-            data.m_data.m_cpus.at(i).m_cpuScalingMaxFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingMaxFreq).toUInt();
-            data.m_data.m_cpus.at(i).m_cpuCoreId                      = getData(cpuXlist.cpuList().at(i).m_topology.m_coreId).toUInt();
-            data.m_data.m_cpus.at(i).m_dieId                          = getData(cpuXlist.cpuList().at(i).m_topology.m_dieId).toUInt();
-            data.m_data.m_cpus.at(i).m_physicalPackageId              = getData(cpuXlist.cpuList().at(i).m_topology.m_physicalPackageId).toUInt();
-            data.m_data.m_cpus.at(i).m_clusterId                      = getData(cpuXlist.cpuList().at(i).m_topology.m_clusterId).toUInt();
+            data.m_data.m_cpus.at(i).m_cpuOnline                      = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
+
+            if(data.m_data.m_cpus.at(i).m_cpuOnline)
+            {
+                data.m_data.m_cpus.at(i).m_cpuBaseFreq                    = cpuXlist.cpuList().at(i).m_freq.m_cpuBaseFreq.has_value() ? getData(cpuXlist.cpuList().at(i).m_freq.m_cpuBaseFreq.value()).toUInt() : 0;
+                data.m_data.m_cpus.at(i).m_cpuInfoMinFreq                 = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuInfoMinFreq).toUInt();
+                data.m_data.m_cpus.at(i).m_cpuInfoMaxFreq                 = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuInfoMaxFreq).toUInt();
+                data.m_data.m_cpus.at(i).m_cpuScalingCurFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingCurFreq).toUInt();
+                data.m_data.m_cpus.at(i).m_cpuScalingMinFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingMinFreq).toUInt();
+                data.m_data.m_cpus.at(i).m_cpuScalingMaxFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingMaxFreq).toUInt();
+                data.m_data.m_cpus.at(i).m_cpuCoreId                      = getData(cpuXlist.cpuList().at(i).m_topology.m_coreId).toUInt();
+                data.m_data.m_cpus.at(i).m_dieId                          = getData(cpuXlist.cpuList().at(i).m_topology.m_dieId).toUInt();
+                data.m_data.m_cpus.at(i).m_physicalPackageId              = getData(cpuXlist.cpuList().at(i).m_topology.m_physicalPackageId).toUInt();
+                data.m_data.m_cpus.at(i).m_clusterId                      = getData(cpuXlist.cpuList().at(i).m_topology.m_clusterId).toUInt();
+            }
+            else
+            {
+                data.m_data.m_cpus.at(i).m_cpuBaseFreq                    = 0;
+                data.m_data.m_cpus.at(i).m_cpuInfoMinFreq                 = 0;
+                data.m_data.m_cpus.at(i).m_cpuInfoMaxFreq                 = 0;
+                data.m_data.m_cpus.at(i).m_cpuScalingCurFreq              = 0;
+                data.m_data.m_cpus.at(i).m_cpuScalingMinFreq              = 0;
+                data.m_data.m_cpus.at(i).m_cpuScalingMaxFreq              = 0;
+                data.m_data.m_cpus.at(i).m_cpuCoreId                      = 0;
+                data.m_data.m_cpus.at(i).m_dieId                          = 0;
+                data.m_data.m_cpus.at(i).m_physicalPackageId              = 0;
+                data.m_data.m_cpus.at(i).m_clusterId                      = 0;
+            }
+        }
+    } catch(SysFsDriver::exception_T& ex)
+    {
+        if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
+        {
+            data.m_isAvailable = false;
         }
         else
         {
-            data.m_data.m_cpus.at(i).m_cpuBaseFreq                    = 0;
-            data.m_data.m_cpus.at(i).m_cpuInfoMinFreq                 = 0;
-            data.m_data.m_cpus.at(i).m_cpuInfoMaxFreq                 = 0;
-            data.m_data.m_cpus.at(i).m_cpuScalingCurFreq              = 0;
-            data.m_data.m_cpus.at(i).m_cpuScalingMinFreq              = 0;
-            data.m_data.m_cpus.at(i).m_cpuScalingMaxFreq              = 0;
-            data.m_data.m_cpus.at(i).m_cpuCoreId                      = 0;
-            data.m_data.m_cpus.at(i).m_dieId                          = 0;
-            data.m_data.m_cpus.at(i).m_physicalPackageId              = 0;
-            data.m_data.m_cpus.at(i).m_clusterId                      = 0;
+            throw;
         }
     }
 
@@ -525,35 +548,46 @@ CPUXControl::DataInfo SysFsDataProvider::getCPUsInfoControlData() const
     };
 
     LOG_D("SysFsDataProvider::getCPUsInfoGavernorData()");
+    try {
+        SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
 
-    SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
-
-    for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
-    {
-        data.m_data.m_cpus.at(i).m_cpuOnline = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
-
-        if(data.m_data.m_cpus.at(i).m_cpuOnline)
+        for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
         {
-            auto cpuScalingAvailableGovernors = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingAvailableGovernors).toStdString();
-            std::memset(data.m_data.m_cpus.at(i).m_availableGovernors,0,sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]));
-            std::strncpy(data.m_data.m_cpus.at(i).m_availableGovernors,cpuScalingAvailableGovernors.data(),sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]) - 1);
+            data.m_data.m_cpus.at(i).m_cpuOnline = cpuXlist.cpuList().at(i).isOnlineAvailable() ? getData(cpuXlist.cpuList().at(i).m_cpuOnline.value()).toUShort() == 1 : true;
 
-            auto cpuScalingGovernor = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingGovernor).toStdString();
-            std::memset(data.m_data.m_cpus.at(i).m_Governor,0,sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]));
-            std::strncpy(data.m_data.m_cpus.at(i).m_Governor,cpuScalingGovernor.data(),sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]) - 1);
-            data.m_data.m_cpus.at(i).m_cpuCoreId = getData(cpuXlist.cpuList().at(i).m_topology.m_coreId).toUInt();
-            data.m_data.m_cpus.at(i).m_dieId = getData(cpuXlist.cpuList().at(i).m_topology.m_dieId).toUInt();
-            data.m_data.m_cpus.at(i).m_physicalPackageId = getData(cpuXlist.cpuList().at(i).m_topology.m_physicalPackageId).toUInt();
-            data.m_data.m_cpus.at(i).m_clusterId = getData(cpuXlist.cpuList().at(i).m_topology.m_clusterId).toUInt();
+            if(data.m_data.m_cpus.at(i).m_cpuOnline)
+            {
+                auto cpuScalingAvailableGovernors = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingAvailableGovernors).toStdString();
+                std::memset(data.m_data.m_cpus.at(i).m_availableGovernors,0,sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]));
+                std::strncpy(data.m_data.m_cpus.at(i).m_availableGovernors,cpuScalingAvailableGovernors.data(),sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]) - 1);
+
+                auto cpuScalingGovernor = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingGovernor).toStdString();
+                std::memset(data.m_data.m_cpus.at(i).m_Governor,0,sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]));
+                std::strncpy(data.m_data.m_cpus.at(i).m_Governor,cpuScalingGovernor.data(),sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]) - 1);
+                data.m_data.m_cpus.at(i).m_cpuCoreId = getData(cpuXlist.cpuList().at(i).m_topology.m_coreId).toUInt();
+                data.m_data.m_cpus.at(i).m_dieId = getData(cpuXlist.cpuList().at(i).m_topology.m_dieId).toUInt();
+                data.m_data.m_cpus.at(i).m_physicalPackageId = getData(cpuXlist.cpuList().at(i).m_topology.m_physicalPackageId).toUInt();
+                data.m_data.m_cpus.at(i).m_clusterId = getData(cpuXlist.cpuList().at(i).m_topology.m_clusterId).toUInt();
+            }
+            else
+            {
+                std::memset(data.m_data.m_cpus.at(i).m_availableGovernors,0,sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]));
+                std::memset(data.m_data.m_cpus.at(i).m_Governor,0,sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]));
+                data.m_data.m_cpus.at(i).m_cpuCoreId         = 0;
+                data.m_data.m_cpus.at(i).m_dieId             = 0;
+                data.m_data.m_cpus.at(i).m_physicalPackageId = 0;
+                data.m_data.m_cpus.at(i).m_clusterId         = 0;
+            }
+        }
+    } catch(SysFsDriver::exception_T& ex)
+    {
+        if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
+        {
+            data.m_isAvailable = false;
         }
         else
         {
-            std::memset(data.m_data.m_cpus.at(i).m_availableGovernors,0,sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]));
-            std::memset(data.m_data.m_cpus.at(i).m_Governor,0,sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]));
-            data.m_data.m_cpus.at(i).m_cpuCoreId         = 0;
-            data.m_data.m_cpus.at(i).m_dieId             = 0;
-            data.m_data.m_cpus.at(i).m_physicalPackageId = 0;
-            data.m_data.m_cpus.at(i).m_clusterId         = 0;
+            throw;
         }
     }
 

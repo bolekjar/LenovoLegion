@@ -437,6 +437,12 @@ struct CPUXFreqControl
     {
         DataControl dataControl = {};
 
+        if(dataInfo.m_isAvailable == false)
+        {
+            THROW_EXCEPTION(ControlDataException,ControlDataException::NOT_AVAILABLE,"CPUXFreqControl DataInfo not available");
+        }
+
+
         forAllCpu([&dataControl](const DataInfo::CPUX& cpuInfo,const size_t i){
 
             dataControl.m_data.m_cpus.at(i).m_cpuScalingMinFreq = cpuInfo.m_cpuScalingMinFreq;
@@ -546,6 +552,11 @@ struct CPUXControl {
     static DataControl getDataControl(const DataInfo& dataInfo)
     {
         DataControl dataControl = {};
+
+        if(dataInfo.m_isAvailable == false)
+        {
+            THROW_EXCEPTION(ControlDataException,ControlDataException::NOT_AVAILABLE,"CPUX DataInfo not available");
+        }
 
         forAllCpu([&dataControl](const DataInfo::CPUX& cpuInfo,const size_t i){
 

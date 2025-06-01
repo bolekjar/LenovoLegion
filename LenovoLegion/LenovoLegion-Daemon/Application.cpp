@@ -273,11 +273,11 @@ void Application::saveCurrentConfiguration()
         }
         else
         {
-            LOG_W("SysFs driver error, CPU control profile not loaded!");
+            LOG_W("SysFs driver error, CPU control profile not saved!");
         }
     } catch (...)
     {
-        LOG_W("Unknown error, CPU control profile not loaded!");
+        LOG_W("Unknown error, CPU control profile not saved!");
     }
 
     try {
@@ -290,12 +290,12 @@ void Application::saveCurrentConfiguration()
         }
         else
         {
-            LOG_W("SysFs driver error, CPU control profile not loaded!");
+            LOG_W("SysFs driver error, CPU control profile not saved!");
         }
     }
     catch(...)
     {
-        LOG_W("Unknown error, CPU control profile not loaded!");
+        LOG_W("Unknown error, CPU control profile not saved!");
     }
 }
 
