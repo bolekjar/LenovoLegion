@@ -78,14 +78,24 @@ public:
 
             CPUX(const SysFsDriver::DescriptorType& descriptor) :
                 m_freq(descriptor),
-                m_topology(descriptor),
+                m_topology(descriptor.find("clusterId") == descriptor.end()         ||
+                           descriptor.find("physicalPackageId") == descriptor.end() ||
+                           descriptor.find("coreId") == descriptor.end()            ||
+                           descriptor.find("dieId") == descriptor.end()             ||
+                           descriptor.find("clusterCpusList") == descriptor.end()   ||
+                           descriptor.find("packageCpusList") == descriptor.end()   ||
+                           descriptor.find("dieCpusList") == descriptor.end()       ||
+                           descriptor.find("coreCpusList") == descriptor.end()      ||
+                           descriptor.find("coreSiblingsList") == descriptor.end()  ||
+                           descriptor.find("threadSiblingsList") == descriptor.end()
+                           ? std::nullopt : std::make_optional(CPUXTopology(descriptor))),
                 m_cpuOnline((descriptor.find("cpuOnline") == descriptor.end()) ? std::optional<std::filesystem::path>() : descriptor["cpuOnline"])
             {}
 
             CPUX(const CPUX& ) = default;
 
-            CPUXFreq                             m_freq;
-            CPUXTopology                         m_topology;
+            CPUXFreq                           m_freq;
+            const std::optional<CPUXTopology>  m_topology;
 
 
             bool isOnlineAvailable() const

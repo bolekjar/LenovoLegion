@@ -506,16 +506,25 @@ CPUXFreqControl::DataInfo SysFsDataProvider::getCPUsInfoData() const
 
             if(data.m_data.m_cpus.at(i).m_cpuOnline)
             {
+                if(!cpuXlist.cpuList().at(i).m_topology.has_value())
+                {
+                    LOG_D("SysFsDataProvider::getCPUsInfoData() - Driver not available");
+                    data.m_isAvailable = false;
+                    break;
+                }
+
                 data.m_data.m_cpus.at(i).m_cpuBaseFreq                    = cpuXlist.cpuList().at(i).m_freq.m_cpuBaseFreq.has_value() ? getData(cpuXlist.cpuList().at(i).m_freq.m_cpuBaseFreq.value()).toUInt() : 0;
                 data.m_data.m_cpus.at(i).m_cpuInfoMinFreq                 = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuInfoMinFreq).toUInt();
                 data.m_data.m_cpus.at(i).m_cpuInfoMaxFreq                 = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuInfoMaxFreq).toUInt();
                 data.m_data.m_cpus.at(i).m_cpuScalingCurFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingCurFreq).toUInt();
                 data.m_data.m_cpus.at(i).m_cpuScalingMinFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingMinFreq).toUInt();
                 data.m_data.m_cpus.at(i).m_cpuScalingMaxFreq              = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingMaxFreq).toUInt();
-                data.m_data.m_cpus.at(i).m_cpuCoreId                      = getData(cpuXlist.cpuList().at(i).m_topology.m_coreId).toUInt();
-                data.m_data.m_cpus.at(i).m_dieId                          = getData(cpuXlist.cpuList().at(i).m_topology.m_dieId).toUInt();
-                data.m_data.m_cpus.at(i).m_physicalPackageId              = getData(cpuXlist.cpuList().at(i).m_topology.m_physicalPackageId).toUInt();
-                data.m_data.m_cpus.at(i).m_clusterId                      = getData(cpuXlist.cpuList().at(i).m_topology.m_clusterId).toUInt();
+
+
+                data.m_data.m_cpus.at(i).m_cpuCoreId                      = getData(cpuXlist.cpuList().at(i).m_topology.value().m_coreId).toUInt();
+                data.m_data.m_cpus.at(i).m_dieId                          = getData(cpuXlist.cpuList().at(i).m_topology.value().m_dieId).toUInt();
+                data.m_data.m_cpus.at(i).m_physicalPackageId              = getData(cpuXlist.cpuList().at(i).m_topology.value().m_physicalPackageId).toUInt();
+                data.m_data.m_cpus.at(i).m_clusterId                      = getData(cpuXlist.cpuList().at(i).m_topology.value().m_clusterId).toUInt();
             }
             else
             {
@@ -566,6 +575,14 @@ CPUXControl::DataInfo SysFsDataProvider::getCPUsInfoControlData() const
 
             if(data.m_data.m_cpus.at(i).m_cpuOnline)
             {
+
+                if(!cpuXlist.cpuList().at(i).m_topology.has_value())
+                {
+                    LOG_D("SysFsDataProvider::getCPUsInfoData() - Driver not available");
+                    data.m_isAvailable = false;
+                    break;
+                }
+
                 auto cpuScalingAvailableGovernors = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingAvailableGovernors).toStdString();
                 std::memset(data.m_data.m_cpus.at(i).m_availableGovernors,0,sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]));
                 std::strncpy(data.m_data.m_cpus.at(i).m_availableGovernors,cpuScalingAvailableGovernors.data(),sizeof(data.m_data.m_cpus.at(i).m_availableGovernors) * sizeof(data.m_data.m_cpus.at(i).m_availableGovernors[0]) - 1);
@@ -573,10 +590,10 @@ CPUXControl::DataInfo SysFsDataProvider::getCPUsInfoControlData() const
                 auto cpuScalingGovernor = getData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingGovernor).toStdString();
                 std::memset(data.m_data.m_cpus.at(i).m_Governor,0,sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]));
                 std::strncpy(data.m_data.m_cpus.at(i).m_Governor,cpuScalingGovernor.data(),sizeof(data.m_data.m_cpus.at(i).m_Governor) * sizeof(data.m_data.m_cpus.at(i).m_Governor[0]) - 1);
-                data.m_data.m_cpus.at(i).m_cpuCoreId = getData(cpuXlist.cpuList().at(i).m_topology.m_coreId).toUInt();
-                data.m_data.m_cpus.at(i).m_dieId = getData(cpuXlist.cpuList().at(i).m_topology.m_dieId).toUInt();
-                data.m_data.m_cpus.at(i).m_physicalPackageId = getData(cpuXlist.cpuList().at(i).m_topology.m_physicalPackageId).toUInt();
-                data.m_data.m_cpus.at(i).m_clusterId = getData(cpuXlist.cpuList().at(i).m_topology.m_clusterId).toUInt();
+                data.m_data.m_cpus.at(i).m_cpuCoreId = getData(cpuXlist.cpuList().at(i).m_topology.value().m_coreId).toUInt();
+                data.m_data.m_cpus.at(i).m_dieId = getData(cpuXlist.cpuList().at(i).m_topology.value().m_dieId).toUInt();
+                data.m_data.m_cpus.at(i).m_physicalPackageId = getData(cpuXlist.cpuList().at(i).m_topology.value().m_physicalPackageId).toUInt();
+                data.m_data.m_cpus.at(i).m_clusterId = getData(cpuXlist.cpuList().at(i).m_topology.value().m_clusterId).toUInt();
             }
             else
             {

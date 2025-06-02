@@ -34,11 +34,9 @@ void SysFsDriverCPUXList::init()
 
                 m_descriptorsInVector.resize(std::max(cpuIndex + 1,m_descriptorsInVector.size()));
 
-                if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("cpufreq"))   &&
-                   std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology")))
+                if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("cpufreq")))
                 {
                     LOG_D(QString("Found CPUX cpufreq driver in path: ") + std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("cpufreq").c_str());
-                    LOG_D(QString("Found CPUX topology driver in path: ") + std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").c_str());
 
                     m_descriptorsInVector[cpuIndex]["affectedCpus"]                    = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("affected_cpus");
                     if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("base_frequency")))
@@ -54,16 +52,21 @@ void SysFsDriverCPUXList::init()
                     m_descriptorsInVector[cpuIndex]["cpuScalingMaxFreq"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string( cpuIndex)).append("cpufreq").append("scaling_max_freq");
 
 
-                    m_descriptorsInVector[cpuIndex]["clusterId"]                       = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("cluster_id");
-                    m_descriptorsInVector[cpuIndex]["physicalPackageId"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("physical_package_id");
-                    m_descriptorsInVector[cpuIndex]["coreId"]                          = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_id");
-                    m_descriptorsInVector[cpuIndex]["dieId"]                           = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("die_id");
-                    m_descriptorsInVector[cpuIndex]["clusterCpusList"]                 = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("cluster_cpus_list");
-                    m_descriptorsInVector[cpuIndex]["packageCpusList"]                 = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("package_cpus_list");
-                    m_descriptorsInVector[cpuIndex]["dieCpusList"]                     = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("die_cpus_list");
-                    m_descriptorsInVector[cpuIndex]["coreCpusList"]                    = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_cpus_list");
-                    m_descriptorsInVector[cpuIndex]["coreSiblingsList"]                = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_siblings_list");
-                    m_descriptorsInVector[cpuIndex]["threadSiblingsList"]              = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("thread_siblings_list");
+                    if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology")))
+                    {
+                        LOG_D(QString("Found CPUX topology driver in path: ") + std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").c_str());
+
+                        m_descriptorsInVector[cpuIndex]["clusterId"]                       = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("cluster_id");
+                        m_descriptorsInVector[cpuIndex]["physicalPackageId"]               = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("physical_package_id");
+                        m_descriptorsInVector[cpuIndex]["coreId"]                          = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_id");
+                        m_descriptorsInVector[cpuIndex]["dieId"]                           = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("die_id");
+                        m_descriptorsInVector[cpuIndex]["clusterCpusList"]                 = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("cluster_cpus_list");
+                        m_descriptorsInVector[cpuIndex]["packageCpusList"]                 = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("package_cpus_list");
+                        m_descriptorsInVector[cpuIndex]["dieCpusList"]                     = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("die_cpus_list");
+                        m_descriptorsInVector[cpuIndex]["coreCpusList"]                    = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_cpus_list");
+                        m_descriptorsInVector[cpuIndex]["coreSiblingsList"]                = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("core_siblings_list");
+                        m_descriptorsInVector[cpuIndex]["threadSiblingsList"]              = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("topology").append("thread_siblings_list");
+                    }
 
                     if(std::filesystem::exists(std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("online")))
                     {
