@@ -66,6 +66,8 @@ MainWindow::MainWindow(DataProvider *dataProvider, QWidget *parent) :
     ui->actionSilent_Multicore->connect(ui->actionSilent_Multicore,&QAction::triggered,this,&MainWindow::on_actionSilent_Multicore_triggered);
 
 
+    ui->menubar->blockSignals(true);
+    ui->menubar->setEnabled(false);
 
 
     m_removeGuiEleamentsTasks.push_back([this] {
