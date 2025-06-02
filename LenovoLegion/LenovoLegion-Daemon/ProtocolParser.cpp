@@ -125,7 +125,7 @@ QByteArray ProtocolParser::parseMessage(const Message &message)
     case Message::DataType::FAN_CURVE_CONTROL_DATA:
     {
         rawMessage.append(reinterpret_cast<const char*>(message.m_data.m_fanCurveControlData.m_data.m_points.data()),message.m_data.m_fanCurveControlData.m_data.m_points.size());
-        rawMessage.append(static_cast<quint8>(message.m_data.m_fanCurveControlData.m_isAvailable) ? 1 : 0);
+        rawMessage.append(static_cast<quint8>(message.m_data.m_fanCurveControlData.m_isAvailable));
         break;
     }
     case Message::DataType::FANCONTROL_DATA:
@@ -181,7 +181,7 @@ QByteArray ProtocolParser::parseMessage(const Message &message)
     case Message::DataType::CPUS_CONTROL_DATA:
     {
         rawMessage.append(reinterpret_cast<const char*>(message.m_data.m_cpusControlData.m_data.m_cpus.data()),message.m_data.m_cpusControlData.m_data.m_cpus.size() * sizeof(message.m_data.m_cpusControlData.m_data.m_cpus[0]));
-        rawMessage.append(static_cast<quint8>(message.m_data.m_cpusFreqControlData.m_isAvailable));
+        rawMessage.append(static_cast<quint8>(message.m_data.m_cpusControlData.m_isAvailable));
         break;
     }
     case Message::DataType::CPUS_SMT_CONTROL_DATA:
@@ -192,7 +192,7 @@ QByteArray ProtocolParser::parseMessage(const Message &message)
     case Message::DataType::CPU_HOMOGENOUS_TOPOLOGY_DATA:
     {
         rawMessage.append(reinterpret_cast<const char*>(message.m_data.m_cpuHomogenousTopologyData.m_data.m_ActiveCpus.data()),message.m_data.m_cpuHomogenousTopologyData.m_data.m_ActiveCpus.size() * sizeof(message.m_data.m_cpuHomogenousTopologyData.m_data.m_ActiveCpus[0]));
-        rawMessage.append(static_cast<quint8>(message.m_data.m_gpuControlData.m_isAvailable));
+        rawMessage.append(static_cast<quint8>(message.m_data.m_cpuHomogenousTopologyData.m_isAvailable));
         break;
     }
     }

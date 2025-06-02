@@ -396,9 +396,8 @@ void CPUControl::forAllCpuDisabledCores(const std::function<bool (const int)> &f
 
 void CPUControl::renderData()
 {
-    if(!m_cpuInfoData.m_isAvailable     ||
-       !m_cpuHetTopology.m_isAvailable  ||
-       !m_cpuHomTopology.m_isAvailable  ||
+    if(!m_cpuInfoData.m_isAvailable                                           ||
+       (!m_cpuHetTopology.m_isAvailable  && !m_cpuHomTopology.m_isAvailable)  ||
        !m_cpuSMTControlData.m_isAvailable
       )
     {

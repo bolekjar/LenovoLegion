@@ -287,9 +287,7 @@ void CPUFrequencyControl::forAllCPUThreads(const std::function<bool (const Lenov
 
 void CPUFrequencyControl::renderData()
 {
-    if(!m_cpuFreqData.m_isAvailable         ||
-       !m_cpuHetTopologyData.m_isAvailable  ||
-       !m_cpuHomTopologyData.m_isAvailable
+    if(!m_cpuFreqData.m_isAvailable || (!m_cpuHetTopologyData.m_isAvailable  && !m_cpuHomTopologyData.m_isAvailable)
       )
     {
         emit widgetEvent( LenovoLegionGui::WidgetMessage {

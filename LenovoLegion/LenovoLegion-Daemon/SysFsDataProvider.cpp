@@ -54,6 +54,7 @@ PowerProfile::Control::DataInfo SysFsDataProvider::getPowerProfileData() const {
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getPowerProfileData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -92,7 +93,8 @@ PowerControl::GPU::DataInfo SysFsDataProvider::getGpuControlData()  const {
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
-             data.m_isAvailable = false;
+            LOG_D("SysFsDataProvider::getGpuControlData() - Driver not available");
+            data.m_isAvailable = false;
         }
         else
         {
@@ -136,6 +138,7 @@ PowerControl::CPU::DataInfo SysFsDataProvider::getCpuControlData()  const  {
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getCpuControlData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -246,6 +249,7 @@ HWMonitoring::DataInfo        SysFsDataProvider::getHWMonitoringData()     const
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getHWMonitoringData() - Driver not available");
             data.m_cpusFreq.fill({.m_data = {0,0,0,0,0,0},.m_isAvailable = false});
         }
         else
@@ -279,6 +283,7 @@ FanControl::Control::DataInfo SysFsDataProvider::getFanControlData() const
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getFanControlData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -318,6 +323,7 @@ FanControl::CurveControl::DataInfo SysFsDataProvider::getFanCurveControlData() c
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getFanCurveControlData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -408,6 +414,7 @@ CPUTopology::Heterogeneous::DataInfo SysFsDataProvider::getCPUTopologyHeterogeno
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getCPUTopologyHeterogenousData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -467,6 +474,7 @@ CPUTopology::Homogeneous::DataInfo SysFsDataProvider::getCPUTopologyHomogenousDa
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getCPUTopologyHomogenousData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -527,6 +535,7 @@ CPUXFreqControl::DataInfo SysFsDataProvider::getCPUsInfoData() const
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getCPUsInfoData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -583,6 +592,7 @@ CPUXControl::DataInfo SysFsDataProvider::getCPUsInfoControlData() const
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getCPUsInfoGavernorData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -620,6 +630,7 @@ Batery::DataInfo SysFsDataProvider::getBateryControlData() const
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getBateryControlData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
@@ -655,6 +666,7 @@ CPUSMTControl::DataInfo SysFsDataProvider::getCPUSMTControlData() const
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
         {
+            LOG_D("SysFsDataProvider::getCPUSMTControlData() - Driver not available");
             data.m_isAvailable = false;
         }
         else
