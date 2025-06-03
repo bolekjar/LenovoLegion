@@ -28,9 +28,7 @@ Application::Application(int &argc, char *argv[]) : QApplication(argc,argv),
 }
 
 Application::~Application()
-{
-    m_trayIcon->contextMenu()->clear();
-}
+{}
 
 void Application::appRollBackImpl() noexcept
 {}
@@ -65,7 +63,11 @@ void Application::appInitImpl(std::unique_ptr<ApplicationModulesHandler_T>)
 
 void Application::appStopImpl() noexcept
 {
+    m_aboutWindow->close();
     m_mainWindow->close();
+
+    m_trayIcon->setVisible(false);
+    m_trayIcon->contextMenu()->clear();
 }
 
 void Application::appMainLoop()
