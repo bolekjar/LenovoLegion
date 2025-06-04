@@ -117,6 +117,16 @@ void SysFsDriverManager::blockSignals(const QString &driverName,bool block)
     }
 }
 
+void SysFsDriverManager::refreshDriver(const QString &driverName)
+{
+    try {
+        m_drivers.at(driverName)->init();
+        m_drivers.at(driverName)->validate();
+    } catch (const std::out_of_range& ex) {
+        THROW_EXCEPTION(exception_T,ERROR_CODES::DRIVER_NOT_FOUND,"Driver not found !");
+    }
+}
+
 const SysFsDriver::DescriptorType&  SysFsDriverManager::getDriverDesriptor(const QString &driverName) const
 {
     try {
