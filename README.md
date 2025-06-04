@@ -54,8 +54,21 @@ You will need to install the following to download and build it. If there is an 
 
 Arch/Manjaro/EndeavourOS
   sudo pacman -S linux-headers qt6-base qt6-5compat dkms make gcc qt6-charts 
-  # Install the following for installation with DKMS
   sudo pacman -S dkms openssl mokutil
 
-Build and Test Instruction
+Build
+
+1) For all distribution
+   
+Download [https://github.com/bolekjar/LenovoLegion/releases/tag/release%2F1.0.0](https://github.com/bolekjar/LenovoLegion/archive/refs/tags/release/1.0.0.tar.gz)
+1) Unpack
+2) Go to LenovoLegion-release-1.0.0/LenovoLegion-dkms
+3) run make
+4) Kernel module is lenovo_legion.ko
+5) Go to LenovoLegion-release-1.0.0/LenovoLegion
+6) run (qmake or qmake6) && make
+7) The application is in folder LenovoLegion-release-1.0.0/LenovoLegion/Installation
+
+
+
 
