@@ -58,10 +58,9 @@ Arch/Manjaro/EndeavourOS
 
 Build
 
-1) For all distribution
+For all distribution
    
-Download [https://github.com/bolekjar/LenovoLegion/releases/tag/release%2F1.0.0](https://github.com/bolekjar/LenovoLegion/archive/refs/tags/release/1.0.0.tar.gz)
-1) Unpack
+1) Download [https://github.com/bolekjar/LenovoLegion/releases/tag/release%2F1.0.0](https://github.com/bolekjar/LenovoLegion/archive/refs/tags/release/1.0.0.tar.gz) and unpack
 2) Go to LenovoLegion-release-1.0.0/LenovoLegion-dkms
 3) run make
 4) Kernel module is lenovo_legion.ko
