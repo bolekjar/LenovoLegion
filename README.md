@@ -59,7 +59,7 @@ Arch/Manjaro/EndeavourOS
 Build
 
 For all distribution
-   
+
 1) Download [https://github.com/bolekjar/LenovoLegion/releases/tag/release%2F1.0.0](https://github.com/bolekjar/LenovoLegion/archive/refs/tags/release/1.0.0.tar.gz) and unpack
 2) Go to LenovoLegion-release-1.0.0/LenovoLegion-dkms
 3) run make
@@ -67,6 +67,11 @@ For all distribution
 5) Go to LenovoLegion-release-1.0.0/LenovoLegion
 6) run (qmake or qmake6) && make
 7) The application is in folder LenovoLegion-release-1.0.0/LenovoLegion/Installation
+
+Arch/Manjaro/EndeavourOS
+- download package from aur or install with yay utility
+
+ 
 
 
 
