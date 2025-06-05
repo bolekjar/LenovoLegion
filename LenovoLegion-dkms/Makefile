@@ -20,14 +20,14 @@ clean:
 	$(MAKE) -C $(KSRC) M=$(shell pwd) clean
 
 install: all
-	@rm --force --verbose $(INSTALL_DIR)/legion-laptop.ko
+	@rm --force --verbose $(INSTALL_DIR)/lenovo_legion.ko
 	@mkdir --parent --verbose $(MODDEST_DIR)
 	@install --preserve-timestamps -D --mode=644 *.ko $(INSTALL_DIR)
 	@depmod --all $(KVER)
 	@printf "%s\n" "Installion finished."
 
 uninstall:
-	@rm -f $(INSTALL_DIR)/legion-laptop.ko
+	@rm -f $(INSTALL_DIR)/lenovo_legion.ko
 	@depmod --all
 	@printf "%s\n" "Uninstall finished."
 
@@ -41,8 +41,14 @@ dkms: clean
 	        cp --recursive * $(DKMS_DIR);\
 		dkms add -m LenovoLegion -v ${VERSION};\
 	fi;
-	dkms build LenovoLegion -v $(VERSION)
-	dkms install LenovoLegion -v $(VERSION)
+	dkms build LenovoLegion -v $(VERSION) --force
+	dkms install LenovoLegion -v $(VERSION) --force
 	printf "%s\n" "Loading module"
 	modprobe lenovo_legion 
 	dmesg --ctime | grep lenovo_legion
+
+uninstall-dkms:
+	dkms remove -m LenovoLegion -v ${VERSION}
+	rm --force --recursive $(DKMS_DIR)
+	
+	
