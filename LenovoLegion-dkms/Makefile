@@ -2,6 +2,10 @@ SHELL := /bin/bash
 KERNEL_VERSION  ?= $(shell uname --kernel-release)
 KSRC := /lib/modules/$(KERNEL_VERSION)/build
 
+INSTALL_DIR := /lib/modules/$(KERNEL_VERSION)/kernel/drivers/platform/x86
+MODDEST_DIR := /lib/modules/$(KERNEL_VERSION)/kernel/drivers/platform/x86
+DKMS_DIR := /usr/src/LenovoLegion
+
 obj-m := lenovo_legion.o 
 lenovo_legion-objs := legion-dkms.o legion-wmi-other.o legion-hwmon.o legion-sysfs.o legion-wmi-gamezone.o legion-ec.o legion-wmi.o legion-fancurve.o legion-wmi-driver.o legion-pprof.o
 
@@ -14,4 +18,30 @@ allWarn:
 clean:
 	$(MAKE) -C $(KSRC) M=$(shell pwd) clean
 
-dkms: all
+install: all
+	@rm --force --verbose $(INSTALL_DIR)/legion-laptop.ko
+	@mkdir --parent --verbose $(MODDEST_DIR)
+	@install --preserve-timestamps -D --mode=644 *.ko $(INSTALL_DIR)
+	@depmod --all $(KVER)
+	@printf "%s\n" "Installion finished."
+
+uninstall:
+	@rm -f $(INSTALL_DIR)/legion-laptop.ko
+	@depmod --all
+	@printf "%s\n" "Uninstall finished."
+
+dkms: clean
+	if [ -d $(DKMS_DIR) ]
+	then
+    	rm --recursive $(DKMS_DIR)/*
+        cp --recursive * $(DKMS_DIR)/
+	else 
+		mkdir --verbose $(DKMS_DIR)
+        cp --recursive * $(DKMS_DIR)
+		dkms add -m LenovoLegion
+	fi
+	dkms build LenovoLegion 
+	dkms install LenovoLegion
+	printf "%s\n" "Loading module"
+	modprobe lenovo_legion 
+	dmesg --ctime | grep lenovo_legion
