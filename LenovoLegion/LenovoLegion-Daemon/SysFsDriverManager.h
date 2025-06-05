@@ -67,6 +67,7 @@ public:
 
     void  blockKernelEvent(const QString& driverName,bool block);
     void  blockSignals(const QString& driverName,bool block);
+    void  refreshDriver(const QString& driverName);
 
     const SysFsDriver::DescriptorType&          getDriverDesriptor(const QString& driverName) const;
     const SysFsDriver::DescriptorsInVectorType& getDriverDescriptorsInVector(const QString& driverName) const;

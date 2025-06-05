@@ -765,17 +765,10 @@ void SysFsDataProvider::setCpuControlData(const CPUXControl::DataControl &data)
     LOG_D("SysFsDataProvider::setCpuControlData()");
 
     m_sysFsDriverManager->blockKernelEvent(SysFsDriverCPUXList::DRIVER_NAME,true);
-
-
     auto cleanup =  qScopeGuard([this] { m_sysFsDriverManager->blockKernelEvent(SysFsDriverCPUXList::DRIVER_NAME,false); });
 
     for(size_t i = 0; i < std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) ; ++i)
     {
-        if(i == (std::min(cpuXlist.cpuList().size(),data.m_data.m_cpus.size()) - 1))
-        {
-            QCoreApplication::processEvents(QEventLoop::AllEvents,100);
-        }
-
         if(cpuXlist.cpuList().at(i).isOnlineAvailable())
         {
             setData(cpuXlist.cpuList().at(i).m_cpuOnline.value(),data.m_data.m_cpus.at(i).m_cpuOnline);
@@ -783,15 +776,25 @@ void SysFsDataProvider::setCpuControlData(const CPUXControl::DataControl &data)
         setData(cpuXlist.cpuList().at(i).m_freq.m_cpuScalingGovernor,std::string(data.m_data.m_cpus.at(i).m_Governor));
     }
 
+    QCoreApplication::processEvents(QEventLoop::AllEvents,100);
+
+    m_sysFsDriverManager->refreshDriver(SysFsDriverCPUXList::DRIVER_NAME);
 }
 
 void SysFsDataProvider::setCPUSMTControlData(const CPUSMTControl::DataControl &data)
 {
     SysFsDriverCPU::CPU::Smt smtControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverCPU::DRIVER_NAME));
 
+    m_sysFsDriverManager->blockKernelEvent(SysFsDriverCPUXList::DRIVER_NAME,true);
+    auto cleanup =  qScopeGuard([this] { m_sysFsDriverManager->blockKernelEvent(SysFsDriverCPUXList::DRIVER_NAME,false); });
+
     LOG_D("SysFsDataProvider::setCPUSMTControlData()");
 
     setData(smtControl.m_control.value(),std::string(data.m_data.m_control));
+
+    QCoreApplication::processEvents(QEventLoop::AllEvents,100);
+
+    m_sysFsDriverManager->refreshDriver(SysFsDriverCPUXList::DRIVER_NAME);
 }
 
 QString SysFsDataProvider::getData(const std::filesystem::path &path) const
