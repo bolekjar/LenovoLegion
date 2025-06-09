@@ -42,7 +42,7 @@ ThreadFrequency::ThreadFrequency(const QString &title, int min, int max, QWidget
 
     axisV.first()->setRange(min, max);
     axisV.first()->setLabelsVisible(false);
-    axisV.first()->setGridLineVisible(false);
+    axisV.first()->setGridLineVisible(true);
     axisV.first()->setLineVisible(false);
 
 

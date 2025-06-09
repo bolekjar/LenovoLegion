@@ -59,7 +59,7 @@ void HWMonitor::init(const QString &title, int min, int max,int scaleMin, int sc
 
     axisV.first()->setRange(min, max);
     axisV.first()->setLabelsVisible(false);
-    axisV.first()->setGridLineVisible(false);
+    axisV.first()->setGridLineVisible(true);
     axisV.first()->setLineVisible(false);
 
 
