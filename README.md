@@ -65,17 +65,18 @@ For all distribution
 3) run make
 4) Kernel module is lenovo_legion.ko
 5) If you want to install lenovo_legion.ko:
-   - for current kernel: run make install
-   - like dkms: run make dkms
-   - you should see in dmesg for sucessfully installed and detected supported laptop this:
-   - kernel: lenovo-legion VPC2004:00: Legion Pro 7 16IRX9H platform driver probing:
-   - kernel: lenovo-legion VPC2004:00:         Read identifying information: DMI_SYS_VENDOR: LENOVO; DMI_PRODUCT_NAME: 83DE; DMI_BIOS_VERSION:N2CN27WW
-   - kernel: lenovo-legion VPC2004:00:         Supported model
-   - kernel: lenovo-legion VPC2004:00:         Platform profile interface was created
-   - kernel: lenovo-legion VPC2004:00:         WMI interface was created
-   - kernel: lenovo-legion VPC2004:00:         SysFs interface was created
-   - kernel: lenovo-legion VPC2004:00:         HWMon interface was created
-   - kernel: lenovo-legion VPC2004:00: Legion Pro 7 16IRX9H platform driver was loaded   
+   - for current kernel: run "make install"
+   - like dkms: run "make dkms" you should see in dmesg for sucessfully installed and detected supported laptop this:
+     
+                   kernel: lenovo-legion VPC2004:00: Legion Pro 7 16IRX9H platform driver probing:
+                   kernel: lenovo-legion VPC2004:00:         Read identifying information: DMI_SYS_VENDOR: LENOVO; DMI_PRODUCT_NAME: 83DE; DMI_BIOS_VERSION:N2CN27WW
+                   kernel: lenovo-legion VPC2004:00:         Supported model
+                   kernel: lenovo-legion VPC2004:00:         Platform profile interface was created
+                   kernel: lenovo-legion VPC2004:00:         WMI interface was created
+                   kernel: lenovo-legion VPC2004:00:         SysFs interface was created
+                   kernel: lenovo-legion VPC2004:00:         HWMon interface was created
+                   kernel: lenovo-legion VPC2004:00: Legion Pro 7 16IRX9H platform driver was loaded   
+
 7) Go to LenovoLegion-release-1.0.0/LenovoLegion
 8) run (qmake or qmake6) && make
 9) The application is in folder LenovoLegion-release-1.0.0/LenovoLegion/Installation
