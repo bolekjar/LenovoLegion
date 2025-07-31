@@ -11,9 +11,12 @@ It allows you to control features like the fan curve, power mode, power limits, 
 
 🚀 Features
 
-![image](https://github.com/user-attachments/assets/8ed8bc79-bb4c-40f1-a644-ca16d84117cc)
-![image](https://github.com/user-attachments/assets/649e22c4-d2b7-4054-888f-87b360ed925a)
-![image](https://github.com/user-attachments/assets/abf1583c-3121-44a1-95ea-9b6cbf744616)
+![image](<img width="110" height="30" alt="image" src="https://github.com/user-attachments/assets/4864c3d2-06b6-4261-afde-6bc229db9e01" />
+)
+![image](<img width="2138" height="1582" alt="image" src="https://github.com/user-attachments/assets/660fb791-4e77-41b0-8ed3-cda80b5ccfdd" />
+)
+![image](<img width="1004" height="1223" alt="image" src="https://github.com/user-attachments/assets/8f44be6f-4f90-49d0-9218-9f53bb4cda57" />
+)
 
 - GUI replacement for Lenovo Vantage: Fan control (Fan curve), Power Control (GPU, CPU)
 - Set a fully featured custom fan curve with up to 10 points
