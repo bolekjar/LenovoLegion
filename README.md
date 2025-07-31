@@ -66,7 +66,7 @@ For all distribution
 4) Kernel module is lenovo_legion.ko
 5) If you want to install lenovo_legion.ko:
    - for current kernel: run "make install"
-   - like dkms: run "make dkms" you should see in dmesg for sucessfully installed and detected supported laptop this:
+   - dkms: run "make dkms" you should see in dmesg for sucessfully installed and detected supported laptop this:
      
                    kernel: lenovo-legion VPC2004:00: Legion Pro 7 16IRX9H platform driver probing:
                    kernel: lenovo-legion VPC2004:00:         Read identifying information: DMI_SYS_VENDOR: LENOVO; DMI_PRODUCT_NAME: 83DE; DMI_BIOS_VERSION:N2CN27WW
@@ -80,6 +80,10 @@ For all distribution
 7) Go to LenovoLegion-release-1.0.0/LenovoLegion
 8) run (qmake or qmake6) && make
 9) The application is in folder LenovoLegion-release-1.0.0/LenovoLegion/Installation
+10) Copy this folder to /opt/LenovoLegion
+11) Copy LenovoLegion-release-1.0.0/LenovoLegion/LenovoLegion-Daemon/lenovo-legion-daemon.service to /usr/lib/systemd/system
+12) run systemctl start lenovo-legion-daemon.service and systemctl start lenovo-legion-daemon.service to enable this service
+13) run gui with /opt/LenovoLegion/LenovoLegion
 
 Arch/Manjaro/EndeavourOS
 - download package from aur or install with yay utility
