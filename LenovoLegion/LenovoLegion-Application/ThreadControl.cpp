@@ -72,7 +72,7 @@ void ThreadControl::setScalingGovernor(const QString& governor,const QString& cu
     }
     else
     {
-        ui->label_scalingGovernor_info->setStyleSheet(ui->label_scalingGovernor->styleSheet());
+        ui->label_scalingGovernor_info->setStyleSheet(QString("QLabel { }"));
     }
 }
 

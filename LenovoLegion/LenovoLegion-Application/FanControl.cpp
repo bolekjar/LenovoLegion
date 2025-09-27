@@ -301,7 +301,7 @@ void FanControl::markChangesFanCurveControlData()
         ui->label_FanCurve1->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve1->setStyleSheet(QString());
+        ui->label_FanCurve1->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->verticalSlider_FanCurve2->value() != m_fanCurveControlData.m_data.m_points.at(1))
@@ -309,7 +309,7 @@ void FanControl::markChangesFanCurveControlData()
         ui->label_FanCurve2->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve2->setStyleSheet(QString());
+        ui->label_FanCurve2->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->verticalSlider_FanCurve3->value() != m_fanCurveControlData.m_data.m_points.at(2))
@@ -317,56 +317,56 @@ void FanControl::markChangesFanCurveControlData()
         ui->label_FanCurve3->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve3->setStyleSheet(QString());
+        ui->label_FanCurve3->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve4->value() != m_fanCurveControlData.m_data.m_points.at(3))
     {
         ui->label_FanCurve4->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve4->setStyleSheet(QString());
+        ui->label_FanCurve4->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve5->value() != m_fanCurveControlData.m_data.m_points.at(4))
     {
         ui->label_FanCurve5->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve5->setStyleSheet(QString());
+        ui->label_FanCurve5->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve6->value() != m_fanCurveControlData.m_data.m_points.at(5))
     {
         ui->label_FanCurve6->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve6->setStyleSheet(QString());
+        ui->label_FanCurve6->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve7->value() != m_fanCurveControlData.m_data.m_points.at(6))
     {
         ui->label_FanCurve7->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve7->setStyleSheet(QString());
+        ui->label_FanCurve7->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve8->value() != m_fanCurveControlData.m_data.m_points.at(7))
     {
         ui->label_FanCurve8->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve8->setStyleSheet(QString());
+        ui->label_FanCurve8->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve9->value() != m_fanCurveControlData.m_data.m_points.at(8))
     {
         ui->label_FanCurve9->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve9->setStyleSheet(QString());
+        ui->label_FanCurve9->setStyleSheet(QString("QLabel { }"));
     }
     if(ui->verticalSlider_FanCurve10->value() != m_fanCurveControlData.m_data.m_points.at(9))
     {
         ui->label_FanCurve10->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_FanCurve10->setStyleSheet(QString());
+        ui->label_FanCurve10->setStyleSheet(QString("QLabel { }"));
     }
 }
 

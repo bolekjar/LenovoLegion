@@ -189,7 +189,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_LTPowerLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_LTPowerLimitPowerControl->setStyleSheet(QString());
+        ui->label_LTPowerLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->horizontalSlider_STPowerLimitPowerControl->value() != m_cpuControlData.m_data.m_shortTermPowerLimit)
@@ -197,7 +197,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_STPowerLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_STPowerLimitPowerControl->setStyleSheet(QString());
+        ui->label_STPowerLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->horizontalSlider_CrossLPowerLimitPowerControl->value() != m_cpuControlData.m_data.m_crossLoadingPowerLimit)
@@ -205,7 +205,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_CrossLPowerLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_CrossLPowerLimitPowerControl->setStyleSheet(QString());
+        ui->label_CrossLPowerLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->horizontalSlider_CPUTempLimitPowerControl->value() != m_cpuControlData.m_data.m_tempLimit)
@@ -213,7 +213,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_CPUTempLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_CPUTempLimitPowerControl->setStyleSheet(QString());
+        ui->label_CPUTempLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->comboBox_PL1TauPowerControl->currentText().toUShort() != m_cpuControlData.m_data.m_l1Tau)
@@ -221,7 +221,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_PL1TauPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_PL1TauPowerControl->setStyleSheet(QString());
+        ui->label_PL1TauPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->horizontalSlider_PowerTargetInACPowerControl->value() != m_cpuControlData.m_data.m_totalPowerTargetInAC)
@@ -229,7 +229,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_PowerTargetInACPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_PowerTargetInACPowerControl->setStyleSheet(QString());
+        ui->label_PowerTargetInACPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->comboBox_CPUBoostPowerControl->currentText().toUShort() != m_cpuControlData.m_data.m_powerBoost)
@@ -237,7 +237,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_CPUBoostPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_CPUBoostPowerControl->setStyleSheet(QString());
+        ui->label_CPUBoostPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 }
 
@@ -249,7 +249,7 @@ void PowerControl::markChangesGpuControlData()
         ui->label_GPUTempLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_GPUTempLimitPowerControl->setStyleSheet(QString());
+        ui->label_GPUTempLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
 
@@ -258,7 +258,7 @@ void PowerControl::markChangesGpuControlData()
         ui->label_GPUBoostClockPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_GPUBoostClockPowerControl->setStyleSheet(QString());
+        ui->label_GPUBoostClockPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
     if(ui->comboBox_GPUTargetPowerPowerControl->currentText().toUShort() != m_gpuControlData.m_data.m_targetLimit)
@@ -266,7 +266,7 @@ void PowerControl::markChangesGpuControlData()
         ui->label_GPUTargetPowerPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
     else {
-        ui->label_GPUTargetPowerPowerControl->setStyleSheet(QString());
+        ui->label_GPUTargetPowerPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 }
 
