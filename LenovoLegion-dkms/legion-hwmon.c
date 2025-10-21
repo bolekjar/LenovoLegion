@@ -179,11 +179,11 @@ static const struct attribute_group legion_hwmon_sensor_group_temp = {
 /*
  * Fan 1
  */
-static SENSOR_DEVICE_ATTR_RO(cpu_fan_input, sensor, SENSOR_CPU_FAN_RPM_ID);
-static SENSOR_DEVICE_ATTR_RO(cpu_fan_label, sensor_label, SENSOR_CPU_FAN_RPM_ID);
-static SENSOR_DEVICE_ATTR_RO(cpu_fan_min, sensor, SENSOR_CPU_FAN_MIN_ID);
-static SENSOR_DEVICE_ATTR_RO(cpu_fan_alarm, sensor, SENSOR_CPU_FAN_ALARM_ID);
-static SENSOR_DEVICE_ATTR_RO(cpu_fan_max, sensor, SENSOR_CPU_FAN_MAX_ID);
+static SENSOR_DEVICE_ATTR_RO(fan1_input, sensor, SENSOR_CPU_FAN_RPM_ID);
+static SENSOR_DEVICE_ATTR_RO(fan1_label, sensor_label, SENSOR_CPU_FAN_RPM_ID);
+static SENSOR_DEVICE_ATTR_RO(fan1_min, sensor, SENSOR_CPU_FAN_MIN_ID);
+static SENSOR_DEVICE_ATTR_RO(fan1_alarm, sensor, SENSOR_CPU_FAN_ALARM_ID);
+static SENSOR_DEVICE_ATTR_RO(fan1_max, sensor, SENSOR_CPU_FAN_MAX_ID);
 
 static struct attribute *sensor_hwmon_attributes_fan_cpu[] = {
     &sensor_dev_attr_cpu_fan_input.dev_attr.attr,
@@ -201,11 +201,11 @@ static const struct attribute_group legion_hwmon_sensor_group_fan_cpu = {
 /*
  * Fan 2
  */
-static SENSOR_DEVICE_ATTR_RO(gpu_fan_input, sensor, SENSOR_GPU_FAN_RPM_ID);
-static SENSOR_DEVICE_ATTR_RO(gpu_fan_label, sensor_label, SENSOR_GPU_FAN_RPM_ID);
-static SENSOR_DEVICE_ATTR_RO(gpu_fan_min, sensor, SENSOR_GPU_FAN_MIN_ID);
-static SENSOR_DEVICE_ATTR_RO(gpu_fan_alarm, sensor, SENSOR_GPU_FAN_ALARM_ID);
-static SENSOR_DEVICE_ATTR_RO(gpu_fan_max, sensor, SENSOR_GPU_FAN_MAX_ID);
+static SENSOR_DEVICE_ATTR_RO(fan2_input, sensor, SENSOR_GPU_FAN_RPM_ID);
+static SENSOR_DEVICE_ATTR_RO(fan2_label, sensor_label, SENSOR_GPU_FAN_RPM_ID);
+static SENSOR_DEVICE_ATTR_RO(fan2_min, sensor, SENSOR_GPU_FAN_MIN_ID);
+static SENSOR_DEVICE_ATTR_RO(fan2_alarm, sensor, SENSOR_GPU_FAN_ALARM_ID);
+static SENSOR_DEVICE_ATTR_RO(fan2_max, sensor, SENSOR_GPU_FAN_MAX_ID);
 
 static struct attribute *sensor_hwmon_attributes_fan_gpu[] = {
     &sensor_dev_attr_gpu_fan_input.dev_attr.attr,

@@ -66,10 +66,10 @@ void SysFsDriverLenovo::init()
                 m_descriptor["powerChargeMode"] = std::filesystem::path(m_path).append("pwr_chargemode");
 
 
-                m_descriptor["fan1Speed"] = std::filesystem::path(entry).append("cpu_fan_input");
-                m_descriptor["fan2Speed"] = std::filesystem::path(entry).append("gpu_fan_input");
-                m_descriptor["fan1MaxSpeed"] = std::filesystem::path(entry).append("cpu_fan_max");
-                m_descriptor["fan2MaxSpeed"] = std::filesystem::path(entry).append("gpu_fan_max");
+                m_descriptor["fan1Speed"] = std::filesystem::path(entry).append("fan1_input");
+                m_descriptor["fan2Speed"] = std::filesystem::path(entry).append("fan2_input");
+                m_descriptor["fan1MaxSpeed"] = std::filesystem::path(entry).append("fan1_max");
+                m_descriptor["fan2MaxSpeed"] = std::filesystem::path(entry).append("fan2_max");
 
                 m_descriptor["cpuTemp"] = std::filesystem::path(entry).append("temp1_input");
                 m_descriptor["gpuTemp"] = std::filesystem::path(entry).append("temp2_input");
