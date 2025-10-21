@@ -186,11 +186,11 @@ static SENSOR_DEVICE_ATTR_RO(fan1_alarm, sensor, SENSOR_CPU_FAN_ALARM_ID);
 static SENSOR_DEVICE_ATTR_RO(fan1_max, sensor, SENSOR_CPU_FAN_MAX_ID);
 
 static struct attribute *sensor_hwmon_attributes_fan_cpu[] = {
-    &sensor_dev_attr_cpu_fan_input.dev_attr.attr,
-    &sensor_dev_attr_cpu_fan_label.dev_attr.attr,
-    &sensor_dev_attr_cpu_fan_min.dev_attr.attr,
-    &sensor_dev_attr_cpu_fan_alarm.dev_attr.attr,
-    &sensor_dev_attr_cpu_fan_max.dev_attr.attr,
+    &sensor_dev_attr_fan1_input.dev_attr.attr,
+    &sensor_dev_attr_fan1_label.dev_attr.attr,
+    &sensor_dev_attr_fan1_min.dev_attr.attr,
+    &sensor_dev_attr_fan1_alarm.dev_attr.attr,
+    &sensor_dev_attr_fan1_max.dev_attr.attr,
     NULL
 };
 
@@ -208,11 +208,11 @@ static SENSOR_DEVICE_ATTR_RO(fan2_alarm, sensor, SENSOR_GPU_FAN_ALARM_ID);
 static SENSOR_DEVICE_ATTR_RO(fan2_max, sensor, SENSOR_GPU_FAN_MAX_ID);
 
 static struct attribute *sensor_hwmon_attributes_fan_gpu[] = {
-    &sensor_dev_attr_gpu_fan_input.dev_attr.attr,
-    &sensor_dev_attr_gpu_fan_label.dev_attr.attr,
-    &sensor_dev_attr_gpu_fan_min.dev_attr.attr,
-    &sensor_dev_attr_gpu_fan_alarm.dev_attr.attr,
-    &sensor_dev_attr_gpu_fan_max.dev_attr.attr,
+    &sensor_dev_attr_fan2_input.dev_attr.attr,
+    &sensor_dev_attr_fan2_label.dev_attr.attr,
+    &sensor_dev_attr_fan2_min.dev_attr.attr,
+    &sensor_dev_attr_fan2_alarm.dev_attr.attr,
+    &sensor_dev_attr_fan2_max.dev_attr.attr,
     NULL
 };
 
