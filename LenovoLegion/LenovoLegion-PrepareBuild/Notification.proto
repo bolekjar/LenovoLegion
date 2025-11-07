@@ -1,0 +1,19 @@
+edition = "2024";
+
+package legion.messages;
+
+
+message Notification
+{
+    enum Action {
+        LENOVO_DRIVER_ADDED                     = 0;
+        LENOVO_DRIVER_REMOVED                   = 1;
+        ACPI_PLATFORM_PROFILE_CHANGE            = 2;
+        POWER_PROFILE_PERFORMANCE               = 3;
+        POWER_SUPPLY_BATTERY0_CHANGE            = 4;
+        CPU_X_LIST_RELOADED                     = 5;
+        KEYLOCK_STATUS_CHANGE                   = 6;
+    }
+
+    Action   action = 1;
+}

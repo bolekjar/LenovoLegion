@@ -8,7 +8,11 @@
 #pragma once
 
 #include "WidgetMessage.h"
-#include <DataProvider.h>
+#include <Core/ExceptionBuilder.h>
+
+
+#include "../LenovoLegion-PrepareBuild/CPUOptions.pb.h"
+#include "../LenovoLegion-PrepareBuild/CPUTopology.pb.h"
 
 #include <QWidget>
 
@@ -18,24 +22,29 @@ class CPUControl;
 
 namespace LenovoLegionGui {
 
-class CPUControlDataProvider;
-
-
+class DataProvider;
 class CPUControl : public QWidget
 {
     Q_OBJECT
 
+public:
+    DEFINE_EXCEPTION(CPUControl)
+
+    enum ERROR_CODES : int {
+        DATA_NOT_READY = -1
+    };
+
 private:
 
-    static const QMap<QString,LenovoLegionDaemon::CPUXControl::DataControl::CPUX> CPU_CONTROL_PRESETS;
+    static const QMap<QString,legion::messages::CPUOptions::CPUX> CPU_CONTROL_PRESETS;
 
 public:
 
     static const QString NAME;
 
 
-    static const LenovoLegionDaemon::CPUSMTControl::DataControl                   SMT_ON_DATA;
-    static const LenovoLegionDaemon::CPUSMTControl::DataControl                   SMT_OFF_DATA;
+    static const legion::messages::CPUSMT   SMT_ON_DATA;
+    static const legion::messages::CPUSMT   SMT_OFF_DATA;
 
     static const QString APPLY_TO_ALL;
     static const QString APPLY_TO_ALL_ENABLED;
@@ -51,13 +60,13 @@ public:
 
 
 public:
-    explicit CPUControl(CPUControlDataProvider *dataProvider,QWidget *parent = nullptr);
+    explicit CPUControl(DataProvider *dataProvider,QWidget *parent = nullptr);
     ~CPUControl();
 
     void refresh();
 
 
-    static LenovoLegionDaemon::CPUXControl::DataControl::CPUX getCpuControlPreset(const QString &presetName,const LenovoLegionDaemon::CPUXControl::DataInfo::CPUX &dataInfo);
+    static legion::messages::CPUOptions::CPUX getCpuControlPreset(const QString &presetName,const legion::messages::CPUOptions::CPUX &dataInfo);
 
 
 signals:
@@ -90,12 +99,11 @@ private:
 private:
     Ui::CPUControl *ui;
 
-    CPUControlDataProvider*  m_dataProvider;
+    DataProvider*  m_dataProvider;
 
-    LenovoLegionDaemon::CPUXControl::DataInfo                           m_cpuInfoData;
-    LenovoLegionDaemon::CPUTopology::Heterogeneous::DataInfo            m_cpuHetTopology;
-    LenovoLegionDaemon::CPUTopology::Homogeneous::DataInfo              m_cpuHomTopology;
-    LenovoLegionDaemon::CPUSMTControl::DataInfo                         m_cpuSMTControlData;
+    legion::messages::CPUOptions            m_cpuInfoData;
+    legion::messages::CPUTopology           m_cpuTopology;
+    legion::messages::CPUSMT                m_cpuSMTControlData;
 
 };
 

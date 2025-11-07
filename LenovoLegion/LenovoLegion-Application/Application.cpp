@@ -6,7 +6,7 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 #include "Application.h"
-#include "DaemonDataProvider.h"
+#include "DataProviderManager.h"
 #include "ProtocolProcessor.h"
 #include "ProtocolProcessorNotifier.h"
 
@@ -42,7 +42,7 @@ void Application::appInitImpl(std::unique_ptr<ApplicationModulesHandler_T>)
      * Init Gui
      */
 
-    m_mainWindow  = std::make_unique<MainWindow>(new DaemonDataProvider(this));
+    m_mainWindow  = std::make_unique<MainWindow>();
     m_aboutWindow = std::make_unique<AboutWindow>();;
 
 
@@ -59,10 +59,28 @@ void Application::appInitImpl(std::unique_ptr<ApplicationModulesHandler_T>)
 
 
     connect(m_trayIcon, &QSystemTrayIcon::activated, this, &Application::trayIconActivated);
+    
+    /*
+     * Connect to settings changes
+     */
+    connect(ApplicationSettings::instance(), &ApplicationSettings::settingChanged,
+            this, &Application::onSettingChanged);
+    
+    /*
+     * Load and apply settings
+     */
+    loadSettings();
+    applyStartupSettings();
 }
 
 void Application::appStopImpl() noexcept
 {
+    /*
+     * Disconnect from settings signals
+     */
+    disconnect(ApplicationSettings::instance(), &ApplicationSettings::settingChanged,
+               this, &Application::onSettingChanged);
+    
     m_aboutWindow->close();
     m_mainWindow->close();
 
@@ -111,32 +129,110 @@ void Application::onExitActionTriggered()
     QApplication::exit(0);
 }
 
-bool Application::notify(QObject* receiver, QEvent* event) {
-  bool done = true;
+void Application::loadSettings()
+{
+    // Settings are loaded automatically via ApplicationSettings singleton
+    LOG_D("Application settings loaded");
+}
 
+void Application::applyStartupSettings()
+{
+    // Apply debug logging setting
+    bool appDebugLogging = false;
+    ApplicationSettings::instance()->loadAppDebugLogging(appDebugLogging);
+    applyDebugLogging(appDebugLogging);
+    
+    // Apply start minimized setting
+    bool startMinimized = false;
+    ApplicationSettings::instance()->loadStartMinimized(startMinimized);
+    
+    if (startMinimized) {
+        LOG_D("Starting minimized to system tray");
+        // Don't show main window on startup
+    } else {
+        m_mainWindow->show();
+    }
+}
+
+void Application::applyDebugLogging(bool enable)
+{
+    if (enable) {
+        // Enable all log levels including DEBUG
+        setLogingSeverityLevel(bj::framework::Logger::SEVERITY_BITSET(
+            (1 << bj::framework::Logger::SEVERITY::DEBUG)    |
+            (1 << bj::framework::Logger::SEVERITY::INFO)     |
+            (1 << bj::framework::Logger::SEVERITY::WARNING)  |
+            (1 << bj::framework::Logger::SEVERITY::ERROR)
+        ));
+        LOG_D("Debug logging enabled");
+    } else {
+        // Disable DEBUG level, keep INFO, WARNING, ERROR
+        setLogingSeverityLevel(bj::framework::Logger::SEVERITY_BITSET(
+            (1 << bj::framework::Logger::SEVERITY::INFO)     |
+            (1 << bj::framework::Logger::SEVERITY::WARNING)  |
+            (1 << bj::framework::Logger::SEVERITY::ERROR)
+        ));
+        LOG_D("Debug logging disabled");
+    }
+}
+
+void Application::onSettingChanged(ApplicationSettings::SettingType setting, bool value)
+{
+    using SettingType = ApplicationSettings::SettingType;
+    
+    switch (setting) {
+        case SettingType::StartMinimized:
+            LOG_D(QString("Setting changed: StartMinimized = ").append(value ? "true" : "false"));
+            // This affects next startup, no action needed now
+            break;
+            
+        case SettingType::MinimizeToTray:
+            LOG_D(QString("Setting changed: MinimizeToTray = ").append(value ? "true" : "false"));
+            // This is handled in MainWindow::closeEvent
+            break;
+            
+        case SettingType::AppDebugLogging:
+            LOG_D(QString("Setting changed: AppDebugLogging = ").append(value ? "true" : "false"));
+            applyDebugLogging(value);
+            break;
+            
+        default:
+            break;
+    }
+}
+
+bool Application::notify(QObject* receiver, QEvent* event) noexcept {
   try {
-      done = QApplication::notify(receiver, event);
+      return QApplication::notify(receiver, event);
   }
   catch (const ProtocolProcessor::exception_T& ex)
   {
       LOG_E(bj::framework::exception::ExceptionBuilder::print(ex).c_str());
-      QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Protocol error",ex.descriptionInfo().value().c_str());
+      if(m_mainWindow) {
+          QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Protocol error",ex.descriptionInfo().value().c_str());
+      }
   }
   catch (const ProtocolProcessorNotifier::exception_T& ex)
   {
       LOG_E(bj::framework::exception::ExceptionBuilder::print(ex).c_str());
-      QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Protocol notifieer error",ex.descriptionInfo().value().c_str());
+      if(m_mainWindow) {
+          QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Protocol notifier error",ex.descriptionInfo().value().c_str());
+      }
   }
   catch(const bj::framework::exception::Exception& ex)
   {    
       LOG_E(bj::framework::exception::ExceptionBuilder::print(ex).c_str());
-      QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Error",QString("Unknow error ocurre, error description = \" ").append(ex.descriptionInfo().value().c_str()).append(" \""));
+      if(m_mainWindow) {
+          QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Error",QString("Unknown error occurred, error description = \" ").append(ex.descriptionInfo().value().c_str()).append(" \""));
+      }
   } catch (...) {
       LOG_E(bj::framework::exception::ExceptionBuilder::print(__FILE__,__FUNCTION__,__LINE__,1,"Unknown error !").c_str());
-      QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Error","Unknow error ocurre !");
+      if(m_mainWindow) {
+          QMessageBox::critical(m_mainWindow.get(),"LenovoLegion Error","Unknown error occurred!");
+      }
   }
 
-  return done;
+  return true;
 }
 
 }

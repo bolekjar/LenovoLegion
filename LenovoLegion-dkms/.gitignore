@@ -2,3 +2,4 @@
 /.clang-format
 /.cproject
 /.settings/*
+/legion-common.h

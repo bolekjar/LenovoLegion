@@ -6,23 +6,20 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 #pragma once
-
-#include <DataProvider.h>
-#include <WidgetMessage.h>
+#include "TaskList.h"
 
 
 #include <Core/ExceptionBuilder.h>
 #include <Core/ApplicationModulesHandler.h>
 
+
+#include "../LenovoLegion-PrepareBuild/Notification.pb.h"
+
 #include <QMainWindow>
 #include <QString>
-#include <QLayoutItem>
-#include <QVBoxLayout>
-#include <QMessageBox>
 
-#include <list>
 
-#include "ui_MainWindow.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -31,8 +28,9 @@ class MainWindow;
 
 namespace  LenovoLegionGui {
 
-class CPUFrequency;
 
+
+class DataProviderManager;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -62,7 +60,7 @@ private:
 
 public:
 
-    explicit MainWindow(DataProvider* dataProvider,QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
 
     virtual ~MainWindow();
 
@@ -76,121 +74,37 @@ protected:
     void timerEvent(QTimerEvent *) override;
     void closeEvent(QCloseEvent *event) override;
 
-private slots:
-
-    void on_actionMaximum_Game_triggered(bool checked);
-    void on_actionOptimum_Game_triggered(bool checked);
-    void on_actionSilent_Game_triggered(bool checked);
-
-    void on_actionMaximum_Multicore_triggered(bool checked);
-    void on_actionOptimum_Multicore_triggered(bool checked);
-    void on_actionSilent_Multicore_triggered(bool checked);
-
-
-
 public slots:
 
-    void on_dataProviderEvent(const LenovoLegionGui::DataProvider::Message& event);
-    void on_widgetEvent(const LenovoLegionGui::WidgetMessage& event);
+    void dameonConnectionStatus(bool isConnected);
+    void daemonNotification(const legion::messages::Notification& msg);
 
 private:
-    void removeControlTab(const QString& name);
-    void removeAllControlTabs();
-    void removeLayoutItem(QLayoutItem* layout);
 
-    void evaluateTasks(const std::list<std::function<void ()> > &tasks);
-    void evaluateTasksAsync(const std::list<std::function<void ()> > &tasks);
-
-    void insertTasksBack(std::list<std::function< void ()>>& tasks, const std::list<std::function< void ()>>& tasksToInsert);
-    void insertTasksFront(std::list<std::function< void ()>>& tasks, const std::list<std::function< void ()>>& tasksToInsert);
-
-    void blockDataProviderSignals(bool block);
-
-    void optimize(const LenovoLegionDaemon::CPUSMTControl::DataControl&             smt,
-                  const LenovoLegionDaemon::CPUXControl::DataControl::CPUX&         performance,
-                  const LenovoLegionDaemon::CPUXControl::DataControl::CPUX&         efficient,
-                  const LenovoLegionDaemon::CPUXFreqControl::DataControl::CPUX&     freqPerformance,
-                  const LenovoLegionDaemon::CPUXFreqControl::DataControl::CPUX&     freqEfficient,
-                  const LenovoLegionDaemon::PowerControl::CPU::DataControl&         powerCPU,
-                  const LenovoLegionDaemon::PowerControl::GPU::DataControl&         powerGPU
-                  );
-
-    void setTheValueWithTimeout(std::function<void ()> setter, std::function<bool ()> getter, int timeoutInMilSec = 50);
-
-    template<class T>
-    void addTabWidgetControls(T* widget, const QString& name);
-
-    template<class T>
-    void addVBoxLayoutWidget(T* widget,QVBoxLayout& layout);
-
-    template<class T>
-    void addHBoxLayoutWidget(T* widget,QHBoxLayout& layout);
+    void clientDisconnected();
+    void clientConnected();
+    void initializeUI();
+    void clearUI();
 
 private:
 
     Ui::MainWindow *ui;
 
     /*
-     * Data Provider
+     * Data Provider Manager
      */
-    DataProvider*  m_dataProvider;
+    DataProviderManager*  m_dataProviderManager;
 
     /*
-     * Id of timer
+     * Timer ID
      */
     int m_timerId;
 
     /*
-     * Timer event counter
+     * Async tasks list
      */
-    quint64 m_timerEventCounter;
-
-    /*
-     * Message box
-     */
-    QMessageBox* m_messageBox;
-
-    /*
-     * Tasks for GUI refresh
-     */
-    std::list<std::function< void ()>>  m_refreshGuiEleamentsTasks;
-    std::list<std::function< void ()>>  m_refreshGuiPPCustomTasks;
-    std::list<std::function< void ()>>  m_refreshGuiPPTasks;
-
-    std::list<std::function< void ()>>  m_removeGuiEleamentsTasks;
-    std::list<std::function< void ()>>  m_removeGuiPPTasks;
-
-    std::list<std::function< void ()>>  m_addGuiEleamentsTasks;
-    std::list<std::function< void ()>>  m_addGuiPPCustomTasks;
-    std::list<std::function< void ()>>  m_addGuiPPTasks;
-
-    std::list<std::function< void ()>>  m_evaluateAsyncTasks;
+    TaskList m_asyncTasks;
 };
 
-template<class T>
-inline void MainWindow::addTabWidgetControls(T *widget, const QString &name)
-{
-    ui->tabWidget_Controls->addTab(widget,name);
-    connect(widget,&T::widgetEvent,this,&MainWindow::on_widgetEvent);
-    widget->refresh();
-}
-
-template<class T>
-void MainWindow::addVBoxLayoutWidget(T *widget, QVBoxLayout &layout)
-{
-
-    layout.insertWidget(0,widget);
-    connect(widget,&T::widgetEvent,this,&MainWindow::on_widgetEvent);
-    widget->refresh();
-}
-
-template<class T>
-void MainWindow::addHBoxLayoutWidget(T *widget, QHBoxLayout &layout)
-{
-    layout.insertWidget(0,widget);
-    connect(widget,&T::widgetEvent,this,&MainWindow::on_widgetEvent);
-    widget->refresh();
-
-}
 
 }

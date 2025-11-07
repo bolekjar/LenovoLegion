@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CPUDetails</class>
+ <widget class="QWidget" name="CPUDetails">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>CPU Details</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="Resources.qrc">
+    <normaloff>:/images/icons/LenovoLegionIco.png</normaloff>:/images/icons/LenovoLegionIco.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Basic */
+QWidget {
+	background-color: #656565;
+    border-radius: 10px;
+    border: 0px;
+}
+
+#CPUDetails {
+	background-color: rgb(58, 59, 58);
+}
+
+/*-----QToolTip-----*/
+QToolTip {
+            background-color: #656565;
+			background-clip: padding-box;
+            color: rgb(58, 59, 58);
+            border: 1px solid rgb(58, 59, 58);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            margin: 2px;
+}
+
+/*-----QGroupBox-----*/
+QGroupBox {
+    border: 1px solid gray;
+    border-color: #b0b0b0;
+    margin-top: 10px;
+    font-size: 12px;
+    border-radius: 10px;
+	background-color: #656565;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding: 2px 2px;
+    background-color: #b0b0b0;
+    color: rgb(255, 255, 255);
+}
+
+QGroupBox::indicator {
+    width: 12px;
+    height: 12px;
+}
+
+QGroupBox::indicator:unchecked {
+    background-color: #656565;
+    border: 2px solid #656565;
+    border-radius: 4px;
+}
+
+QGroupBox::indicator:checked {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0 #656565,
+        stop:1 #b0b0b0
+    );
+    border: 2px solid #656565;
+    border-radius: 4px;
+}
+
+/* QLabel */
+QLabel  {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #656565, stop:1 #656565);
+    color: white;
+    padding: 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    border: 2px solid rgb(58, 59, 58);
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QGroupBox" name="groupBox_CPUDetails">
+     <property name="title">
+      <string>GroupBox</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="topMargin">
+       <number>30</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_CPUDetails">
+        <property name="text">
+         <string>CPU INFO</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::TextFormat::AutoText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="Resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

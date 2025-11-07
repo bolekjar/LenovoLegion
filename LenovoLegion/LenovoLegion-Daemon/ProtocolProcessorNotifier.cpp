@@ -6,21 +6,28 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 #include "ProtocolProcessorNotifier.h"
-#include "SysFsDriverLenovo.h"
+#include "ProtocolParser.h"
+#include "Computer.h"
+#include "SysFsDriverManager.h"
+
+#include <Core/LoggerHolder.h>
+
 #include "SysFsDriverACPIPlatformProfile.h"
 #include "SysFsDriverPowerSuplyBattery0.h"
 #include "SysFsDriverCPUXList.h"
-#include "ProtocolParser.h"
+#include "SysFsDriverLegion.h"
+#include "SysFsDriverLegionEvents.h"
 
-#include <Core/LoggerHolder.h>
+
+#include "../LenovoLegion-PrepareBuild/Notification.pb.h"
 
 #include <QCoreApplication>
 
 namespace LenovoLegionDaemon {
 
-ProtocolProcessorNotifier::ProtocolProcessorNotifier(ControlDataProvider* dataProvider,QLocalSocket* clientSocket,QObject* parent) :
+ProtocolProcessorNotifier::ProtocolProcessorNotifier(SysFsDriverManager* sysFsDriverManager,QLocalSocket* clientSocket, QObject* parent) :
     ProtocolProcessorBase(clientSocket,parent),
-    m_controlDataProvider(dataProvider)
+    m_sysfsDriverManager(sysFsDriverManager)
 {}
 
 ProtocolProcessorNotifier::~ProtocolProcessorNotifier()
@@ -46,27 +53,39 @@ void ProtocolProcessorNotifier::start()
 
 void ProtocolProcessorNotifier::readyReadHandler()
 {
-    LOG_D("ProtocolProcessorNotifier: readyReadHandler");
+    LOG_D("ProtocolProcessorNotifier readyReadHandler");
 
     THROW_EXCEPTION(exception_T,ERROR_CODES::UNEXPECTED_MESSAGE,"ProtocolProcessorNotifier: Unexpected message !");
 }
 
+void ProtocolProcessorNotifier::disconnectedHandler()
+{
+    LOG_D("ProtocolProcessorNotifier client disconnected !");
+    ProtocolProcessorBase::stop();
+    ProtocolProcessorBase::waitForExit();
+
+    emit clientDisconnected();
+}
+
 void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent &event)
 {
-    LOG_D("ProtocolProcessorNotifier: kernelEventHandler " + event.m_driverName + " " + QString::number(static_cast<int>(event.m_action)));
+    LOG_D("ProtocolProcessorNotifier: kernelEventHandler m_driverName=" + event.m_driverName + ", event.m_action=" + QString::number(static_cast<int>(event.m_action)) + ", m_DriverSpecificAction=" + QString(event.m_DriverSpecificEventType.data()) + ", m_DriverSpecificValue=" + event.m_DriverSpecificEventValue.data());
+
+    if(!isRunning())
+    {
+        LOG_D("ProtocolProcessorNotifier is not running, ignoring kernel event !");
+        return;
+    }
+
+    legion::messages::Notification msg;
+
+
 
     if(event.m_driverName == SysFsDriverACPIPlatformProfile::DRIVER_NAME)
     {
         if(event.m_action == SysFsDriver::SubsystemEvent::Action::CHANGED)
         {
-            m_clientSocket->write(
-                ProtocolParser::parseMessage(Message {
-                    .m_type = Message::NOTIFICATION,
-                    .m_dataType  = Message::ENUMERATION,
-                    .m_data      = {
-                        .m_enumType = Message::EnumerationType::INF_ACPI_PLATFORM_PROFILE_CHANGE
-                    }
-                }));
+            msg.set_action(legion::messages::Notification::ACPI_PLATFORM_PROFILE_CHANGE);
         }
     }
 
@@ -74,14 +93,7 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
     {
         if(event.m_action == SysFsDriver::SubsystemEvent::Action::CHANGED)
         {
-            m_clientSocket->write(
-                ProtocolParser::parseMessage(Message {
-                    .m_type = Message::NOTIFICATION,
-                    .m_dataType  = Message::ENUMERATION,
-                    .m_data      = {
-                        .m_enumType = Message::EnumerationType::INF_POWER_SUPPLY_BATTERY0_CHANGE
-                    }
-                }));
+            msg.set_action(legion::messages::Notification::POWER_SUPPLY_BATTERY0_CHANGE);
         }
     }
 
@@ -89,48 +101,90 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
     {
         if(event.m_action == SysFsDriver::SubsystemEvent::Action::RELOADED)
         {
-            m_clientSocket->write(
-                ProtocolParser::parseMessage(Message {
-                    .m_type = Message::NOTIFICATION,
-                    .m_dataType  = Message::ENUMERATION,
-                    .m_data      = {
-                        .m_enumType = Message::EnumerationType::INF_CPU_X_LIST_RELOADED
-                    }
-                }));
+            msg.set_action(legion::messages::Notification::CPU_X_LIST_RELOADED);
         }
+    }
+
+    if(event.m_driverName == SysFsDriverLegionEvents::DRIVER_NAME)
+    {
+        if(event.m_action == SysFsDriver::SubsystemEvent::Action::CHANGED)
+        {
+            if(static_cast<SysFsDriverLegionEvents::LegionVmiEventType>(QString(event.m_DriverSpecificEventType.data()).toInt()) == SysFsDriverLegionEvents::LegionVmiEventType::LEGION_WMI_EVENT_KEYLOCK_STATUS)
+            {
+                msg.set_action(legion::messages::Notification::KEYLOCK_STATUS_CHANGE);
+            }
+        }
+    }
+
+
+    if(msg.has_action())
+    {
+        QByteArray data;
+
+        data.resize(msg.ByteSizeLong());
+
+        if(!msg.SerializeToArray(data.data(),data.size()))
+        {
+            THROW_EXCEPTION(exception_T,ERROR_CODES::SERIALIZE_ERROR,"Serialize of data message error !");
+        }
+
+
+        m_clientSocket->write(ProtocolParser::parseMessage(MessageHeader{
+            .m_type         = MessageHeader::NOTIFICATION,
+            .m_dataType     = m_dataType,
+            .m_dataLength   = data.length()
+        },data));
+
+        LOG_D("ProtocolProcessorNotifier: Notification sent !");
     }
 }
 
 void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon::SysFsDriverManager::ModuleSubsystemEvent &event)
 {
-    LOG_D("ProtocolProcessorNotifier: moduleSubsystemHandler " + event.m_driverName + " " + QString::number(static_cast<int>(event.m_action)));
+    LOG_D("ProtocolProcessorNotifier: moduleSubsystemHandler " + event.m_moduleName + " " + QString::number(static_cast<int>(event.m_action)));
+
+    legion::messages::Notification msg;
 
 
-    if(event.m_driverName == SysFsDriverLenovo::DRIVER_NAME)
+    if(!isRunning())
+    {
+        LOG_D("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
+        return;
+    }
+
+
+    if(event.m_moduleName == LEGION_MODULE_NAME)
     {
         if(event.m_action == SysFsDriverManager::ModuleSubsystemEvent::Action::REMOVE)
         {
-            m_clientSocket->write(
-            ProtocolParser::parseMessage(Message {
-                .m_type = Message::NOTIFICATION,
-                .m_dataType  = Message::ENUMERATION,
-                .m_data      = {
-                    .m_enumType = Message::EnumerationType::INF_LENOVO_DRIVER_REMOVED
-                }
-            }));
+            msg.set_action(legion::messages::Notification::LENOVO_DRIVER_REMOVED);
         }
 
         if(event.m_action == SysFsDriverManager::ModuleSubsystemEvent::Action::ADD)
         {
-            m_clientSocket->write(
-                ProtocolParser::parseMessage(Message {
-                    .m_type = Message::NOTIFICATION,
-                    .m_dataType  = Message::ENUMERATION,
-                    .m_data      = {
-                        .m_enumType = Message::EnumerationType::INF_LENOVO_DRIVER_ADDED
-                    }
-                }));
+            Computer(*m_sysfsDriverManager,this).initComputer();
+
+            msg.set_action(legion::messages::Notification::LENOVO_DRIVER_ADDED);
         }
+    }
+
+    if(msg.has_action())
+    {
+        QByteArray data;
+
+        data.resize(msg.ByteSizeLong());
+
+        if(!msg.SerializeToArray(data.data(),data.size()))
+        {
+            THROW_EXCEPTION(exception_T,ERROR_CODES::SERIALIZE_ERROR,"Serialize of data message error !");
+        }
+
+
+        m_clientSocket->write(ProtocolParser::parseMessage(MessageHeader{
+                                                               .m_type         = MessageHeader::NOTIFICATION,
+                                                               .m_dataType     = m_dataType,
+                                                               .m_dataLength   = data.length()
+                                                           },data));
     }
 }
 

@@ -1,0 +1,41 @@
+edition = "2024";
+
+package legion.messages;
+
+message HardwareMonitor
+{
+    message Legion {
+        uint32 fan1_speed       = 1;
+        uint32 fan2_speed       = 2;
+        uint32 fan1_speed_min   = 3;
+        uint32 fan2_speed_min   = 4;
+        uint32 fan1_speed_max   = 5;
+        uint32 fan2_speed_max   = 6;
+        string fan1_label       = 7;
+        string fan2_label       = 8;
+
+        uint32 temp1_temp       = 9;
+        uint32 temp2_temp       = 10;
+        string temp1_label      = 11;
+        string temp2_label      = 12;
+    }
+
+    message IntelPowerRapl {
+        uint64 power_cap_cpu_energy = 1;
+    }
+
+    message CPUXFreq {
+        bool   cpu_online           = 1;
+        uint32 cpu_base_freq        = 2;
+        uint32 cpu_info_min_freq    = 3;
+        uint32 cpu_info_max_freq    = 4;
+        uint32 cpu_scaling_cur_freq = 5;
+        uint32 cpu_scaling_min_freq = 6;
+        uint32 cpu_scaling_max_freq = 7;
+    };
+
+
+    Legion              legion      = 1;
+    IntelPowerRapl      intel_power = 2;
+    repeated CPUXFreq   cpux_freq   = 3;
+}

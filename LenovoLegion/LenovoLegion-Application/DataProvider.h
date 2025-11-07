@@ -7,60 +7,65 @@
  */
 #pragma once
 
-#include <QObject>
+#include "ProtocolProcessor.h"
 
-#include <ControlData.h>
+
+#include <QObject>
 
 namespace LenovoLegionGui {
 
-
-class PowerControlDataProvider;
-class FanControlDataProvider;
-class HWMonitoringDataProvider;
 class ProtocolProcessor;
-class CPUControlDataProvider;
-class CPUFrequencyControlDataProvider;
-class PowerProfileControlDataProvider;
-class BateryStatusDataProvider;
 
-struct DataProvider : QObject
+class DataProvider : public QObject
 {
     Q_OBJECT
 
 public:
 
-    struct Message {
-
-        enum class Type : quint8 {
-            NOTIFICATION_CLIENT_IS_CONNECTED    = 0,
-            NOTIFICATION_CLIENT_IS_DISCONNECTED = 1,
-            NOTIFICATION_POWER_PROFILE_CHANGED  = 2,
-            NOTIFICATION_BATTERY_STATUS_CHANGED = 3,
-            NOTIFICATION_LENOVO_DRIVER_ADDED    = 4,
-            NOTIFICATION_LENOVO_DRIVER_REMOVED  = 5,
-            NOTIFICATION_CPU_X_LIST_RELOADED    = 6,
-        };
-
-        Type m_type;
-
+    enum ERROR_CODES : int {
+        PARSER_ERROR     = 1,
+        SERIALIZE_ERROR  = 2
     };
 
-    DataProvider(QObject *parent) : QObject(parent) {}
 
-    virtual ~DataProvider() = default;
+    DEFINE_EXCEPTION(ProtocolProcessorBase);
 
-    virtual BateryStatusDataProvider*           getBateryStatusDataProvider()                            = 0;
-    virtual PowerControlDataProvider*           getPowerControlDataProvider()                            = 0;
-    virtual FanControlDataProvider*             getFanControlDataProvider()                              = 0;
-    virtual HWMonitoringDataProvider*           getHWMonitoringDataProvider()                            = 0;
-    virtual CPUControlDataProvider*             getCPUControlDataProvider()                              = 0;
-    virtual CPUFrequencyControlDataProvider*    getCPUFrequencyControlDataProvider()                     = 0;
-    virtual PowerProfileControlDataProvider*    getPowerProfileControlDataProvider()                     = 0;
+public:
 
-signals:
+    DataProvider(ProtocolProcessor * protocolProcessor,QObject *parent);
 
-    void dataProviderEvent(const LenovoLegionGui::DataProvider::Message& event);
+    template<class Message>
+    Message getDataMessage(quint8 m_dataType) const {
+
+        QByteArray                    byte = m_protocolProcessor->getDataRequest(m_dataType);
+        Message                       msg;
+
+        if(!msg.ParsePartialFromArray(byte,byte.size()))
+        {
+             THROW_EXCEPTION(exception_T,ERROR_CODES::PARSER_ERROR,"Parse of data message error !");
+        }
+
+        return msg;
+    }
+
+    template<class Message>
+    QByteArray setDataMessage(quint8 m_dataType,const Message& message) const {
+        QByteArray                    data;
+
+        data.resize(message.ByteSizeLong());
+        if(!message.SerializeToArray(data.data(),data.size()))
+        {
+            THROW_EXCEPTION(exception_T,ERROR_CODES::SERIALIZE_ERROR,"Serialize of data message error !");
+        }
+
+        return m_protocolProcessor->setDataRequest(m_dataType,data);
+    }
+
+private:
+
+    ProtocolProcessor* m_protocolProcessor;
 };
 
-
 }
+
+

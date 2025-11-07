@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include "ControlDataProvider.h"
 #include "ProtocolProcessorBase.h"
 
 #include <Core/ExceptionBuilder.h>
@@ -17,28 +16,34 @@
 #include <QFileSystemWatcher>
 
 
-
 namespace LenovoLegionDaemon {
 
+class DataProviderManager;
+class SysFsDriverManager;
 class ProtocolProcessor : public ProtocolProcessorBase
 {
     Q_OBJECT
 
 public:
 
-    ProtocolProcessor(ControlDataProvider* dataProvider, QLocalSocket* clientSocket,QObject* parent = nullptr);
+    ProtocolProcessor(DataProviderManager* dataProviderManager, QLocalSocket* clientSocket,QObject* parent = nullptr);
     ~ProtocolProcessor();
 
     virtual void stop() override;
     virtual void start() override;
 
-private slots:
+signals:
 
+    void clientDisconnected();
+
+private:
+
+    virtual void disconnectedHandler() override;
     virtual void readyReadHandler() override;
 
 private:
 
-    ControlDataProvider*     m_controlDataProvider;
+    DataProviderManager*     m_dataProviderManager;
 };
 
 }

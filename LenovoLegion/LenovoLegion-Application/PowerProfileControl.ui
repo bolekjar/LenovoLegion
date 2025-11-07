@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>455</width>
-    <height>401</height>
+    <width>534</width>
+    <height>513</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,6 +49,16 @@
           </property>
           <property name="text">
            <string>PERFORMANCE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButton_PPExtreme">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(0, 0,0);</string>
+          </property>
+          <property name="text">
+           <string>EXTREME</string>
           </property>
          </widget>
         </item>

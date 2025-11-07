@@ -16,6 +16,8 @@ SysFsDriverCPUAtom::SysFsDriverCPUAtom(QObject* parrent) : SysFsDriver(DRIVER_NA
 
 void SysFsDriverCPUAtom::init()
 {
+    LOG_D(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(std::filesystem::path(m_path)))

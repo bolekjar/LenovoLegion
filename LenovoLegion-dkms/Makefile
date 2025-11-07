@@ -1,15 +1,17 @@
 SHELL := /bin/bash
 KERNEL_VERSION  ?= $(shell uname --kernel-release)
 KSRC := /lib/modules/$(KERNEL_VERSION)/build
-VERSION := 1.0.0
+VERSION := 2.0.0
 
 INSTALL_DIR := /lib/modules/$(KERNEL_VERSION)/kernel/drivers/platform/x86
 MODDEST_DIR := /lib/modules/$(KERNEL_VERSION)/kernel/drivers/platform/x86
 DKMS_DIR := /usr/src/LenovoLegion-$(VERSION)
 
 obj-m := lenovo_legion.o 
-lenovo_legion-objs := legion-dkms.o legion-wmi-other.o legion-hwmon.o legion-sysfs.o legion-wmi-gamezone.o legion-ec.o legion-wmi.o legion-fancurve.o legion-wmi-driver.o legion-pprof.o
-
+lenovo_legion-objs := legion-dkms.o legion-common.o legion-firmware-attributes-class.o legion-compatibility.o legion-machine-information.o legion-machine-information-sysfs.o \
+					  legion-wmi-helpers.o legion-wmi-events.o legion-wmi-gamezone.o legion-wmi-gamezone-sysfs.o legion-wmi-capdata01.o legion-wmi-ddata.o legion-wmi-other.o \
+					  legion-wmi-other-sysfs.o legion-hwmon.o legion-wmi-ftable.o legion-wmi-fm.o legion-wmi-fm-sysfs.o legion-ec.o legion-ec-sysfs.o legion-rapl-mmio.o \
+					  legion-rapl-mmio-sysfs.o legion-intel-msr.o legion-intel-msr-sysfs.o
 all:
 	$(MAKE) -C $(KSRC) M=$(shell pwd) modules
 
@@ -50,5 +52,3 @@ dkms: clean
 uninstall-dkms:
 	dkms remove -m LenovoLegion -v ${VERSION}
 	rm --force --recursive $(DKMS_DIR)
-	
-	

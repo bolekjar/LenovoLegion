@@ -8,51 +8,121 @@
 #ifndef _LEGION_WMI_H
 #define _LEGION_WMI_H
 
+#include "legion-wmi-gamezone.h"
+
 #include <linux/types.h>
 
+#define LEGION_WMI_OTHER_FEATURE_VALUE_GET 17
+#define LEGION_WMI_OTHER_FEATURE_VALUE_SET 18
+
+#define LEGION_WMI_MODE_ID_MASK 	 GENMASK(15, 8)
+
+/*
+ * DEV_ID=31,24|FEAT_ID=23,16|MODE_ID=15,8 |TYPE_ID=7, 0
+ * 0x01 = CPU  |0x02 = LTP   |0xFF = CUSTOM|0x00 = N/A
+ * 0x04 = FAN  |0x03 = CFS   |0x00 = RAW   |0x01 = CPU/02 = GPU
+ */
+enum CapabilityID
+{
+
+	//IGPU mode related settings
+    IGPUMode 						 					= 0x00010000,
+
+    //Other related settings
+    FlipToStart 					 					= 0x00030000,
+	NvidiaGPUDynamicDisplaySwitching 					= 0x00040000,
+
+	//AMD related settings
+    AMDSmartShiftMode 				 					= 0x00050001,
+    AMDSkinTemperatureTracking 		 					= 0x00050002,
+
+	//Other related settings
+	SupportedPowerModes 								= 0x00070000,
+
+	//Other related settings
+    LegionZoneSupportVersion 							= 0x00090000,
+
+	//Other related settings
+    GodModeFnQSwitchable 								= 0x00100000,
+
+	//Other related settings
+    OverDrive 											= 0x001A0000,
+
+	//Other related settings N/A
+    AIChip 												= 0x000E0000,
+	//IGPU mode related settings
+	IGPUModeChangeStatus 								= 0x000F0000,
 
 
-#define LEGION_WMI_LENOVO_OTHER_METHOD_GUID "dc2a8805-3a8c-41ba-a6f7-092e0089cd3b"
 
-#define WMI_METHOD_ID_GET_FEATURE_VALUE 17
-#define WMI_METHOD_ID_SET_FEATURE_VALUE 18
-
-
-
-
-enum OtherMethodFeature {
-    OtherMethodFeature_U1                                              = 0x010000,  //->PC00.LPCB.EC0.REJF
-    OtherMethodFeature_U2                                              = 0x0F0000,  //->C00.PEG1.PXP._STA?
-    OtherMethodFeature_U3                                              = 0x030000,  //->PC00.LPCB.EC0.FLBT?
-    OtherMethodFeature_CPU_SHORT_TERM_POWER_LIMIT                      = 0x01010000,
-    OtherMethodFeature_CPU_LONG_TERM_POWER_LIMIT                       = 0x01020000,
-    OtherMethodFeature_CPU_PEAK_POWER_LIMIT                            = 0x01030000,
-    OtherMethodFeature_CPU_TEMPERATURE_LIMIT                           = 0x01040000,
-
-    OtherMethodFeature_APU_PPT_POWER_LIMIT                             = 0x01050000,
-
-    OtherMethodFeature_CPU_CROSS_LOAD_POWER_LIMIT                      = 0x01060000,
-    OtherMethodFeature_CPU_L1_TAU                                      = 0x01070000,
+	//Set the CPU short term power limit
+	CPUShortTermPowerLimit 								= 0x0101FF00,
+	//Set the CPU long term power limit
+	CPULongTermPowerLimit 								= 0x0102FF00,
+	//Set the CPU peak power limit
+    CPUPeakPowerLimit 									= 0x0103FF00,
+	//Set the CPU temperature limit
+	CPUTemperatureLimit 								= 0x0104FF00,
+	//Set the APUs ppt power limit
+	APUsPPTPowerLimit 									= 0x0105FF00,
+	//Set the CPU cross loading power limit
+	CPUCrossLoadingPowerLimit 							= 0x0106FF00,
+	//Set the CPU PL1 Tau limit
+	CPUPL1Tau 											= 0x0107FF00,
 
 
-    OtherMethodFeature_GPU_POWER_BOOST                                 = 0x02010000,
-    OtherMethodFeature_GPU_cTGP                                        = 0x02020000,
-    OtherMethodFeature_GPU_TEMPERATURE_LIMIT                           = 0x02030000,
-    OtherMethodFeature_GPU_POWER_TARGET_ON_AC_OFFSET_FROM_BASELINE     = 0x02040000,
-	OtherMethodFeature_CPU_POWER_POWER_BOOST					       = 0x020b0000,
 
+	//Set the GPU power boost
+    GPUPowerBoost 										= 0x0201FF00,
+	//Set the GPU configurable TGP
+    GPUConfigurableTGP 									= 0x0202FF00,
+    //Set the GPU temperature limit
+	GPUTemperatureLimit 								= 0x0203FF00,
+	//Set the GPU total processing power target on AC offset from base line limit
+    GPUTotalProcessingPowerTargetOnAcOffsetFromBaseline = 0x0204FF00,
+	//Set the GPU To CPU dynamic boost
+    GPUToCPUDynamicBoost 								= 0x020BFF00,
 
-    OtherMethodFeature_CPU_SPEED                                       = 0x04030001,
-    OtherMethodFeature_GPU_SPEED                                       = 0x04030002,
+	//GPU other related settings
+    GPUStatus 											= 0x02070000,
+    GPUDidVid 											= 0x02090000,
 
+	//Instant boot related settings
+	InstantBootAc 										= 0x03010001,
+    InstantBootUsbPowerDelivery 						= 0x03010002,
 
-    OtherMethodFeature_C_U1                                            = 0x05010000,
-    OtherMethodFeature_TEMP_CPU                                        = 0x05040000,
-    OtherMethodFeature_TEMP_GPU                                        = 0x05050000
+	//Other related settings
+	FanFullSpeed										= 0x04020000,
+
+	//HwMon
+	CpuCurrentFanSpeed 									= 0x04030001,
+    GpuCurrentFanSpeed 									= 0x04030002,
+    CpuCurrentTemperature 								= 0x05040000,
+    GpuCurrentTemperature 								= 0x05050000
 };
 
 
-int wmi_lenovo_other_set_value(enum OtherMethodFeature feature_id,u32 value);
-int wmi_lenovo_other_get_value(enum OtherMethodFeature feature_id,u32 *value);
+struct legion_wmi_other_priv {
+	struct legion_wmi_cd01_list 	*cd01_list; /* only valid after capdata01 bind */
+    struct legion_wmi_dd_list 		*dd_list;   /* only valid after ddata bind */
+	struct wmi_device 				*wdev;
+
+	struct notifier_block 			hwmon_nb;    /* hwmon*/
+
+	//SysFs
+	struct device *fw_attr_dev;
+	struct kset   *fw_attr_kset;
+	int ida_id;
+};
+
+struct device;
+struct notifier_block;
+
+int legion_wmi_other_notifier_call(void *data,enum gamezone_events_type gamezone_events_type);
+
+int devm_lenovo_wmi_other_register_notifier(struct device *dev,struct notifier_block *nb);
+
+int legion_wmi_other_driver_init(struct device *dev);
+void legion_wmi_other_driver_exit(void);
 
 #endif

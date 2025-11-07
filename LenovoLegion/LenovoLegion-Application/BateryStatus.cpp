@@ -8,10 +8,13 @@
 #include "BateryStatus.h"
 #include "ui_BateryStatus.h"
 
-#include "BateryStatusDataProvider.h"
+#include "DataProvider.h"
+
+#include "../LenovoLegion-PrepareBuild/Battery.pb.h"
+#include "../LenovoLegion-Daemon/SysFsDataProviderBattery.h"
 
 namespace LenovoLegionGui {
-BateryStatus::BateryStatus(BateryStatusDataProvider* dataProvider,QWidget *parent)
+BateryStatus::BateryStatus(DataProvider* dataProvider,QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::BateryStatus)
     , m_dataProvider(dataProvider)
@@ -28,15 +31,15 @@ BateryStatus::~BateryStatus()
 
 void BateryStatus::refresh()
 {
-    m_bateryControlData = m_dataProvider->getBateryControlData();
+    m_bateryControlData = m_dataProvider->getDataMessage<legion::messages::Battery>(LenovoLegionDaemon::SysFsDataProviderBattery::dataType);
     renderData();
 }
 
 void BateryStatus::renderData()
 {
-    if(m_bateryControlData.m_isAvailable)
+    if(m_bateryControlData.has_baterry_status())
     {
-        ui->label_bateryText->setText(QString(m_bateryControlData.m_data.m_batteryStatus.data()).trimmed());
+        ui->label_bateryText->setText(QString(m_bateryControlData.baterry_status().data()).trimmed());
     }
     else
     {
