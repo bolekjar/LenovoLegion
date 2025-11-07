@@ -8,11 +8,15 @@
 #pragma once
 
 #include "WidgetMessage.h"
+#include <Core/ExceptionBuilder.h>
 
 #include <DataProvider.h>
 
 #include <QWidget>
 #include <QMap>
+
+#include "../LenovoLegion-PrepareBuild/CPUFrequency.pb.h"
+#include "../LenovoLegion-PrepareBuild/CPUTopology.pb.h"
 
 namespace Ui {
 class CPUFrequencyControl;
@@ -21,21 +25,29 @@ class CPUFrequencyControl;
 namespace LenovoLegionGui {
 
 
-class CPUFrequencyControlDataProvider;
+class DataProvider;
 
 class CPUFrequencyControl : public QWidget
 {
     Q_OBJECT
 
 public:
+
+    DEFINE_EXCEPTION(CPUFrequencyControl)
+
+    enum ERROR_CODES : int {
+        DATA_NOT_READY = -1
+    };
+
+public:
     static const QString NAME;
-    static const QMap<QString,LenovoLegionDaemon::CPUXFreqControl::DataControl::CPUX> CPUFREQ_PRESETS;
+    static const QMap<QString,legion::messages::CPUFrequency::CPUX> CPUFREQ_PRESETS;
 
     static const QString APPLY_TO_ALL;
     static const QString APPLY_TO_ALL_EFFICIENT;
     static const QString APPLY_TO_ALL_PERFORMANCE;
 public:
-    explicit CPUFrequencyControl(CPUFrequencyControlDataProvider *dataProvider,QWidget *parent = nullptr);
+    explicit CPUFrequencyControl(DataProvider *dataProvider,QWidget *parent = nullptr);
     ~CPUFrequencyControl();
 
     void refresh();
@@ -87,19 +99,18 @@ private slots:
 
 private:
 
-    void forAllCpuPerformanceCores(const std::function<bool(const int index)> &func);
-    void forAllCpuEfficientCores(const std::function<bool(const int index)> &func);
-    void forAllCPUThreads(const std::function<bool (const LenovoLegionDaemon::CPUXFreqControl::DataInfo::CPUX&,const size_t)> &func);
+    void forAllActiveCpuPerformanceCores(const std::function<bool(const int index)> &func);
+    void forAllActiveCpuEfficientCores(const std::function<bool(const int index)> &func);
+    void forAllActiveCPUThreads(const std::function<bool (const int)> &func);
 
     void renderData();
 
 private:
     Ui::CPUFrequencyControl *ui;
-    CPUFrequencyControlDataProvider *m_dataProvider;
+    DataProvider *m_dataProvider;
 
-    LenovoLegionDaemon::CPUXFreqControl::DataInfo            m_cpuFreqData;
-    LenovoLegionDaemon::CPUTopology::Heterogeneous::DataInfo m_cpuHetTopologyData;
-    LenovoLegionDaemon::CPUTopology::Homogeneous::DataInfo   m_cpuHomTopologyData;
+    legion::messages::CPUFrequency  m_cpuFreqData;
+    legion::messages::CPUTopology   m_cpuTopologyData;
 };
 
 }

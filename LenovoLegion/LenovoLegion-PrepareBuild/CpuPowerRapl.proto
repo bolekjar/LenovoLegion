@@ -1,0 +1,19 @@
+edition = "2024";
+
+package legion.messages;
+
+
+message CPUPowerRapl
+{
+    message Limit
+    {
+        uint64 max_power_uw        = 1;
+        uint64 power_limit_uw      = 2;
+        uint64 time_window_us      = 3;
+        string name                = 4;
+    }
+
+    Limit ltp_limit                = 1;
+    Limit stp_limit                = 2;
+    Limit  pp_limit                = 3;
+}

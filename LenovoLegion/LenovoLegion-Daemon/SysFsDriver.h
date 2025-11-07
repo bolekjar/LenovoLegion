@@ -13,6 +13,7 @@
 #include <QString>
 #include <QMap>
 #include <QVector>
+#include <QSet>
 
 #include <filesystem>
 
@@ -40,7 +41,8 @@ public:
     {
         struct Filter {
             static constexpr std::string_view NAME      = "kernel";
-            QString m_subSystem;
+            QString          m_subSystem;
+            QSet<QString>    m_properties;
         };
 
         struct Event {
@@ -49,6 +51,7 @@ public:
             QString m_sysName;
             QString m_subSystem;
             QString m_devPath;
+            QMap<QString,QString>  m_properties;
         };
     };
 
@@ -63,12 +66,13 @@ public:
 
         QString m_driverName;
         Action  m_action;
-        QString m_DriverSpecificAction;
+        QString m_DriverSpecificEventType;
+        QString m_DriverSpecificEventValue;
     };
 
 public:
 
-    explicit SysFsDriver(const QString & name,const std::filesystem::path& path,const KernelEvent::Filter& filter = KernelEvent::Filter(),QObject *parent = nullptr);
+    explicit SysFsDriver(const QString & name,const std::filesystem::path& path,const KernelEvent::Filter& filter = KernelEvent::Filter(),QObject *parent = nullptr,QString module = QString());
 
     virtual ~SysFsDriver() = default;
 
@@ -139,6 +143,7 @@ public:
     const QString               m_name;
     const std::filesystem::path m_path;
     const KernelEvent::Filter   m_filter;
+    const QString               m_module;
 };
 
 

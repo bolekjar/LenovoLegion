@@ -21,6 +21,7 @@ namespace LenovoLegionDaemon {
 
 class SysFsStructure;
 class ProtocolProcessorBase;
+class DataProviderManager;
 class SysFsDriverManager;
 
 class Application : public QCoreApplication,
@@ -33,7 +34,8 @@ public:
     DEFINE_EXCEPTION(Application);
 
     enum ERROR_CODES : int {
-        NOT_ROOT = -1
+        NOT_ROOT   = -1,
+        SAVE_ERROR = -2
     };
 
 public:
@@ -72,22 +74,50 @@ private slots:
     /*
      * New connnectios notification handler
      */
-    void newConnectionNotificationHandler();;
+    void newConnectionNotificationHandler();
+
+
+    /*
+     * Connection disconnection handler
+     */
+    void connectionDisconnectedHandler();
+
+
+    /*
+     * Notification connection disconnection handler
+     */
+    void connectionNotificationDisconnectedHandler();
 
 private:
 
     void signalEventHandler(int signal) noexcept;
 
-    void saveCurrentConfiguration();
-    void saveCurrentPowerProfile();
-    void saveCurrentCPUsControlProfile();
+    template<class T,class U>
+    void deleteProtocolProcessors(T* &protocolProcessor)
+    {
+        if(protocolProcessor != nullptr)
+        {
+            // Disconnect ALL signals/slots FIRST to prevent queued signals from delivering
+            disconnect(dynamic_cast<U*>(protocolProcessor), nullptr, nullptr, nullptr);
+            
+            // Block signals immediately (additional safety)
+            protocolProcessor->blockSignals(true);
 
+            // Stop the processor (closes socket, prevents new events)
+            protocolProcessor->stop();
 
-    void loadSavedConfiguration();
-    void loadSavedPowerProfile();
-    void loadSavedCPUsControlProfile();
+            // Remove ALL pending events for this object from the event queue
+            // This prevents re-entrant calls during deletion
+            QCoreApplication::removePostedEvents(protocolProcessor);
+            
+            // Process only deferred delete events for child objects (like socket)
+            QCoreApplication::sendPostedEvents(protocolProcessor, QEvent::DeferredDelete);
 
-
+            // Now safe to delete
+            delete protocolProcessor;
+            protocolProcessor = nullptr;
+        }
+    };
 
 private:
 
@@ -101,7 +131,13 @@ private:
     /*
      * SysFs Driver Manager
      */
-    SysFsDriverManager*            m_sysFsDriverManager;
+    SysFsDriverManager*             m_sysFsDriverManager;
+
+
+    /*
+     * Data Provider Manager
+     */
+    DataProviderManager*            m_dataProviderManager;
 
 
     /*

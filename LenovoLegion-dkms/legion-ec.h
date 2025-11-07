@@ -29,7 +29,7 @@
 /*
  * Maximum speed control
  */
-#define EC_MAXIMUMFANSPEED  0xBD
+#define EC_FULLFANSPEED  0xBD
 #define EC_FANFULLSPEED_ON  0x40
 #define EC_FANFULLSPEED_OFF 0x80
 

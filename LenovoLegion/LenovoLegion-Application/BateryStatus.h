@@ -7,7 +7,8 @@
  */
 #pragma once
 #include "WidgetMessage.h"
-#include <DataProvider.h>
+
+#include "../LenovoLegion-PrepareBuild/Battery.pb.h"
 
 #include <QWidget>
 
@@ -17,14 +18,13 @@ class BateryStatus;
 
 namespace LenovoLegionGui {
 
-class BateryStatusDataProvider;
-
+class DataProvider;
 class BateryStatus : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit BateryStatus(BateryStatusDataProvider* dataProvider,QWidget *parent = nullptr);
+    explicit BateryStatus(DataProvider* dataProvider,QWidget *parent);
 
     ~BateryStatus();
 
@@ -43,9 +43,9 @@ private:
 
     Ui::BateryStatus *ui;
 
-    BateryStatusDataProvider* m_dataProvider;
+    DataProvider* m_dataProvider;
 
-    LenovoLegionDaemon::Batery::DataInfo m_bateryControlData;
+    legion::messages::Battery m_bateryControlData;
 };
 
 }
