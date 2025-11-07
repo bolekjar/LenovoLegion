@@ -11,11 +11,9 @@
 
 #include <Core/ExceptionBuilder.h>
 
-#include <ControlData.h>
-#include <Message.h>
 
-#include <QObject>
-#include <QLocalSocket>
+#include "../LenovoLegion-PrepareBuild/Notification.pb.h"
+
 
 namespace LenovoLegionGui {
 
@@ -30,7 +28,6 @@ public:
         INVALID_MESSAGE   = -1
     };
 
-
     DEFINE_EXCEPTION(ProtocolProcessorNotifier);
 
 public:
@@ -44,11 +41,7 @@ protected:
 
 signals:
 
-    void powerProfileChanged();
-    void batteryStatusChanged();
-    void lenovoDriverAdded();
-    void lenovoDriverRemoved();
-    void cpuXListReloaded();
+    void daemonNotification(const legion::messages::Notification& msg);
 
 private:
 

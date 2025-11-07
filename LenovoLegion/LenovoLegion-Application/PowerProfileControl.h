@@ -9,7 +9,9 @@
 
 #include "WidgetMessage.h"
 
-#include <DataProvider.h>
+
+#include "../LenovoLegion-PrepareBuild/PowerProfile.pb.h"
+#include "../LenovoLegion-PrepareBuild/Battery.pb.h"
 
 #include <QWidget>
 
@@ -19,14 +21,14 @@ class PowerProfileControl;
 
 namespace LenovoLegionGui {
 
-class PowerProfileControlDataProvider;
+class DataProvider;
 
 class PowerProfileControl : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit PowerProfileControl(PowerProfileControlDataProvider * dataProvider,QWidget *parent = nullptr);
+    explicit PowerProfileControl(DataProvider * dataProvider,QWidget *parent = nullptr);
     ~PowerProfileControl();
 
     void refresh();
@@ -41,6 +43,8 @@ private slots:
 
     void on_radioButton_PPQuiet_clicked();
 
+    void on_radioButton_PPExtreme_clicked();
+
 signals:
 
     void widgetEvent(const LenovoLegionGui::WidgetMessage& event);
@@ -51,13 +55,13 @@ private:
 
     Ui::PowerProfileControl *ui;
 
-    PowerProfileControlDataProvider * m_dataProvider;
+    DataProvider * m_dataProvider;
 
     /*
      *  SysFs values
      */
-    LenovoLegionDaemon::PowerProfile::Control::DataInfo    m_powerProfileControlData;
-    LenovoLegionDaemon::Batery::DataInfo                   m_batteryControlData;
+    legion::messages::PowerProfile                         m_powerProfileControlData;
+    legion::messages::Battery                              m_batteryControlData;
 };
 
 }

@@ -23,7 +23,7 @@ ThreadControl::ThreadControl(const QString& title, int index , bool enabled,cons
 {
     ui->setupUi(this);
     ui->groupBox->setTitle(title);
-    ui->groupBox->setStyleSheet(QString("QGroupBox {  color : %1;  background-color: %2; }").arg(m_color, m_bgcolor));
+    ui->groupBox->setStyleSheet(QString("QGroupBox::title {color : %1;} QGroupBox {  background-color: %2; }").arg(m_color, m_bgcolor));
     ui->radioButton_coreEnabled->setChecked(enabled);
     ui->label_scalingGovernor_info->setText(scalingGovernor.trimmed());
 
@@ -34,7 +34,7 @@ ThreadControl::ThreadControl(const QString& title, int index , bool enabled,cons
 
     if(!m_enabled)
     {
-        ui->groupBox->setStyleSheet(QString("QGroupBox {  color : %1; background-color: %2;}").arg("#333066",m_bgcolor));
+        ui->groupBox->setStyleSheet(QString("QGroupBox::title {color : %1;} QGroupBox { background-color: %2;}").arg("#333066",m_bgcolor));
     }
 }
 

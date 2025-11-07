@@ -29,9 +29,10 @@ public:
         WARNING = 1,
         DEBUG   = 2,
         ERROR   = 3,
+        TRACE  =  4
     };
 
-    using SEVERITY_BITSET =  std::bitset<4>;
+    using SEVERITY_BITSET =  std::bitset<5>;
 
 private:
 
@@ -69,6 +70,7 @@ private:
 #define LOG_WARNING(x,__LoggerSingletonHolder__)  __LoggerSingletonHolder__::getInstance().write(x,bj::framework::Logger::SEVERITY::WARNING)
 #define LOG_DEBUG(x,__LoggerSingletonHolder__)    __LoggerSingletonHolder__::getInstance().write(x,bj::framework::Logger::SEVERITY::DEBUG)
 #define LOG_ERROR(x,__LoggerSingletonHolder__)    __LoggerSingletonHolder__::getInstance().write(x,bj::framework::Logger::SEVERITY::ERROR)
+#define LOG_TRACE(x,__LoggerSingletonHolder__)    __LoggerSingletonHolder__::getInstance().write(x,bj::framework::Logger::SEVERITY::TRACE)
 
 
 

@@ -11,10 +11,12 @@
 
 namespace LenovoLegionDaemon {
 
-SysFsDriverCPUXList::SysFsDriverCPUXList(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/devices/system/cpu/",{"cpu"},parrent) {}
+SysFsDriverCPUXList::SysFsDriverCPUXList(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/devices/system/cpu/",{"cpu",{}},parrent) {}
 
 void SysFsDriverCPUXList::init()
 {
+    LOG_T(__PRETTY_FUNCTION__);
+
     clean();
 
     /*
@@ -72,8 +74,6 @@ void SysFsDriverCPUXList::init()
                     {
                         m_descriptorsInVector[cpuIndex]["cpuOnline"]                       = std::filesystem::path(m_path).append(std::string("cpu") + std::to_string(cpuIndex)).append("online");
                     }
-
-                    LOG_D(QString("CPUX driver descriptor added for CPU index: ") + QString::number(cpuIndex));
                 }
             }
         }
@@ -82,11 +82,11 @@ void SysFsDriverCPUXList::init()
 
 void SysFsDriverCPUXList::handleKernelEvent(const KernelEvent::Event &event)
 {
-    LOG_D(QString("Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
+    LOG_D(__PRETTY_FUNCTION__ + QString(": Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 
@@ -98,7 +98,8 @@ void SysFsDriverCPUXList::handleKernelEvent(const KernelEvent::Event &event)
         emit kernelEvent({
             .m_driverName = DRIVER_NAME,
             .m_action = SubsystemEvent::Action::RELOADED,
-            .m_DriverSpecificAction = "reloaded"
+            .m_DriverSpecificEventType = "reloaded",
+            .m_DriverSpecificEventValue = {}
         });
     }
 }

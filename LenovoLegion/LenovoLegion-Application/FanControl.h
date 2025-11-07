@@ -8,7 +8,12 @@
 #pragma once
 
 #include "WidgetMessage.h"
-#include <DataProvider.h>
+
+#include <Core/ExceptionBuilder.h>
+
+#include "../LenovoLegion-PrepareBuild/FanControl.pb.h"
+#include "../LenovoLegion-PrepareBuild/PowerProfile.pb.h"
+#include "../LenovoLegion-PrepareBuild/HWMonitoring.pb.h"
 
 #include <QWidget>
 
@@ -18,20 +23,25 @@ class FanControl;
 
 namespace LenovoLegionGui {
 
-class FanControlDataProvider;
-
-
+class DataProvider;
 class FanControl : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    static const QString              NAME;
-    static const QMap<quint8,QString> FAN_CURVE_POINTS_TO_CPU_GPU_FAN_SPEED_TOOLTIP;
+    DEFINE_EXCEPTION(FanControl)
+
+    enum ERROR_CODES : int {
+        DATA_NOT_READY = -1
+    };
 
 public:
-    explicit FanControl(FanControlDataProvider *dataProvider,QWidget *parent = nullptr);
+
+    static const QString              NAME;
+
+public:
+    explicit FanControl(DataProvider *dataProvider,QWidget *parent = nullptr);
     ~FanControl();
 
     void refresh();
@@ -75,11 +85,14 @@ private:
 private:
     Ui::FanControl *ui;
 
-    FanControlDataProvider                        *m_dataProvider;
+    DataProvider                          *m_dataProvider;
 
-    LenovoLegionDaemon::FanControl::Control::DataInfo             m_fanControlData;
-    LenovoLegionDaemon::FanControl::CurveControl::DataInfo        m_fanCurveControlData,
-                                                                  m_localFanCurveControlData;
+    legion::messages::FanOption            m_fanControlData;
+    legion::messages::FanCurve             m_fanCurveControlData,
+                                           m_localFanCurveControlData;
+    legion::messages::PowerProfile         m_powerProfileData;
+    legion::messages::HardwareMonitor      m_hwMonitoringData;;
+
 };
 
 }

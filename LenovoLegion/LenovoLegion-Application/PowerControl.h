@@ -8,7 +8,12 @@
 #pragma once
 
 #include "WidgetMessage.h"
-#include <DataProvider.h>
+#include <Core/ExceptionBuilder.h>
+
+#include "../LenovoLegion-PrepareBuild/CpuPower.pb.h"
+#include "../LenovoLegion-PrepareBuild/GPUPower.pb.h"
+#include "../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.h"
+#include "../LenovoLegion-PrepareBuild/PowerProfile.pb.h"
 
 #include <QWidget>
 #include <QString>
@@ -20,23 +25,27 @@ class PowerControl;
 
 namespace LenovoLegionGui {
 
-class PowerControlDataProvider;
+class DataProvider;
 
 class PowerControl : public QWidget
 {
     Q_OBJECT
 
+public:
+
+    DEFINE_EXCEPTION(PowerControl)
+
+    enum ERROR_CODES : int {
+        DATA_NOT_READY = -1
+    };
 
 public:
 
     static const QString NAME;
 
-    static const QMap<QString,LenovoLegionDaemon::PowerControl::CPU::DataControl> CPU_PRESETS;
-    static const QMap<QString,LenovoLegionDaemon::PowerControl::GPU::DataControl> GPU_PRESETS;
-
 public:
 
-    explicit PowerControl(PowerControlDataProvider *dataProvider , QWidget *parent = nullptr);
+    explicit PowerControl(DataProvider *dataProvider , QWidget *parent = nullptr);
 
     ~PowerControl();
 
@@ -73,6 +82,8 @@ private slots:
     void on_pushButton_GPUPowerControlCancel_clicked();
 
 
+    void on_comboBox_PresetConfiguration_currentTextChanged(const QString &arg1);
+
 private:
 
     void renderData();
@@ -88,10 +99,12 @@ private:
 private:
 
     Ui::PowerControl         *ui;
-    PowerControlDataProvider *m_dataProvider;
+    DataProvider             *m_dataProvider;
 
-    LenovoLegionDaemon::PowerControl::CPU::DataInfo             m_cpuControlData;
-    LenovoLegionDaemon::PowerControl::GPU::DataInfo             m_gpuControlData;
+    legion::messages::CPUPower             m_cpuControlData;
+    legion::messages::GPUPower             m_gpuControlData;
+    legion::messages::CPUPowerRapl         m_cpuRaplData;
+    legion::messages::PowerProfile         m_powerProfileData;
 };
 
 }

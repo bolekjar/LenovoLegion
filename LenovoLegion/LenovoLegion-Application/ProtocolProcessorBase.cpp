@@ -13,6 +13,9 @@
 
 #include <../LenovoLegion-Daemon/Application.h>
 
+#include <poll.h>
+#include <unistd.h>
+
 namespace LenovoLegionGui {
 
 ProtocolProcessorBase::ProtocolProcessorBase(const QString& socketName,QObject *parent)
@@ -38,38 +41,55 @@ void ProtocolProcessorBase::timerEvent(QTimerEvent *timerId)
     {
         if(!m_socket->isOpen())
         {
-            LOG_D(QString("Connecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+            LOG_T(QString("Connecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
 
             m_socket->connectToServer(SOCKET_NAME);
         }
     }
 }
 
-void ProtocolProcessorBase::sendMessage(const LenovoLegionDaemon::Message &message)
+void ProtocolProcessorBase::sendMessage(const LenovoLegionDaemon::MessageHeader &message,const QByteArray& data)
 {
-    m_socket->write(LenovoLegionDaemon::ProtocolParser::parseMessage(message));
+    if(!isConnected())
+    {
+        THROW_EXCEPTION(exception_T, ERROR_CODES::NOT_CONNECTED,"Socket is not connected !");
+    }
+
+    m_socket->write(LenovoLegionDaemon::ProtocolParser::parseMessage(message,data));
 }
 
-LenovoLegionDaemon::Message ProtocolProcessorBase::receiveMessage(int timeout)
+LenovoLegionDaemon::MessageHeader ProtocolProcessorBase::receiveMessage(QByteArray &data,int timeout)
 {
+    if(!isConnected())
+    {
+        THROW_EXCEPTION(exception_T, ERROR_CODES::NOT_CONNECTED,"Socket is not connected !");
+    }
+
     if(m_socket->waitForReadyRead(timeout))
     {
-        LenovoLegionDaemon::Message message;
-        LenovoLegionDaemon::ProtocolParser::parseMessage(*m_socket,[&message](const LenovoLegionDaemon::Message &msg){
+        LenovoLegionDaemon::MessageHeader message;
+        LenovoLegionDaemon::ProtocolParser::parseMessage(*m_socket,[&message,&data](const LenovoLegionDaemon::MessageHeader &msg,const QByteArray& daemonData){
             message = msg;
+            data = daemonData;
         });
 
         return message;
     }
 
+    LOG_E("Timeout while waiting for message, closing socket !");
+
+    m_socket->close();
+    waitForExit();
+
     THROW_EXCEPTION(exception_T, ERROR_CODES::TIMEOUT_ERROR,"Timeout while waiting for message");
 }
 
-LenovoLegionDaemon::Message ProtocolProcessorBase::receiveMessageDataReady()
+LenovoLegionDaemon::MessageHeader ProtocolProcessorBase::receiveMessageDataReady(QByteArray& data)
 {
-    LenovoLegionDaemon::Message message;
-    LenovoLegionDaemon::ProtocolParser::parseMessage(*m_socket,[&message](const LenovoLegionDaemon::Message &msg){
+    LenovoLegionDaemon::MessageHeader message;
+    LenovoLegionDaemon::ProtocolParser::parseMessage(*m_socket,[&message,&data](const LenovoLegionDaemon::MessageHeader &msg,const QByteArray& daemonData){
         message = msg;
+        data = daemonData;
     });
 
     return message;
@@ -77,30 +97,75 @@ LenovoLegionDaemon::Message ProtocolProcessorBase::receiveMessageDataReady()
 
 void ProtocolProcessorBase::onConnected()
 {
-
-    LOG_D(QString("Connected to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    LOG_T(QString("Connected to daemon socket ( ").append(SOCKET_NAME).append(" )"));
     emit connected();
 }
 
 void ProtocolProcessorBase::onDisconnected()
 {
-    LOG_D(QString("Disconnected from daemon socket ( ").append(SOCKET_NAME).append(" )"));
-    emit disconnected();
-
     m_socket->close();
+
+    LOG_T(QString("Disconnected from daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    emit disconnected();
 }
 
 void ProtocolProcessorBase::waitForExit()
 {
-    while (isConnected())
-    {
-        QCoreApplication::processEvents();
+    if (!m_socket || !m_socket->isOpen()) {
+        return;
+    }
+
+    // Use poll to wait for socket to close without busy-waiting
+    pollfd pfd;
+    pfd.fd = m_socket->socketDescriptor();
+    pfd.events = POLLIN | POLLHUP | POLLERR;
+    
+    while (m_socket->isOpen()) {
+        pfd.revents = 0;
+        
+        // Poll with timeout to periodically check if socket closed
+        int ret = poll(&pfd, 1, 100);  // 100ms timeout
+        
+        if (ret < 0) {
+            // Poll error
+            break;
+        }
+        
+        if (ret > 0) {
+            // Socket has events - check if it's disconnection
+            if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL)) {
+                // Socket disconnected or error
+                break;
+            }
+            
+            if (pfd.revents & POLLIN) {
+                // Data available - let Qt event loop handle it
+                m_socket->waitForReadyRead(0);
+            }
+        }
+        
+        // Check if socket closed during event processing
+        if (!m_socket->isOpen()) {
+            break;
+        }
     }
 }
 
 bool ProtocolProcessorBase::isConnected()
 {
     return m_socket->isOpen();
+}
+
+void ProtocolProcessorBase::reconnect()
+{
+    LOG_D(QString("Reconnecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    
+    if (m_socket->isOpen()) {
+        m_socket->close();
+        waitForExit();
+    }
+    
+    // Timer will automatically reconnect on next tick
 }
 
 }

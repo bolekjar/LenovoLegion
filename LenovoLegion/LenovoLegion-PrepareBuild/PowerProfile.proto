@@ -1,0 +1,19 @@
+edition = "2024";
+
+package legion.messages;
+
+
+message PowerProfile
+{
+    enum Profiles {
+        POWER_PROFILE_UNKNOWN      = 0  ;
+        POWER_PROFILE_QUIET        = 1  ;
+        POWER_PROFILE_BALANCED     = 2  ;
+        POWER_PROFILE_PERFORMANCE  = 3  ;
+        POWER_PROFILE_EXTREME      = 224;
+        POWER_PROFILE_CUSTOM       = 255;
+    }
+
+    Profiles   current_value         = 1; //smart_fan
+    Profiles   thermal_mode          = 2; //thermal mode
+}
