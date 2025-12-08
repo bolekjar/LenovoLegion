@@ -9,9 +9,9 @@
 #include "legion-ec.h"
 
 #include <linux/delay.h>
-#include <asm/io.h>
 #include <linux/types.h>
 
+#include <asm/io.h>
 
 static int ec_wait( u16 port, u8 flag, u8 value) {
 
@@ -32,24 +32,24 @@ static int ec_wait( u16 port, u8 flag, u8 value) {
 
 
 ssize_t ec_lenovo_write( u16 port, u8 value) {
-    if(ec_wait(EC_SC,IBF,0) != 0) return -1;
+    if(ec_wait(EC_SC,IBF,0)) return -EBUSY;
     outb(WR_EC, EC_SC);
-    if(ec_wait(EC_SC,IBF,0) != 0) return -1;
+    if(ec_wait(EC_SC,IBF,0)) return -EBUSY;
     outb(port, EC_DATA);
-    if(ec_wait(EC_SC,IBF,0) != 0) return -1;
+    if(ec_wait(EC_SC,IBF,0)) return -EBUSY;
     outb(value, EC_DATA);
-    if(ec_wait(EC_SC,IBF,0) != 0) return -1;
+    if(ec_wait(EC_SC,IBF,0)) return -EBUSY;
 
     return 0;
 }
 
 ssize_t ec_lenovo_read(u16 port,u8* value)
 {
-    if(ec_wait(EC_SC,IBF,0) != 0) return -1;
+    if(ec_wait(EC_SC,IBF,0)) return -EBUSY;
     outb(RD_EC,EC_SC);
-    if(ec_wait(EC_SC,IBF,0) != 0) return -1;
+    if(ec_wait(EC_SC,IBF,0)) return -EBUSY;
     outb(port, EC_DATA);
-    if(ec_wait(EC_SC,OBF,1) != 0) return -1;
+    if(ec_wait(EC_SC,OBF,1)) return -EBUSY;
     *value = inb(EC_DATA);
 
     return 0;

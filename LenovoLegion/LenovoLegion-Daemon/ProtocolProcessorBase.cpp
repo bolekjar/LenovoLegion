@@ -9,7 +9,8 @@
 
 #include <Core/LoggerHolder.h>
 
-#include <QCoreApplication>
+#include <poll.h>
+#include <unistd.h>
 
 namespace LenovoLegionDaemon {
 
@@ -30,8 +31,8 @@ ProtocolProcessorBase::~ProtocolProcessorBase()
     waitForExit();
     m_clientSocket->deleteLater();
 
-    disconnect(m_clientSocket, &QLocalSocket::readyRead,this,&ProtocolProcessorBase::on_readyReadHandler);
-    disconnect(m_clientSocket, &QLocalSocket::disconnected,this, &ProtocolProcessorBase::on_disconnectedHandler);
+    disconnect(m_clientSocket, &QLocalSocket::readyRead,this,&ProtocolProcessorBase::readyReadHandlerSlot);
+    disconnect(m_clientSocket, &QLocalSocket::disconnected,this, &ProtocolProcessorBase::disconnectedHandlerSlot);
 
     LOG_D("ProtocolProcessorBase destroyed !");
 }
@@ -47,15 +48,49 @@ void ProtocolProcessorBase::start()
 {
     LOG_D("ProtocolProcessorBase started !");
 
-    connect(m_clientSocket, &QLocalSocket::readyRead,this,&ProtocolProcessorBase::on_readyReadHandler);
-    connect(m_clientSocket, &QLocalSocket::disconnected,this, &ProtocolProcessorBase::on_disconnectedHandler);
+    connect(m_clientSocket, &QLocalSocket::readyRead,this,&ProtocolProcessorBase::readyReadHandlerSlot);
+    connect(m_clientSocket, &QLocalSocket::disconnected,this, &ProtocolProcessorBase::disconnectedHandler);
 }
 
 void ProtocolProcessorBase::waitForExit()
 {
-    while (isRunning())
-    {
-        QCoreApplication::processEvents();
+    if (!m_clientSocket || !m_clientSocket->isOpen()) {
+        return;
+    }
+
+    // Use poll to wait for socket to close without busy-waiting
+    pollfd pfd;
+    pfd.fd = m_clientSocket->socketDescriptor();
+    pfd.events = POLLIN | POLLHUP | POLLERR;
+    
+    while (m_clientSocket->isOpen()) {
+        pfd.revents = 0;
+        
+        // Poll with timeout to periodically check if socket closed
+        int ret = poll(&pfd, 1, 100);  // 100ms timeout
+        
+        if (ret < 0) {
+            // Poll error
+            break;
+        }
+        
+        if (ret > 0) {
+            // Socket has events - check if it's disconnection
+            if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL)) {
+                // Socket disconnected or error
+                break;
+            }
+            
+            if (pfd.revents & POLLIN) {
+                // Data available - let Qt event loop handle it
+                m_clientSocket->waitForReadyRead(0);
+            }
+        }
+        
+        // Check if socket closed during event processing
+        if (!m_clientSocket->isOpen()) {
+            break;
+        }
     }
 }
 
@@ -64,21 +99,28 @@ bool ProtocolProcessorBase::isRunning() const
     return  m_clientSocket->isOpen();
 }
 
-void ProtocolProcessorBase::on_readyReadHandler()
+void ProtocolProcessorBase::disconnectedHandler()
+{}
+
+void ProtocolProcessorBase::readyReadHandlerSlot()
 {
     readyReadHandler();
 }
 
-void ProtocolProcessorBase::on_disconnectedHandler()
+void ProtocolProcessorBase::disconnectedHandlerSlot()
 {
     LOG_D("Client disconnected !");
     m_clientSocket->close();
+
+    disconnectedHandler();
 }
 
 
 
 void ProtocolProcessorBase::refuseConnection(QLocalSocket *clientSocket)
 {
+    LOG_D("Refusing client connection !");
+
     if(clientSocket == nullptr)
     {
         THROW_EXCEPTION(exception_T,CLIENT_POINTER_ERROR,"Client socket is nullptr !");

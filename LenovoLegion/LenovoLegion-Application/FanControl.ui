@@ -15,11 +15,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="groupBox_fanCurve">
      <property name="title">
       <string>Fan curve</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <property name="topMargin">
+       <number>30</number>
+      </property>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_25">
         <item>
@@ -405,11 +408,17 @@
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_6">
+    <widget class="QGroupBox" name="groupBox_fanControl">
      <property name="title">
       <string>Controls</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_24">
+      <property name="topMargin">
+       <number>30</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_23">
         <item>

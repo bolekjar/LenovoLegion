@@ -6,116 +6,225 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 
-#ifndef LINUX_WMI_GAMEZONE_H
-#define LINUX_WMI_GAMEZONE_H
+#ifndef LEGION_WMI_GAMEZONE_H_
+#define LEGION_WMI_GAMEZONE_H_
 
-#include <linux/types.h>
-
-#define LEGION_WMI_GAMEZONE_GUID "887B54E3-DDDC-4B2C-8B88-68A26A8835D0"
-
-
-enum LEGION_WMI_METHOD_ID {
-	// GPU over clock
-	WMI_METHOD_ID_ISSUPPORTGPUOC =  4,
-
-	// Fan speed
-	// only fully implemented for some models here
-	// often implemented in other classes and methods too
-	// below
-	WMI_METHOD_ID_GETFAN1SPEED=8,
-	WMI_METHOD_ID_GETFAN2SPEED=9,
-
-	// Version of ACPI
-	WMI_METHOD_ID_GETVERSION=11,
-
-	// Does it support CPU overclock?
-	WMI_METHOD_ID_ISSUPPORTCPUOC=14,
+#include <linux/spinlock.h>
+#include <linux/spinlock_types.h>
+#include <linux/notifier.h>
 
 
-	// Temperatures
-	// only fully implemented for some models here
-	// often implemented in other classes and methods too
-	// below
-	WMI_METHOD_ID_GETCPUTEMP=18,
-	WMI_METHOD_ID_GETGPUTEMP=19,
-
-	// two state keyboard light
-	WMI_METHOD_ID_GETKEYBOARDLIGHT=37,
-	WMI_METHOD_ID_SETKEYBOARDLIGHT=36,
-
-	// toggle win key
-	// 0 = win key enabled; 1 = win key disabled
-	WMI_METHOD_ID_ISSUPPORTDISABLEWINKEY=21,
-	WMI_METHOD_ID_GETWINKEYSTATUS=23,
-	WMI_METHOD_ID_SETWINKEYSTATUS=22,
-
-
-	// toggle touchpad
-	//0 = touchpad enabled; 1 = touchpad disabled
-	WMI_METHOD_ID_ISSUPPORTDISABLETP=24,
-	WMI_METHOD_ID_GETTPSTATUS=26,
-	WMI_METHOD_ID_SETTPSTATUS=25,
-
-	// GSync
-	WMI_METHOD_ID_ISSUPPORTGSYNC=40,
-	WMI_METHOD_ID_GETGSYNCSTATUS=41,
-	WMI_METHOD_ID_SETGSYNCSTATUS=42,
-
-	//smartFanMode = powermode
-	WMI_METHOD_ID_ISSUPPORTSMARTFAN=49,
-	WMI_METHOD_ID_GETSMARTFANMODE=45,
-	WMI_METHOD_ID_SETSMARTFANMODE=44,
-
-	// power charge mode
-	WMI_METHOD_ID_GETPOWERCHARGEMODE=47,
-
-	// overdrive of display to reduce latency
-	// 0=off, 1=on
-	WMI_METHOD_ID_ISSUPPORTOD=49,
-	WMI_METHOD_ID_GETODSTATUS=50,
-	WMI_METHOD_ID_SETODSTATUS=51,
-
-	// thermal mode = power mode used for cooling
-	WMI_METHOD_ID_GETTHERMALMODE=55,
-
-	// get max frequency of core 0
-	WMI_METHOD_ID_GETCPUMAXFREQUENCY=60,
-
-	// check if AC adapter has enough power to overclock
-	WMI_METHOD_ID_ISACFITFOROC=62,
-
-	// set iGPU (GPU packaged with CPU) state
-	WMI_METHOD_ID_ISSUPPORTIGPUMODE=63,
-	WMI_METHOD_ID_GETIGPUMODESTATUS=64,
-	WMI_METHOD_ID_SETIGPUMODESTATUS=65,
-	WMI_METHOD_ID_NOTIFYDGPUSTATUS=66
+enum gamezone_events_type {
+	LEGION_WMI_GZ_GET_THERMAL_MODE = 1,
+	LEGION_WMI_GZ_GET_SUPPORTED_THERMAL_MODES
 };
 
-#define LENOVO_GAMEZONE_SMART_FAN_MODE_EVENT_GUID     "D320289E-8FEA-41E0-86F9-611D83151B5F"
-#define LENOVO_GAMEZONE_POWER_CHARGE_MODE_EVENT_GUID  "D320289E-8FEA-41E0-86F9-711D83151B5F"
+enum LEGION_GAMEZONE_METHOD_ID {
 
-enum legion_wmi_power_charge_mode {
-	LEGION_WMI_POWER_CHARGE_MODE_AC     = 1,
-	LEGION_WMI_POWER_CHARGE_MODE_BATERY = 2
+//  Other related
+	GetIRTemp 						= 1,
+
+//  N/A
+	GetThermalTableID 				= 2,
+	SetThermalTableID 				= 3,
+
+// N/A
+	IsSupportGpuOC 					= 4,
+	GetGpuGpsState 					= 5,
+	SetGpuGpsState					= 6,
+
+//	Fan related
+	GetFanCount						= 7,
+	GetFan1Speed					= 8,
+	GetFan2Speed        			= 9,
+	GetFanMaxSpeed					= 10,
+
+//  Other related
+	GetVersion						= 11,
+
+//  N/A
+	IsSupportFanCooling 			= 12,
+	SetFanCooling					= 13,
+
+//  Others GPU related features
+	IsSupportCpuOC					= 14,
+
+// N/A
+	IsBIOSSupportOC					= 15,
+	SetBIOSOC						= 16,
+
+//  Other related
+	GetTriggerTemperatureValue 		= 17,
+
+/// Others CPU related features
+	GetCPUTemp						= 18,
+
+//  Others GPU related features
+	GetGPUTemp						= 19,
+
+// Fan cooling capabilty
+	GetFanCoolingStatus				= 20,
+
+// EC disable/enable windows key capability
+	IsSupportDisableWinKey			= 21,
+	SetWinKeyStatus					= 22,
+	GetWinKeyStatus					= 23,
+
+// EC disable/enable touchpad capability
+	IsSupportDisableTP				= 24,
+	SetTPStatus						= 25,
+	GetTPStatus						= 26,
+
+//  Others GPU related features
+	GetGPUPow						= 27,
+	GetGPUOCPow						= 28,
+	GetGPUOCType					= 29,
+
+//  Other related
+	GetKeyboardfeaturelist			= 30,
+	GetMemoryOCInfo					= 31,
+
+// N/A
+	IsSupportWaterCooling			= 32,
+	SetWaterCoolingStatus			= 33,
+	GetWaterCoolingStatus			= 34,
+
+// N/A
+	IsSupportLightingFeature		= 35,
+	SetKeyboardLight				= 36,
+	GetKeyboardLight				= 37,
+
+//  Macrokey related
+	GetMacrokeyScancode				= 38,
+	GetMacrokeyCount				= 39,
+
+// G-Sync feature
+	IsSupportGSync					= 40,
+	GetGSyncStatus					= 41,
+	SetGSyncStatus					= 42,
+
+// Smart Fan feature
+	IsSupportSmartFan				= 43,
+	SetSmartFanMode					= 44,
+	GetSmartFanMode					= 45,
+
+// Other related
+	GetPowerChargeMode				= 47,
+	GetProductInfo					= 48,
+
+// Over Drive feature capability
+	IsSupportOD						= 49,
+	GetODStatus						= 50,
+	SetODStatus						= 51,
+
+//  Other related
+	SetLightControlOwner			= 52,
+	SetDDSControlOwner				= 53,
+
+// N/A
+	IsRestoreOCValue				= 54,
+
+// Other related
+	GetThermalMode					= 55,
+
+// BIOS has overclock capability
+	GetBIOSOCMode					= 56,
+
+//  Other related
+	SetIntelligentSubMode			= 57,
+	GetIntelligentSubMode			= 58,
+	GetHardwareInfoSupportVersion	= 59,
+
+/// Others CPU related features
+	GetCpuFrequency					= 60,
+
+//  Other related
+	GetLearningProfileCount			= 61,
+	IsACFitForOC					= 62,
+
+// IGPU mode
+	IsSupportIGPUMode				= 63,
+	GetIGPUModeStatus				= 64,
+	SetIGPUModeStatus				= 65,
+
+//  Others GPU related features
+	NotifyDGPUStatus				= 66,
+
+//  Other related
+	IsChangedYLog					= 67,
+
+//  Others GPU related features
+	GetDGPUHWId						= 68
 };
 
-enum legion_wmi_powermode {
-    LEGION_WMI_POWERMODE_QUIET          = 1,
-    LEGION_WMI_POWERMODE_BALANCED       = 2,
-    LEGION_WMI_POWERMODE_PERFORMANCE    = 3,
-    LEGION_WMI_POWERMODE_CUSTOM         = 255
+
+enum thermal_mode {
+	LEGION_WMI_GZ_THERMAL_MODE_END          = 	   0x00,
+	LEGION_WMI_GZ_THERMAL_MODE_QUIET 		=	   0x01,
+	LEGION_WMI_GZ_THERMAL_MODE_BALANCED 	=	   0x02,
+	LEGION_WMI_GZ_THERMAL_MODE_PERFORMANCE 	= 	   0x03,
+	LEGION_WMI_GZ_THERMAL_MODE_EXTREME 		=	   0xE0, /* Ver 6+ */
+	LEGION_WMI_GZ_THERMAL_MODE_CUSTOM 		=	   0xFF
+};
+
+#define THERMAL_MODES_SIZE 6
+
+enum power_adapter_status
+{
+	LEGION_WMI_GZ_AC_CONNECTED              = 0x00,
+	LEGION_WMI_GZ_AC_CONNECTED_LOW_WATTAGE  = 0x01,
+	LEGION_WMI_GZ_AC_DISCONNECTED           = 0x02
 };
 
 
-/*
- * Special function to set the power mode, waits for the mode to be set
- */
-int wmi_lenovo_gamezone_powermode_store(enum legion_wmi_powermode power_mode);
+struct game_zone_preloaded_method_values
+{
+	int IsSupportGpuOC;
+	int	IsSupportCpuOC;
+	int	IsSupportDisableWinKey;
+	int	IsSupportDisableTP;
+	int	IsSupportGSync;
+	int	IsSupportSmartFan;
+	int	IsSupportOD;
+	int	IsSupportIGPUMode;
 
 
-int wmi_lenovo_gamezone_set_value(u32 method_id,u32 value);
-int wmi_lenovo_gamezone_get_value(u32 method_id,u32 *value);
+	int GetFanCount;
+	int GetFanMaxSpeed;
+};
+
+struct lenovo_wmi_gz_priv {
+	spinlock_t gz_mode_lock; /* current_mode lock */
+
+	enum thermal_mode current_mode_on_ac;
+	enum thermal_mode current_mode_on_battery;
+
+	enum power_adapter_status current_adapter_status;
+	int  extreme_supported;
+
+	struct notifier_block event_nb;
+	struct notifier_block mode_nb;
+	struct notifier_block mode_fm_nb;
+
+	struct wmi_device *wdev;
+	struct device *ppdev;
+
+	//SysFs
+	struct device *fw_attr_dev;
+	struct kset   *fw_attr_kset;
+	int ida_id;
+
+	struct game_zone_preloaded_method_values preloaded_values; /* Cached value to avoid WMI calls in sysfs */
+};
+
+struct device;
+
+int legion_wmi_gz_get(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,u32 *value);
+int legion_wmi_gz_set(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,u32 value);
+int legion_wmi_gz_get_string(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,char *retval,size_t max_retval_size);
 
 
+int  legion_wmi_gamezone_driver_init(struct device *parent);
+void legion_wmi_gamezone_driver_exit(void);
 
-#endif // LINUX_WMI_GAMEZONE_H
+#endif /* LEGION_WMI_GAMEZONE_H_ */

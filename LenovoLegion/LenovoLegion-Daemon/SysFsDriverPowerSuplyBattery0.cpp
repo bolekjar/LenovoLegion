@@ -12,10 +12,12 @@
 namespace LenovoLegionDaemon {
 
 
-SysFsDriverPowerSuplyBattery0::SysFsDriverPowerSuplyBattery0(QObject* parrent) : SysFsDriver(DRIVER_NAME,"/sys/class/power_supply/BAT0/",{"power_supply"},parrent) {}
+SysFsDriverPowerSuplyBattery0::SysFsDriverPowerSuplyBattery0(QObject* parrent) : SysFsDriver(DRIVER_NAME,"/sys/class/power_supply/BAT0/",{"power_supply",{}},parrent) {}
 
 void SysFsDriverPowerSuplyBattery0::init()
 {
+    LOG_D(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(std::filesystem::path(m_path)))
@@ -34,7 +36,7 @@ void SysFsDriverPowerSuplyBattery0::init()
 
 void SysFsDriverPowerSuplyBattery0::handleKernelEvent(const KernelEvent::Event &event)
 {
-    LOG_D(QString("Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
+    LOG_D(__PRETTY_FUNCTION__ + QString(": Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
 
     if(m_blockKernelEvent)
     {
@@ -49,7 +51,8 @@ void SysFsDriverPowerSuplyBattery0::handleKernelEvent(const KernelEvent::Event &
             emit kernelEvent({
                 .m_driverName = DRIVER_NAME,
                 .m_action = SubsystemEvent::Action::CHANGED,
-                .m_DriverSpecificAction = "changed"
+                .m_DriverSpecificEventType = "changed",
+                .m_DriverSpecificEventValue = {}
             });
         }
         else
@@ -60,7 +63,8 @@ void SysFsDriverPowerSuplyBattery0::handleKernelEvent(const KernelEvent::Event &
             emit kernelEvent({
                 .m_driverName = DRIVER_NAME,
                 .m_action = SubsystemEvent::Action::RELOADED,
-                .m_DriverSpecificAction = "reloaded"
+                .m_DriverSpecificEventType = "reloaded",
+                .m_DriverSpecificEventValue = {}
             });
         }
     }

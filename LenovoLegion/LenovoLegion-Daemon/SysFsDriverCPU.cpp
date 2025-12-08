@@ -16,6 +16,8 @@ SysFsDriverCPU::SysFsDriverCPU(QObject * parrent) : SysFsDriver(DRIVER_NAME,"/sy
 
 void SysFsDriverCPU::init()
 {
+    LOG_D(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(m_path))

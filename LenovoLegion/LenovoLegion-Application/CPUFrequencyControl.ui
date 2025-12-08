@@ -24,8 +24,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1817</width>
-        <height>1047</height>
+        <width>1813</width>
+        <height>1007</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_42">
@@ -73,6 +73,9 @@
             <string>Min</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_35">
+            <property name="topMargin">
+             <number>30</number>
+            </property>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_25">
               <item>
@@ -103,6 +106,9 @@
             <string>Max</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_36">
+            <property name="topMargin">
+             <number>30</number>
+            </property>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_26">
               <item>

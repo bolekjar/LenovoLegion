@@ -16,6 +16,8 @@ SysFsDriverCPUCore::SysFsDriverCPUCore(QObject *parrent) : SysFsDriver(DRIVER_NA
 
 void SysFsDriverCPUCore::init()
 {
+    LOG_D(__PRETTY_FUNCTION__);
+
     clean();
 
     if(std::filesystem::exists(std::filesystem::path(m_path)))

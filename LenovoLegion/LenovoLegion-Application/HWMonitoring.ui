@@ -6,14 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1871</width>
-    <height>200</height>
+    <width>2231</width>
+    <height>336</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>200</height>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -25,11 +31,23 @@
      <property name="title">
       <string>HW Monitoring</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_23">
+     <layout class="QHBoxLayout" name="horizontalLayout_23" stretch="23,31,23,23">
+      <property name="topMargin">
+       <number>30</number>
+      </property>
+      <property name="bottomMargin">
+       <number>20</number>
+      </property>
       <item>
        <widget class="QGroupBox" name="groupBox_CPU">
         <property name="title">
          <string>CPU</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <property name="spacing">
@@ -42,13 +60,13 @@
           <number>0</number>
          </property>
          <property name="topMargin">
-          <number>0</number>
+          <number>30</number>
          </property>
          <property name="rightMargin">
           <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <item>
           <widget class="LenovoLegionGui::HWMonitor" name="widget_CPUTemp" native="true"/>
@@ -81,13 +99,13 @@
           <number>0</number>
          </property>
          <property name="topMargin">
-          <number>0</number>
+          <number>30</number>
          </property>
          <property name="rightMargin">
           <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -106,15 +124,21 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_10">
+       <widget class="QGroupBox" name="groupBox_GPU">
         <property name="maximumSize">
          <size>
-          <width>200</width>
+          <width>16777215</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="title">
          <string>GPU</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_19">
          <property name="spacing">
@@ -124,16 +148,19 @@
           <number>0</number>
          </property>
          <property name="topMargin">
-          <number>0</number>
+          <number>30</number>
          </property>
          <property name="rightMargin">
           <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <item>
           <widget class="LenovoLegionGui::HWMonitor" name="widget_GPUTemp" native="true"/>
+         </item>
+         <item>
+          <widget class="LenovoLegionGui::HWMonitor" name="widget_GPUClock" native="true"/>
          </item>
         </layout>
        </widget>
@@ -142,7 +169,7 @@
        <widget class="QGroupBox" name="groupBox_11">
         <property name="maximumSize">
          <size>
-          <width>300</width>
+          <width>16777215</width>
           <height>16777215</height>
          </size>
         </property>
@@ -157,13 +184,13 @@
           <number>0</number>
          </property>
          <property name="topMargin">
-          <number>0</number>
+          <number>30</number>
          </property>
          <property name="rightMargin">
           <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <item>
           <widget class="LenovoLegionGui::HWMonitor" name="widget_CPUFanSpeed" native="true"/>

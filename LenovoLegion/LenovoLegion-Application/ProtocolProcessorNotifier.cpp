@@ -11,6 +11,8 @@
 
 #include <Core/LoggerHolder.h>
 
+#include "../LenovoLegion-PrepareBuild/Notification.pb.h"
+
 #include <../LenovoLegion-Daemon/Application.h>
 
 namespace LenovoLegionGui {
@@ -32,39 +34,18 @@ void ProtocolProcessorNotifier::timerEvent(QTimerEvent *event)
     {
         if(m_socket->bytesAvailable() > 0)
         {
-            auto msg = receiveMessageDataReady();
+            QByteArray data;
+            auto msg = receiveMessageDataReady(data);
 
-            if(msg.m_type == LenovoLegionDaemon::Message::Type::NOTIFICATION &&  msg.m_dataType == LenovoLegionDaemon::Message::DataType::ENUMERATION)
+            if(msg.m_type == LenovoLegionDaemon::MessageHeader::Type::NOTIFICATION)
             {
-                if(msg.m_data.m_enumType == LenovoLegionDaemon::Message::EnumerationType::INF_LENOVO_DRIVER_ADDED)
-                {
-                    emit lenovoDriverAdded();
-                    return;
-                }
+                legion::messages::Notification msg;
 
-                if(msg.m_data.m_enumType == LenovoLegionDaemon::Message::EnumerationType::INF_LENOVO_DRIVER_REMOVED)
-                {
-                    emit lenovoDriverRemoved();
-                    return;
-                }
+                msg.ParseFromArray(data,data.size());
 
-                if(msg.m_data.m_enumType == LenovoLegionDaemon::Message::EnumerationType::INF_ACPI_PLATFORM_PROFILE_CHANGE)
-                {
-                    emit powerProfileChanged();
-                    return;
-                }
+                emit daemonNotification(msg);
 
-                if(msg.m_data.m_enumType == LenovoLegionDaemon::Message::EnumerationType::INF_POWER_SUPPLY_BATTERY0_CHANGE)
-                {
-                    emit batteryStatusChanged();
-                    return;
-                }
-
-                if(msg.m_data.m_enumType == LenovoLegionDaemon::Message::EnumerationType::INF_CPU_X_LIST_RELOADED)
-                {
-                    emit cpuXListReloaded();
-                    return;
-                }
+                return;
             }
 
             THROW_EXCEPTION(exception_T,ERROR_CODES::INVALID_MESSAGE,"Invalid message");

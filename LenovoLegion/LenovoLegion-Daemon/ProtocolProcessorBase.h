@@ -45,11 +45,12 @@ public:
 
 
     virtual void readyReadHandler() = 0;
+    virtual void disconnectedHandler();
 
 private slots:
 
-    void on_readyReadHandler();
-    void on_disconnectedHandler();
+    void readyReadHandlerSlot();
+    void disconnectedHandlerSlot();
 
 public:
 

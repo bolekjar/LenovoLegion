@@ -11,10 +11,12 @@
 
 namespace LenovoLegionDaemon {
 
-SysFsDriverCPUXList::SysFsDriverCPUXList(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/devices/system/cpu/",{"cpu"},parrent) {}
+SysFsDriverCPUXList::SysFsDriverCPUXList(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/devices/system/cpu/",{"cpu",{}},parrent) {}
 
 void SysFsDriverCPUXList::init()
 {
+    LOG_D(__PRETTY_FUNCTION__);
+
     clean();
 
     /*
@@ -82,7 +84,7 @@ void SysFsDriverCPUXList::init()
 
 void SysFsDriverCPUXList::handleKernelEvent(const KernelEvent::Event &event)
 {
-    LOG_D(QString("Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
+    LOG_D(__PRETTY_FUNCTION__ + QString(": Kernel event received ACTION=") + event.m_action + ", DRIVER=" + event.m_driver + ", SYSNAME=" + event.m_sysName + ", SUBSYSTEM=" + event.m_subSystem + ", DEVPATH=" + event.m_devPath);
 
     if(m_blockKernelEvent)
     {
@@ -98,7 +100,8 @@ void SysFsDriverCPUXList::handleKernelEvent(const KernelEvent::Event &event)
         emit kernelEvent({
             .m_driverName = DRIVER_NAME,
             .m_action = SubsystemEvent::Action::RELOADED,
-            .m_DriverSpecificAction = "reloaded"
+            .m_DriverSpecificEventType = "reloaded",
+            .m_DriverSpecificEventValue = {}
         });
     }
 }

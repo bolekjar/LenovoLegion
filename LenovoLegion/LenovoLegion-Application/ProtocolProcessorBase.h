@@ -44,13 +44,13 @@ protected:
     /*
      * Send message
      */
-    void sendMessage(const LenovoLegionDaemon::Message &message);
+    void sendMessage(const LenovoLegionDaemon::MessageHeader &message,const QByteArray& data);
 
     /*
      * Receive message
      */
-    LenovoLegionDaemon::Message receiveMessage(int timeout = 5000);
-    LenovoLegionDaemon::Message receiveMessageDataReady();
+    LenovoLegionDaemon::MessageHeader receiveMessage(QByteArray &data,int timeout = 5000);
+    LenovoLegionDaemon::MessageHeader receiveMessageDataReady(QByteArray &data);
 
 signals:
 
@@ -60,6 +60,9 @@ signals:
 protected:
 
     void timerEvent(QTimerEvent *) override;
+
+public:
+    void reconnect();
 
 private:
 
