@@ -16,7 +16,11 @@
 namespace  LenovoLegionGui {
 
 Settings::Settings(const QString &group):
-    m_settings(QString(bj::framework::Application::data_dir).append("/LenovoLegionGui.ini"),QSettings::IniFormat)
+    m_settings(QCoreApplication::applicationDirPath()
+                   .append(QDir::separator())
+                   .append(bj::framework::Application::data_dir)
+                   .append(QDir::separator())
+                   .append("/LenovoLegionGui.ini"), QSettings::IniFormat)
 {
     m_settings.setValue("LenovoLegion","LenovoLegionGui");
     m_settings.beginGroup(group);
