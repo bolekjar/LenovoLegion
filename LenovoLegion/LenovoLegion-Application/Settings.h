@@ -46,6 +46,10 @@ public:
 protected:
 
     QSettings m_settings;
+
+public:
+
+    static std::filesystem::path PATH_TO_CONFIG_FILE;
 };
 
 
