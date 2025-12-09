@@ -49,7 +49,7 @@ protected:
 
 public:
 
-    static std::filesystem::path PATH_TO_CONFIG_FILE;
+    static const QString CONFIG_NAME;
 };
 
 

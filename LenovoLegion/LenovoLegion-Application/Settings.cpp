@@ -16,7 +16,7 @@
 namespace  LenovoLegionGui {
 
 Settings::Settings(const QString &group):
-    m_settings(PATH_TO_CONFIG_FILE.string().c_str(), QSettings::IniFormat)
+    m_settings(std::filesystem::path(QCoreApplication::applicationDirPath().toStdString()).append(bj::framework::Application::data_dir).append(CONFIG_NAME.toStdString()).string().c_str(), QSettings::IniFormat)
 {
     m_settings.setValue("LenovoLegion","LenovoLegionGui");
     m_settings.beginGroup(group);
@@ -27,9 +27,7 @@ Settings::~Settings()
     m_settings.endGroup();
 }
 
-std::filesystem::path Settings::PATH_TO_CONFIG_FILE = std::filesystem::path(QCoreApplication::applicationDirPath().toStdString())
-    .append(bj::framework::Application::data_dir)
-    .append("LenovoLegionGui.ini");
+const QString Settings::CONFIG_NAME = "LenovoLegionGui.ini";
 
 
 ApplicationSettings::ApplicationSettings(QObject* parent)
@@ -489,7 +487,7 @@ void ProfileSettings::loadOther(legion::messages::OtherSettings& msg)
 // ProfileManager implementation
 QStringList ProfileManager::listProfiles()
 {
-    QSettings settings(Settings::PATH_TO_CONFIG_FILE.string().c_str(), QSettings::IniFormat);
+    QSettings settings(std::filesystem::path(QCoreApplication::applicationDirPath().toStdString()).append(bj::framework::Application::data_dir).append(Settings::CONFIG_NAME.toStdString()).string().c_str(), QSettings::IniFormat);
     QStringList groups = settings.childGroups();
     QStringList profiles;
     
@@ -509,7 +507,7 @@ bool ProfileManager::profileExists(const QString& profileName)
 
 bool ProfileManager::deleteProfile(const QString& profileName)
 {
-    QSettings settings(Settings::PATH_TO_CONFIG_FILE.string().c_str(), QSettings::IniFormat);
+    QSettings settings(std::filesystem::path(QCoreApplication::applicationDirPath().toStdString()).append(bj::framework::Application::data_dir).append(Settings::CONFIG_NAME.toStdString()).string().c_str(), QSettings::IniFormat);
     QString groupName = QString("Profile_").append(profileName);
     
     settings.beginGroup(groupName);
