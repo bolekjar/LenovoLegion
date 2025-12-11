@@ -176,7 +176,7 @@ void Application::applyDebugLogging(bool enable)
     }
 }
 
-void Application::onSettingChanged(ApplicationSettings::SettingType setting, bool value)
+void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::SettingType setting, bool value)
 {
     using SettingType = ApplicationSettings::SettingType;
     

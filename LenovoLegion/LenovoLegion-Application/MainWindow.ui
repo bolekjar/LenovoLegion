@@ -559,7 +559,222 @@ QRadioButton::indicator:checked {
                     fx:0.5, fy:0.5, stop:0 rgb(58, 59, 58),
                     stop:1 rgba(180, 180, 180, 180));
 				border: 2px solid #656565;
- }</string>
+ }
+
+/*-----QLineEdit-----*/
+QLineEdit {
+    background-color: #656565;
+    border: 2px solid #888888;
+    border-radius: 10px;
+    padding: 6px 10px;
+    color: #ffffff;
+    selection-background-color: #b0b0b0;
+    selection-color: #000000;
+    font-size: 12px;
+}
+
+QLineEdit:hover {
+    border: 2px solid #b0b0b0;
+    background-color: #707070;
+}
+
+QLineEdit:focus {
+    border: 2px solid #cbccd4;
+    background-color: #707070;
+    outline: none;
+}
+
+QLineEdit:disabled {
+    background-color: #404040;
+    border: 2px solid #555555;
+    color: #888888;
+}
+
+QLineEdit[readOnly=&quot;true&quot;] {
+    background-color: #585858;
+    border: 2px solid #707070;
+    color: #b0b0b0;
+}
+
+/*-----QSpinBox-----*/
+QSpinBox {
+    background-color: #656565;
+    border: 2px solid #888888;
+    border-radius: 10px;
+    padding: 6px;
+    color: #ffffff;
+    selection-background-color: #b0b0b0;
+    selection-color: #000000;
+    font-size: 12px;
+}
+
+QSpinBox:hover {
+    border: 2px solid #b0b0b0;
+    background-color: #707070;
+}
+
+QSpinBox:focus {
+    border: 2px solid #cbccd4;
+    background-color: #707070;
+}
+
+QSpinBox:disabled {
+    background-color: #404040;
+    border: 2px solid #555555;
+    color: #888888;
+}
+
+QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left: 2px solid #888888;
+    border-top-right-radius: 8px;
+    background-color: #b0b0b0;
+}
+
+QSpinBox::up-button:hover {
+    background-color: #cbccd4;
+}
+
+QSpinBox::up-button:pressed {
+    background-color: #787878;
+}
+
+QSpinBox::up-button:disabled {
+    background-color: #555555;
+}
+
+QSpinBox::up-arrow {
+    image: url(:/images/icons/Icons-dropup-arrow-16.png);
+    width: 10px;
+    height: 10px;
+}
+
+QSpinBox::up-arrow:disabled {
+    image: none;
+}
+
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    border-left: 2px solid #888888;
+    border-bottom-right-radius: 8px;
+    background-color: #b0b0b0;
+}
+
+QSpinBox::down-button:hover {
+    background-color: #cbccd4;
+}
+
+QSpinBox::down-button:pressed {
+    background-color: #787878;
+}
+
+QSpinBox::down-button:disabled {
+    background-color: #555555;
+}
+
+QSpinBox::down-arrow {
+    image: url(:/images/icons/Icons-dropdown-arrow-16.png);
+    width: 10px;
+    height: 10px;
+}
+
+QSpinBox::down-arrow:disabled {
+    image: none;
+}
+
+/*-----QDoubleSpinBox-----*/
+QDoubleSpinBox {
+    background-color: #656565;
+    border: 2px solid #888888;
+    border-radius: 10px;
+    padding: 6px;
+    color: #ffffff;
+    selection-background-color: #b0b0b0;
+    selection-color: #000000;
+    font-size: 12px;
+}
+
+QDoubleSpinBox:hover {
+    border: 2px solid #b0b0b0;
+    background-color: #707070;
+}
+
+QDoubleSpinBox:focus {
+    border: 2px solid #cbccd4;
+    background-color: #707070;
+}
+
+QDoubleSpinBox:disabled {
+    background-color: #404040;
+    border: 2px solid #555555;
+    color: #888888;
+}
+
+QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left: 2px solid #888888;
+    border-top-right-radius: 8px;
+    background-color: #b0b0b0;
+}
+
+QDoubleSpinBox::up-button:hover {
+    background-color: #cbccd4;
+}
+
+QDoubleSpinBox::up-button:pressed {
+    background-color: #787878;
+}
+
+QDoubleSpinBox::up-button:disabled {
+    background-color: #555555;
+}
+
+QDoubleSpinBox::up-arrow {
+    image: url(:/images/icons/Icons-dropup-arrow-16.png);
+    width: 10px;
+    height: 10px;
+}
+
+QDoubleSpinBox::up-arrow:disabled {
+    image: none;
+}
+
+QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    border-left: 2px solid #888888;
+    border-bottom-right-radius: 8px;
+    background-color: #b0b0b0;
+}
+
+QDoubleSpinBox::down-button:hover {
+    background-color: #cbccd4;
+}
+
+QDoubleSpinBox::down-button:pressed {
+    background-color: #787878;
+}
+
+QDoubleSpinBox::down-button:disabled {
+    background-color: #555555;
+}
+
+QDoubleSpinBox::down-arrow {
+    image: url(:/images/icons/Icons-dropdown-arrow-16.png);
+    width: 10px;
+    height: 10px;
+}
+
+QDoubleSpinBox::down-arrow:disabled {
+    image: none;
+}</string>
   </property>
   <property name="iconSize">
    <size>

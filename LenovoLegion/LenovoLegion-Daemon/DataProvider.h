@@ -30,6 +30,11 @@ public:
 public:
 
     DataProvider(QObject* parent,quint8  dataType);
+    DataProvider(const DataProvider&) = delete;
+    DataProvider(const DataProvider&&) = delete;
+    DataProvider& operator=(const DataProvider&) = delete;
+    DataProvider& operator=(const DataProvider&&) = delete;
+
 
     virtual ~DataProvider() = default;
 

@@ -4,7 +4,7 @@ TARGET = $${APPLICATION_NAME}
 QT       += core gui widgets network charts
 
 CONFIG += c++20 link_pkgconfig
-PKGCONFIG += protobuf
+PKGCONFIG += protobuf hidapi-hidraw
 
 DESTDIR = $${DESTINATION_BIN_PATH}
 
@@ -30,6 +30,7 @@ SOURCES +=               \
         ProtocolProcessor.cpp \
         ProtocolProcessorBase.cpp \
         ProtocolProcessorNotifier.cpp \
+        RGBController.cpp \
         Settings.cpp \
         TaskList.cpp \
         ThreadControl.cpp \
@@ -38,10 +39,17 @@ SOURCES +=               \
         ToolBarHomeWidget.cpp \
         ToolBarHelpWidget.cpp \
         ToolBarInformationWidget.cpp \
+        ToolBarKeyboardWidget.cpp \
         ToolBarProfilesWidget.cpp \
         ToolBarSettingsWidget.cpp \
         ToolBarWidget.cpp \
         Utils.cpp \
+        OpenRGBDevicePage.cpp \
+        OpenRGBZoneResizeDialog.cpp \
+        QTooltipedSlider.cpp \
+        ColorWheel.cpp \
+        DeviceView.cpp \
+        Swatches.cpp \
         main.cpp
 
 HEADERS +=          \
@@ -66,6 +74,7 @@ HEADERS +=          \
         ProtocolProcessor.h \
         ProtocolProcessorBase.h \
         ProtocolProcessorNotifier.h \
+        RGBController.h \
         Settings.h \
         TaskList.h \
         ThreadControl.h \
@@ -74,11 +83,18 @@ HEADERS +=          \
         ToolBarHomeWidget.h \
         ToolBarHelpWidget.h \
         ToolBarInformationWidget.h \
+        ToolBarKeyboardWidget.h \
         ToolBarProfilesWidget.h \
         ToolBarSettingsWidget.h \
         ToolBarWidget.h \
         Utils.h \
-        WidgetMessage.h
+        OpenRGBDevicePage.h \
+        OpenRGBZoneResizeDialog.h \
+        QTooltipedSlider.h \
+        ColorWheel.h \
+        DeviceView.h \
+        WidgetMessage.h \
+        Swatches.h
 
 HEADERS += \
         ../LenovoLegion-Daemon/ProtocolParser.h \
@@ -97,7 +113,8 @@ HEADERS += \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.h \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.h \
         ../LenovoLegion-PrepareBuild/DaemonSettings.pb.h \
-        ../LenovoLegion-PrepareBuild/Other.pb.h
+        ../LenovoLegion-PrepareBuild/Other.pb.h \
+        ../LenovoLegion-PrepareBuild/RGBController.pb.h
 
 SOURCES += \
         ../LenovoLegion-Daemon/ProtocolParser.cpp \
@@ -116,7 +133,8 @@ SOURCES += \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.cc \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.cc \
         ../LenovoLegion-PrepareBuild/DaemonSettings.pb.cc \
-        ../LenovoLegion-PrepareBuild/Other.pb.cc
+        ../LenovoLegion-PrepareBuild/Other.pb.cc \
+        ../LenovoLegion-PrepareBuild/RGBController.pb.cc
 
 FORMS +=           \
     AboutWindow.ui \
@@ -140,8 +158,11 @@ FORMS +=           \
     ToolBarHomeWidget.ui \
     ToolBarHelpWidget.ui \
     ToolBarInformationWidget.ui \
+    ToolBarKeyboardWidget.ui \
     ToolBarProfilesWidget.ui \
-    ToolBarSettingsWidget.ui
+    ToolBarSettingsWidget.ui \
+    OpenRGBDevicePage.ui \
+    OpenRGBZoneResizeDialog.ui
 
 INCLUDEPATH += $${CUDA_PATH}/include
 LIBS += -l$${PROJECT_LIBS_NAME}

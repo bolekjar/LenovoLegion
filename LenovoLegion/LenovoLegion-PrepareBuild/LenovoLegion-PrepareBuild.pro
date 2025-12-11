@@ -27,7 +27,8 @@ DISTFILES += \
     NvidiaNvml.proto \
     Other.proto \
     PowerProfile.proto \
-    DaemonSettings.proto
+    DaemonSettings.proto \
+    RGBController.proto
 
 for (PFILE, DISTFILES) {
     system($${SYSTEM_PROTOC} -I=$${PROJECT_ROOT_PATH}/LenovoLegion-PrepareBuild/ --cpp_out=$${PROJECT_ROOT_PATH}/LenovoLegion-PrepareBuild $${PROJECT_ROOT_PATH}/LenovoLegion-PrepareBuild/$${PFILE})

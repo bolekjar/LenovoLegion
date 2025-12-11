@@ -16,6 +16,8 @@
 #include "ToolBarInformationWidget.h"
 #include "ToolBarProfilesWidget.h"
 #include "ToolBarSettingsWidget.h"
+#include "ToolBarKeyboardWidget.h"
+
 #include "DataProviderManager.h"
 
 
@@ -89,6 +91,12 @@ MainWindow::MainWindow(QWidget *parent) :
         if(ui->label_DaemonStatus->text() != DAEMON_CONNECTION_STATUS_CONNECTED.data())
             return;
         ui->toolBar_HBoxLayout->addWidget((new ToolBarProfilesWidget(m_dataProviderManager->dataProvider(),this))->initialize());
+    });
+
+    toolbarActionInitializer(ui->toolBar->addAction("Keyboard"),QIcon(":/images/icons/keyboard.png"),[this](){
+        if(ui->label_DaemonStatus->text() != DAEMON_CONNECTION_STATUS_CONNECTED.data())
+            return;
+        ui->toolBar_HBoxLayout->addWidget((new ToolBarKeyboardWidget(m_dataProviderManager->dataProvider(),this))->initialize());
     });
 
 

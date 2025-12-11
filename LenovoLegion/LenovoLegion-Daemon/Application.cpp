@@ -59,6 +59,7 @@
 
 #include "DataProviderNvidiaNvml.h"
 #include "DataProviderDaemonSettings.h"
+#include "DataProviderRGBController.h"
 
 #include "Computer.h"
 #include "DaemonSettingsManager.h"
@@ -136,6 +137,7 @@ Application::Application(int &argc, char *argv[]) :
 
     m_dataProviderManager->addDataProvider(new DataProviderNvidiaNvml(m_dataProviderManager));
     m_dataProviderManager->addDataProvider(new DataProviderDaemonSettings(m_dataProviderManager));
+    m_dataProviderManager->addDataProvider(new DataProviderRGBController(m_dataProviderManager));
 }
 
 void Application::appRollBackImpl() noexcept

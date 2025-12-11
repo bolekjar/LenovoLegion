@@ -51,7 +51,7 @@ private slots:
 
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void onExitActionTriggered();
-    void onSettingChanged(ApplicationSettings::SettingType setting, bool value);
+    void onSettingChanged(LenovoLegionGui::ApplicationSettings::SettingType setting, bool value);
 
 private:
 

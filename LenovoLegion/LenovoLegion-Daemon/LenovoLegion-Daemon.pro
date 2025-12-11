@@ -5,7 +5,7 @@ QT       += core network
 
 CONFIG += c++20 cmdline link_pkgconfig
 
-PKGCONFIG += protobuf
+PKGCONFIG += protobuf hidapi-hidraw
 
 DESTDIR = $${DESTINATION_BIN_PATH}
 
@@ -17,10 +17,13 @@ SOURCES +=  \
         DataProviderDaemonSettings.cpp \
         DataProviderManager.cpp \
         DataProviderNvidiaNvml.cpp \
+        DataProviderRGBController.cpp \
         ProtocolParser.cpp \
         ProtocolProcessor.cpp \
         ProtocolProcessorBase.cpp \
         ProtocolProcessorNotifier.cpp \
+        RGBControllerInterface.cpp \
+        RGBController.cpp \
         SysFSDriverHWMon.cpp \
         SysFSDriverLegionFanMode.cpp \
         SysFSDriverLegionGameZone.cpp \
@@ -59,6 +62,7 @@ SOURCES +=  \
         SysFsDriverManager.cpp \
         SysFsDriverPowerSuplyBattery0.cpp \
         Settings.cpp \
+        StringUtils.cpp \
         main.cpp
 
 HEADERS += \
@@ -69,6 +73,7 @@ HEADERS += \
     DataProviderDaemonSettings.h \
     DataProviderManager.h \
     DataProviderNvidiaNvml.h \
+    DataProviderRGBController.h \
     Message.h \
     ProtocolParser.h \
     ProtocolProcessor.h \
@@ -112,7 +117,30 @@ HEADERS += \
     SysFsDriverLegionMachineInformation.h \
     SysFsDriverLegionOther.h \
     SysFsDriverManager.h \
-    SysFsDriverPowerSuplyBattery0.h
+    SysFsDriverPowerSuplyBattery0.h \
+    RGBControllerInterface.h \
+    RGBController.h \
+    RGBControllerKeyNames.h \
+    StringUtils.h \
+    RGBControllerDetector.h \
+    RGBControllerDeviceDetector.h \
+    HidApiWrapper.h
+
+
+HEADERS += \
+        RGBControlers/LenovoDevices.h            \
+        RGBControlers/LenovoUSBController.h      \
+        RGBControlers/RGBController_LenovoUSB.h  \
+        RGBControlers/LenovoGen9USBController.h  \
+        RGBControlers/RGBController_LenovoGen9.h
+
+SOURCES += \
+        RGBControlers/LenovoUSBController.cpp      \
+        RGBControlers/RGBController_LenovoUSB.cpp  \
+        RGBControlers/LenovoGen9USBController.cpp  \
+        RGBControlers/RGBController_LenovoGen9.cpp \
+        RGBControlers/LenovoUSBControllerDetect.cpp
+
 
 HEADERS += \
         ../LenovoLegion-PrepareBuild/HWMonitoring.pb.h \
@@ -130,7 +158,8 @@ HEADERS += \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.h   \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.h \
         ../LenovoLegion-PrepareBuild/DaemonSettings.pb.h \
-        ../LenovoLegion-PrepareBuild/Other.pb.h
+        ../LenovoLegion-PrepareBuild/Other.pb.h \
+        ../LenovoLegion-PrepareBuild/RGBController.pb.h
 
 SOURCES += \
         ../LenovoLegion-PrepareBuild/HWMonitoring.pb.cc \
@@ -148,7 +177,9 @@ SOURCES += \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.cc   \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.cc \
         ../LenovoLegion-PrepareBuild/DaemonSettings.pb.cc \
-        ../LenovoLegion-PrepareBuild/Other.pb.cc
+        ../LenovoLegion-PrepareBuild/Other.pb.cc \
+        ../LenovoLegion-PrepareBuild/RGBController.pb.cc
+
 
 INCLUDEPATH += $${CUDA_PATH}/include
 LIBS += -L$${CUDA_PATH}/lib64 -l$${PROJECT_LIBS_NAME} -ludev -lnvidia-ml

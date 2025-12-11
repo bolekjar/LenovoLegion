@@ -2,6 +2,7 @@
     <qresource prefix="/images/icons">
         <file>LenovoLegionIco.png</file>
         <file>Icons-dropdown-arrow-16.png</file>
+        <file>Icons-dropup-arrow-16.png</file>
         <file>toolbar-home.png</file>
         <file>toolbar-settings.png</file>
         <file>toolbar-door.png</file>
@@ -12,5 +13,6 @@
         <file>info.png</file>
         <file>warning.png</file>
         <file>cross.png</file>
+        <file>keyboard.png</file>
     </qresource>
 </RCC>
