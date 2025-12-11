@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+
 namespace LenovoLegionDaemon {
 
 /*------------------------------------------------------------------*\
@@ -17,11 +18,13 @@ namespace LenovoLegionDaemon {
 \*------------------------------------------------------------------*/
 typedef unsigned int RGBColor;
 
+
 #define RGBGetRValue(rgb)   (rgb & 0x000000FF)
 #define RGBGetGValue(rgb)   ((rgb >> 8) & 0x000000FF)
 #define RGBGetBValue(rgb)   ((rgb >> 16) & 0x000000FF)
 
-#define ToRGBColor(r, g, b) ((RGBColor)((b << 16) | (g << 8) | (r)))
+#define ToRGBColor(r, g, b) ((LenovoLegionDaemon::RGBColor)((b << 16) | (g << 8) | (r)))
+
 
 /*------------------------------------------------------------------*\
 | Mode Flags                                                         |

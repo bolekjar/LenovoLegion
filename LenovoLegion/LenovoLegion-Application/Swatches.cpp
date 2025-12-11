@@ -21,10 +21,11 @@ namespace LenovoLegionGui {
 
 Swatches::Swatches(QWidget *parent) :
     QWidget(parent),
-    initSize(width_inc_margin * minColumns, height_inc_margin * minRows)
+    width_inc_margin(parent->size().width() + (margin * 2)),
+    initSize(width_inc_margin, height_inc_margin * minRows)
 {
     setBaseSize(initSize);
-    setSizeIncrement(width_inc_margin, height_inc_margin);
+    setSizeIncrement(width_inc_margin / 8, height_inc_margin);
     add_swatch.color.setRgb( 0, 0, 0, 0); //transparent
 
     /*-----------------------------------------------------*\

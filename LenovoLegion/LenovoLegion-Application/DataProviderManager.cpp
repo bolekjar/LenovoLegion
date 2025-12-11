@@ -16,7 +16,6 @@
 
 #include <Core/LoggerHolder.h>
 
-using namespace LenovoLegionDaemon;
 
 namespace  LenovoLegionGui {
 

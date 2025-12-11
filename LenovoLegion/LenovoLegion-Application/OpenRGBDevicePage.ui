@@ -375,6 +375,9 @@ QWidget {
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="layoutDirection">
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">/* Basic */
 QWidget {

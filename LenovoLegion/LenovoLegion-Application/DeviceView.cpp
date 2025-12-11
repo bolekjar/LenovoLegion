@@ -21,9 +21,6 @@
 #define PAD_SEGMENT 0.9f
 #define SIZE_TEXT   0.5f
 
-using namespace LenovoLegionDaemon;
-
-
 namespace LenovoLegionGui {
 
 
@@ -54,183 +51,183 @@ struct led_label
 
 static const std::map<std::string, led_label> led_label_lookup =
     {
-        { KEY_EN_A,                 { "A"     , "A",                }},
-        { KEY_EN_B,                 { "B"     , "B",                }},
-        { KEY_EN_C,                 { "C"     , "C",                }},
-        { KEY_EN_D,                 { "D"     , "D",                }},
-        { KEY_EN_E,                 { "E"     , "E",                }},
-        { KEY_EN_F,                 { "F"     , "F",                }},
-        { KEY_EN_G,                 { "G"     , "G",                }},
-        { KEY_EN_H,                 { "H"     , "H",                }},
-        { KEY_EN_I,                 { "I"     , "I",                }},
-        { KEY_EN_J,                 { "J"     , "J",                }},
-        { KEY_EN_K,                 { "K"     , "K",                }},
-        { KEY_EN_L,                 { "L"     , "L",                }},
-        { KEY_EN_M,                 { "M"     , "M",                }},
-        { KEY_EN_N,                 { "N"     , "N",                }},
-        { KEY_EN_O,                 { "O"     , "O",                }},
-        { KEY_EN_P,                 { "P"     , "P",                }},
-        { KEY_EN_Q,                 { "Q"     , "Q",                }},
-        { KEY_EN_R,                 { "R"     , "R",                }},
-        { KEY_EN_S,                 { "S"     , "S",                }},
-        { KEY_EN_T,                 { "T"     , "T",                }},
-        { KEY_EN_U,                 { "U"     , "U",                }},
-        { KEY_EN_V,                 { "V"     , "V",                }},
-        { KEY_EN_W,                 { "W"     , "W",                }},
-        { KEY_EN_X,                 { "X"     , "X",                }},
-        { KEY_EN_Y,                 { "Y"     , "Y",                }},
-        { KEY_EN_Z,                 { "Z"     , "Z",                }},
-        { KEY_EN_0,                 { "0"     , "0",                }},
-        { KEY_EN_1,                 { "1"     , "1",                }},
-        { KEY_EN_2,                 { "2"     , "2",                }},
-        { KEY_EN_3,                 { "3"     , "3",                }},
-        { KEY_EN_4,                 { "4"     , "4",                }},
-        { KEY_EN_5,                 { "5"     , "5",                }},
-        { KEY_EN_6,                 { "6"     , "6",                }},
-        { KEY_EN_7,                 { "7"     , "7",                }},
-        { KEY_EN_8,                 { "8"     , "8",                }},
-        { KEY_EN_9,                 { "9"     , "9",                }},
-        { KEY_EN_F1,                { "F1"    , "F1",               }},
-        { KEY_EN_F2,                { "F2"    , "F2",               }},
-        { KEY_EN_F3,                { "F3"    , "F3",               }},
-        { KEY_EN_F4,                { "F4"    , "F4",               }},
-        { KEY_EN_F5,                { "F5"    , "F5",               }},
-        { KEY_EN_F6,                { "F6"    , "F6",               }},
-        { KEY_EN_F7,                { "F7"    , "F7",               }},
-        { KEY_EN_F8,                { "F8"    , "F8",               }},
-        { KEY_EN_F9,                { "F9"    , "F9",               }},
-        { KEY_EN_F10,               { "F10"   , "F10",              }},
-        { KEY_EN_F11,               { "F11"   , "F11",              }},
-        { KEY_EN_F12,               { "F12"   , "F12",              }},
-        { KEY_EN_BACK_TICK,         { "`"     , "`",                }},
-        { KEY_EN_MINUS,             { "-"     , "-",                }},
-        { KEY_EN_PLUS,              { "+"     , "+",                }},
-        { KEY_EN_EQUALS,            { "="     , "=",                }},
-        { KEY_EN_LEFT_BRACKET,      { "["     , "[",                }},
-        { KEY_EN_RIGHT_BRACKET,     { "]"     , "]",                }},
-        { KEY_EN_BACK_SLASH,        { "\\"    , "\\",               }},
-        { KEY_EN_ANSI_BACK_SLASH,   { "\\"    , "\\",               }},
-        { KEY_EN_ISO_BACK_SLASH,    { "\\"    , "\\",               }},
-        { KEY_EN_SEMICOLON,         { ";"     , ";",                }},
-        { KEY_EN_QUOTE,             { "'"     , "'",                }},
-        { KEY_EN_POUND,             { "#"     , "#",                }},
-        { KEY_EN_COMMA,             { ","     , ",",                }},
-        { KEY_EN_PERIOD,            { "."     , ".",                }},
-        { KEY_EN_FORWARD_SLASH,     { "/"     , "/",                }},
-        { KEY_EN_ESCAPE,            { "Esc"   , "Esc",              }},
-        { KEY_EN_PRINT_SCREEN,      { "Prt"   , "Prt",              }},
-        { KEY_EN_SCROLL_LOCK,       { "Scr"   , "Scr",              }},
-        { KEY_EN_PAUSE_BREAK,       { "Brk"   , "Brk",              }},
-        { KEY_EN_BACKSPACE,         { "Bks"   , "\xE2\x8C\xAB"      }}, // ⌫
-        { KEY_EN_INSERT,            { "Ins"   , "Ins",              }},
-        { KEY_EN_HOME,              { "Hom"   , "Hom",              }},
-        { KEY_EN_PAGE_UP,           { "PUp"   , "PUp",              }},
-        { KEY_EN_TAB,               { "Tab"   , "\xE2\x86\xb9"      }}, // ⭾ ↹ ⇄ ⇥
-        { KEY_EN_DELETE,            { "Del"   , "Del",              }},
-        { KEY_EN_END,               { "End"   , "End",              }},
-        { KEY_EN_PAGE_DOWN,         { "PDn"   , "PDn",              }},
-        { KEY_EN_CAPS_LOCK,         { "Cap"   , "Cap",              }},
-        { KEY_EN_ANSI_ENTER,        { "Ent"   , "\xE2\x86\xB5"      }}, // ↵ ⏎
-        { KEY_EN_ISO_ENTER,         { "Ent"   , "\xE2\x86\xB5"      }}, // ↵ ⏎
-        { KEY_EN_LEFT_SHIFT,        { "Sft"   , "\xE2\x87\xA7"      }}, // ⇧
-        { KEY_EN_RIGHT_SHIFT,       { "Sft"   , "\xE2\x87\xA7"      }}, // ⇧
-        { KEY_EN_UP_ARROW,          { "Up"    , "\xF0\x9F\xA1\xB9"  }}, // ↑ 🡹
-        { KEY_EN_LEFT_CONTROL,      { "Ctl"   , "Ctl",              }},
-        { KEY_EN_LEFT_WINDOWS,      { "Win"   , "\xe2\x9d\x96"      }}, // ❖
-        { KEY_EN_LEFT_FUNCTION,     { "Fn"    , "Fn",               }},
-        { KEY_EN_LEFT_ALT,          { "Alt"   , "Alt",              }},
-        { KEY_EN_SPACE,             { "Spc"   , "Spc",              }},
-        { KEY_EN_RIGHT_ALT,         { "Alt"   , "Alt",              }},
-        { KEY_EN_RIGHT_FUNCTION,    { "Fn"    , "Fn",               }},
-        { KEY_EN_RIGHT_WINDOWS,     { "Win"   , "\xe2\x9d\x96"      }}, // ❖
-        { KEY_EN_MENU,              { "Mnu"   , "\xE2\x98\xB0"      }}, // ▤ ☰ 𝌆 🗏
-        { KEY_EN_RIGHT_CONTROL,     { "Ctl"   , "Ctl",              }},
-        { KEY_EN_LEFT_ARROW,        { "Lft"   , "\xF0\x9F\xA1\xB8"  }}, // ↑ 🡹
-        { KEY_EN_DOWN_ARROW,        { "Dn"    , "\xF0\x9F\xA1\xBB"  }}, // ↑ 🡹
-        { KEY_EN_RIGHT_ARROW,       { "Rgt"   , "\xF0\x9F\xA1\xBA"  }}, // ↑ 🡹
-        { KEY_EN_NUMPAD_LOCK,       { "Num"   , "Num",              }},
-        { KEY_EN_NUMPAD_DIVIDE,     { "/"     , "/",                }},
-        { KEY_EN_NUMPAD_TIMES,      { "*"     , "*",                }},
-        { KEY_EN_NUMPAD_MINUS,      { "-"     , "-",                }},
-        { KEY_EN_NUMPAD_PLUS,       { "+"     , "+",                }},
-        { KEY_EN_NUMPAD_PERIOD,     { "."     , ".",                }},
-        { KEY_EN_NUMPAD_ENTER,      { "Ent"   , "\xE2\x86\xB5"      }}, // ↵ ⏎
-        { KEY_EN_NUMPAD_0,          { "0"     , "0",                }},
-        { KEY_EN_NUMPAD_1,          { "1"     , "1",                }},
-        { KEY_EN_NUMPAD_2,          { "2"     , "2",                }},
-        { KEY_EN_NUMPAD_3,          { "3"     , "3",                }},
-        { KEY_EN_NUMPAD_4,          { "4"     , "4",                }},
-        { KEY_EN_NUMPAD_5,          { "5"     , "5",                }},
-        { KEY_EN_NUMPAD_6,          { "6"     , "6",                }},
-        { KEY_EN_NUMPAD_7,          { "7"     , "7",                }},
-        { KEY_EN_NUMPAD_8,          { "8"     , "8",                }},
-        { KEY_EN_NUMPAD_9,          { "9"     , "9",                }},
-        { KEY_EN_MEDIA_PLAY_PAUSE,  { "Ply"   , "\xE2\x8F\xAF",     }}, // ⏯
-        { KEY_EN_MEDIA_PREVIOUS,    { "Prv"   , "\xE2\x8F\xAE",     }}, // ⏮
-        { KEY_EN_MEDIA_NEXT,        { "Nxt"   , "\xE2\x8F\xAD",     }}, // ⏭
-        { KEY_EN_MEDIA_STOP,        { "Stp"   , "\xE2\x8F\xB9",     }}, // ⏹
-        { KEY_EN_MEDIA_MUTE,        { "Mte"   , "\xF0\x9F\x94\x87", }}, // 🔇
-        { KEY_EN_MEDIA_VOLUME_DOWN, { "Vl-"   , "\xF0\x9F\x94\x88", }}, // 🔉
-        { KEY_EN_MEDIA_VOLUME_UP,   { "Vl+"   , "\xF0\x9F\x94\x89", }}, // 🔊
-        { KEY_EN_POWER,             { "Pwr"   , "\xE2\x8F\xBB",     }}, // ⏻
-        { KEY_JP_RO,                { "_"     , "_",                }},
-        { KEY_JP_EJ,                { "E/J"   , "E/J",              }},
-        { KEY_JP_ZENKAKU,           { "Zen"   , "\xE5\x8D\x8A\xE8"
+        { LenovoLegionDaemon::KEY_EN_A,                 { "A"     , "A",                }},
+        { LenovoLegionDaemon::KEY_EN_B,                 { "B"     , "B",                }},
+        { LenovoLegionDaemon::KEY_EN_C,                 { "C"     , "C",                }},
+        { LenovoLegionDaemon::KEY_EN_D,                 { "D"     , "D",                }},
+        { LenovoLegionDaemon::KEY_EN_E,                 { "E"     , "E",                }},
+        { LenovoLegionDaemon::KEY_EN_F,                 { "F"     , "F",                }},
+        { LenovoLegionDaemon::KEY_EN_G,                 { "G"     , "G",                }},
+        { LenovoLegionDaemon::KEY_EN_H,                 { "H"     , "H",                }},
+        { LenovoLegionDaemon::KEY_EN_I,                 { "I"     , "I",                }},
+        { LenovoLegionDaemon::KEY_EN_J,                 { "J"     , "J",                }},
+        { LenovoLegionDaemon::KEY_EN_K,                 { "K"     , "K",                }},
+        { LenovoLegionDaemon::KEY_EN_L,                 { "L"     , "L",                }},
+        { LenovoLegionDaemon::KEY_EN_M,                 { "M"     , "M",                }},
+        { LenovoLegionDaemon::KEY_EN_N,                 { "N"     , "N",                }},
+        { LenovoLegionDaemon::KEY_EN_O,                 { "O"     , "O",                }},
+        { LenovoLegionDaemon::KEY_EN_P,                 { "P"     , "P",                }},
+        { LenovoLegionDaemon::KEY_EN_Q,                 { "Q"     , "Q",                }},
+        { LenovoLegionDaemon::KEY_EN_R,                 { "R"     , "R",                }},
+        { LenovoLegionDaemon::KEY_EN_S,                 { "S"     , "S",                }},
+        { LenovoLegionDaemon::KEY_EN_T,                 { "T"     , "T",                }},
+        { LenovoLegionDaemon::KEY_EN_U,                 { "U"     , "U",                }},
+        { LenovoLegionDaemon::KEY_EN_V,                 { "V"     , "V",                }},
+        { LenovoLegionDaemon::KEY_EN_W,                 { "W"     , "W",                }},
+        { LenovoLegionDaemon::KEY_EN_X,                 { "X"     , "X",                }},
+        { LenovoLegionDaemon::KEY_EN_Y,                 { "Y"     , "Y",                }},
+        { LenovoLegionDaemon::KEY_EN_Z,                 { "Z"     , "Z",                }},
+        { LenovoLegionDaemon::KEY_EN_0,                 { "0"     , "0",                }},
+        { LenovoLegionDaemon::KEY_EN_1,                 { "1"     , "1",                }},
+        { LenovoLegionDaemon::KEY_EN_2,                 { "2"     , "2",                }},
+        { LenovoLegionDaemon::KEY_EN_3,                 { "3"     , "3",                }},
+        { LenovoLegionDaemon::KEY_EN_4,                 { "4"     , "4",                }},
+        { LenovoLegionDaemon::KEY_EN_5,                 { "5"     , "5",                }},
+        { LenovoLegionDaemon::KEY_EN_6,                 { "6"     , "6",                }},
+        { LenovoLegionDaemon::KEY_EN_7,                 { "7"     , "7",                }},
+        { LenovoLegionDaemon::KEY_EN_8,                 { "8"     , "8",                }},
+        { LenovoLegionDaemon::KEY_EN_9,                 { "9"     , "9",                }},
+        { LenovoLegionDaemon::KEY_EN_F1,                { "F1"    , "F1",               }},
+        { LenovoLegionDaemon::KEY_EN_F2,                { "F2"    , "F2",               }},
+        { LenovoLegionDaemon::KEY_EN_F3,                { "F3"    , "F3",               }},
+        { LenovoLegionDaemon::KEY_EN_F4,                { "F4"    , "F4",               }},
+        { LenovoLegionDaemon::KEY_EN_F5,                { "F5"    , "F5",               }},
+        { LenovoLegionDaemon::KEY_EN_F6,                { "F6"    , "F6",               }},
+        { LenovoLegionDaemon::KEY_EN_F7,                { "F7"    , "F7",               }},
+        { LenovoLegionDaemon::KEY_EN_F8,                { "F8"    , "F8",               }},
+        { LenovoLegionDaemon::KEY_EN_F9,                { "F9"    , "F9",               }},
+        { LenovoLegionDaemon::KEY_EN_F10,               { "F10"   , "F10",              }},
+        { LenovoLegionDaemon::KEY_EN_F11,               { "F11"   , "F11",              }},
+        { LenovoLegionDaemon::KEY_EN_F12,               { "F12"   , "F12",              }},
+        { LenovoLegionDaemon::KEY_EN_BACK_TICK,         { "`"     , "`",                }},
+        { LenovoLegionDaemon::KEY_EN_MINUS,             { "-"     , "-",                }},
+        { LenovoLegionDaemon::KEY_EN_PLUS,              { "+"     , "+",                }},
+        { LenovoLegionDaemon::KEY_EN_EQUALS,            { "="     , "=",                }},
+        { LenovoLegionDaemon::KEY_EN_LEFT_BRACKET,      { "["     , "[",                }},
+        { LenovoLegionDaemon::KEY_EN_RIGHT_BRACKET,     { "]"     , "]",                }},
+        { LenovoLegionDaemon::KEY_EN_BACK_SLASH,        { "\\"    , "\\",               }},
+        { LenovoLegionDaemon::KEY_EN_ANSI_BACK_SLASH,   { "\\"    , "\\",               }},
+        { LenovoLegionDaemon::KEY_EN_ISO_BACK_SLASH,    { "\\"    , "\\",               }},
+        { LenovoLegionDaemon::KEY_EN_SEMICOLON,         { ";"     , ";",                }},
+        { LenovoLegionDaemon::KEY_EN_QUOTE,             { "'"     , "'",                }},
+        { LenovoLegionDaemon::KEY_EN_POUND,             { "#"     , "#",                }},
+        { LenovoLegionDaemon::KEY_EN_COMMA,             { ","     , ",",                }},
+        { LenovoLegionDaemon::KEY_EN_PERIOD,            { "."     , ".",                }},
+        { LenovoLegionDaemon::KEY_EN_FORWARD_SLASH,     { "/"     , "/",                }},
+        { LenovoLegionDaemon::KEY_EN_ESCAPE,            { "Esc"   , "Esc",              }},
+        { LenovoLegionDaemon::KEY_EN_PRINT_SCREEN,      { "Prt"   , "Prt",              }},
+        { LenovoLegionDaemon::KEY_EN_SCROLL_LOCK,       { "Scr"   , "Scr",              }},
+        { LenovoLegionDaemon::KEY_EN_PAUSE_BREAK,       { "Brk"   , "Brk",              }},
+        { LenovoLegionDaemon::KEY_EN_BACKSPACE,         { "Bks"   , "\xE2\x8C\xAB"      }}, // ⌫
+        { LenovoLegionDaemon::KEY_EN_INSERT,            { "Ins"   , "Ins",              }},
+        { LenovoLegionDaemon::KEY_EN_HOME,              { "Hom"   , "Hom",              }},
+        { LenovoLegionDaemon::KEY_EN_PAGE_UP,           { "PUp"   , "PUp",              }},
+        { LenovoLegionDaemon::KEY_EN_TAB,               { "Tab"   , "\xE2\x86\xb9"      }}, // ⭾ ↹ ⇄ ⇥
+        { LenovoLegionDaemon::KEY_EN_DELETE,            { "Del"   , "Del",              }},
+        { LenovoLegionDaemon::KEY_EN_END,               { "End"   , "End",              }},
+        { LenovoLegionDaemon::KEY_EN_PAGE_DOWN,         { "PDn"   , "PDn",              }},
+        { LenovoLegionDaemon::KEY_EN_CAPS_LOCK,         { "Cap"   , "Cap",              }},
+        { LenovoLegionDaemon::KEY_EN_ANSI_ENTER,        { "Ent"   , "\xE2\x86\xB5"      }}, // ↵ ⏎
+        { LenovoLegionDaemon::KEY_EN_ISO_ENTER,         { "Ent"   , "\xE2\x86\xB5"      }}, // ↵ ⏎
+        { LenovoLegionDaemon::KEY_EN_LEFT_SHIFT,        { "Sft"   , "\xE2\x87\xA7"      }}, // ⇧
+        { LenovoLegionDaemon::KEY_EN_RIGHT_SHIFT,       { "Sft"   , "\xE2\x87\xA7"      }}, // ⇧
+        { LenovoLegionDaemon::KEY_EN_UP_ARROW,          { "Up"    , "\xF0\x9F\xA1\xB9"  }}, // ↑ 🡹
+        { LenovoLegionDaemon::KEY_EN_LEFT_CONTROL,      { "Ctl"   , "Ctl",              }},
+        { LenovoLegionDaemon::KEY_EN_LEFT_WINDOWS,      { "Win"   , "\xe2\x9d\x96"      }}, // ❖
+        { LenovoLegionDaemon::KEY_EN_LEFT_FUNCTION,     { "Fn"    , "Fn",               }},
+        { LenovoLegionDaemon::KEY_EN_LEFT_ALT,          { "Alt"   , "Alt",              }},
+        { LenovoLegionDaemon::KEY_EN_SPACE,             { "Spc"   , "Spc",              }},
+        { LenovoLegionDaemon::KEY_EN_RIGHT_ALT,         { "Alt"   , "Alt",              }},
+        { LenovoLegionDaemon::KEY_EN_RIGHT_FUNCTION,    { "Fn"    , "Fn",               }},
+        { LenovoLegionDaemon::KEY_EN_RIGHT_WINDOWS,     { "Win"   , "\xe2\x9d\x96"      }}, // ❖
+        { LenovoLegionDaemon::KEY_EN_MENU,              { "Mnu"   , "\xE2\x98\xB0"      }}, // ▤ ☰ 𝌆 🗏
+        { LenovoLegionDaemon::KEY_EN_RIGHT_CONTROL,     { "Ctl"   , "Ctl",              }},
+        { LenovoLegionDaemon::KEY_EN_LEFT_ARROW,        { "Lft"   , "\xF0\x9F\xA1\xB8"  }}, // ↑ 🡹
+        { LenovoLegionDaemon::KEY_EN_DOWN_ARROW,        { "Dn"    , "\xF0\x9F\xA1\xBB"  }}, // ↑ 🡹
+        { LenovoLegionDaemon::KEY_EN_RIGHT_ARROW,       { "Rgt"   , "\xF0\x9F\xA1\xBA"  }}, // ↑ 🡹
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_LOCK,       { "Num"   , "Num",              }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_DIVIDE,     { "/"     , "/",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_TIMES,      { "*"     , "*",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_MINUS,      { "-"     , "-",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_PLUS,       { "+"     , "+",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_PERIOD,     { "."     , ".",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_ENTER,      { "Ent"   , "\xE2\x86\xB5"      }}, // ↵ ⏎
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_0,          { "0"     , "0",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_1,          { "1"     , "1",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_2,          { "2"     , "2",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_3,          { "3"     , "3",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_4,          { "4"     , "4",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_5,          { "5"     , "5",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_6,          { "6"     , "6",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_7,          { "7"     , "7",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_8,          { "8"     , "8",                }},
+        { LenovoLegionDaemon::KEY_EN_NUMPAD_9,          { "9"     , "9",                }},
+        { LenovoLegionDaemon::KEY_EN_MEDIA_PLAY_PAUSE,  { "Ply"   , "\xE2\x8F\xAF",     }}, // ⏯
+        { LenovoLegionDaemon::KEY_EN_MEDIA_PREVIOUS,    { "Prv"   , "\xE2\x8F\xAE",     }}, // ⏮
+        { LenovoLegionDaemon::KEY_EN_MEDIA_NEXT,        { "Nxt"   , "\xE2\x8F\xAD",     }}, // ⏭
+        { LenovoLegionDaemon::KEY_EN_MEDIA_STOP,        { "Stp"   , "\xE2\x8F\xB9",     }}, // ⏹
+        { LenovoLegionDaemon::KEY_EN_MEDIA_MUTE,        { "Mte"   , "\xF0\x9F\x94\x87", }}, // 🔇
+        { LenovoLegionDaemon::KEY_EN_MEDIA_VOLUME_DOWN, { "Vl-"   , "\xF0\x9F\x94\x88", }}, // 🔉
+        { LenovoLegionDaemon::KEY_EN_MEDIA_VOLUME_UP,   { "Vl+"   , "\xF0\x9F\x94\x89", }}, // 🔊
+        { LenovoLegionDaemon::KEY_EN_POWER,             { "Pwr"   , "\xE2\x8F\xBB",     }}, // ⏻
+        { LenovoLegionDaemon::KEY_JP_RO,                { "_"     , "_",                }},
+        { LenovoLegionDaemon::KEY_JP_EJ,                { "E/J"   , "E/J",              }},
+        { LenovoLegionDaemon::KEY_JP_ZENKAKU,           { "Zen"   , "\xE5\x8D\x8A\xE8"
                              "\xA7\x92\x2F\xE5"
                              "\x85\xA8\xE8\xA7"
                              "\x92",             }}, // 半角/全角
-        { KEY_JP_KANA,              { "Kana"  , "\xE3\x81\x8B\xE3"
+        { LenovoLegionDaemon::KEY_JP_KANA,              { "Kana"  , "\xE3\x81\x8B\xE3"
                           "\x81\xAA",         }}, // かな
-        { KEY_JP_HENKAN,            { "Hnkn"  , "\xE5\xA4\x89\xE6"
+        { LenovoLegionDaemon::KEY_JP_HENKAN,            { "Hnkn"  , "\xE5\xA4\x89\xE6"
                             "\x8F\x9B",         }}, // 変換
-        { KEY_JP_MUHENKAN,          { "MuKn"  , "\xE7\x84\xA1\xE5"
+        { LenovoLegionDaemon::KEY_JP_MUHENKAN,          { "MuKn"  , "\xE7\x84\xA1\xE5"
                               "\xA4\x89\xE6\x8F"
                               "\x9B",             }}, // 無変換
-        { KEY_JP_YEN,               { "Yen"   , "\xC2\xA5",         }}, // ¥
-        { KEY_JP_AT,                { "@"     , "@",                }},
-        { KEY_JP_CHEVRON,           { "^"     , "^",                }},
-        { KEY_JP_COLON,             { ":"     , ":",                }},
-        { KEY_KR_HAN,               { "Hayg"  , "\xED\x95\x9C\x2F"
+        { LenovoLegionDaemon::KEY_JP_YEN,               { "Yen"   , "\xC2\xA5",         }}, // ¥
+        { LenovoLegionDaemon::KEY_JP_AT,                { "@"     , "@",                }},
+        { LenovoLegionDaemon::KEY_JP_CHEVRON,           { "^"     , "^",                }},
+        { LenovoLegionDaemon::KEY_JP_COLON,             { ":"     , ":",                }},
+        { LenovoLegionDaemon::KEY_KR_HAN,               { "Hayg"  , "\xED\x95\x9C\x2F"
                          "\xEC\x98\x81",     }}, // 한/영
-        { KEY_KR_HANJA,             { "Haja"  , "\xED\x95\x9C\xEC"
+        { LenovoLegionDaemon::KEY_KR_HANJA,             { "Haja"  , "\xED\x95\x9C\xEC"
                            "\x9E\x90",         }}, // 한자
-        { KEY_NORD_AAL,             { "Å"     , "\xC3\x85",         }}, // Å
-        { KEY_NORD_A_OE,            { "Ä Ø"   , "\xC3\x84\x20\xC3"
+        { LenovoLegionDaemon::KEY_NORD_AAL,             { "Å"     , "\xC3\x85",         }}, // Å
+        { LenovoLegionDaemon::KEY_NORD_A_OE,            { "Ä Ø"   , "\xC3\x84\x20\xC3"
                                 "\x98"              }}, // Ä Ø
-        { KEY_NORD_O_AE,            { "Ö Æ"   , "\xC3\x96\x20\xC3"
+        { LenovoLegionDaemon::KEY_NORD_O_AE,            { "Ö Æ"   , "\xC3\x96\x20\xC3"
                                 "\x86"              }}, // Ö Æ
-        { KEY_NORD_HALF,            { "§ ½"   , "\xC2\xA7\x20\xC2"
+        { LenovoLegionDaemon::KEY_NORD_HALF,            { "§ ½"   , "\xC2\xA7\x20\xC2"
                                 "\xBD"              }}, // § ½
-        { KEY_NORD_HYPHEN,          { "- _"   , "- _"               }},
-        { KEY_NORD_PLUS_QUESTION,   { "+ ?"   , "+ ?",              }},
-        { KEY_NORD_ACUTE_GRAVE,     { "´ `"   , "\xC2\xB4\x20\x60", }}, // ´ `
-        { KEY_NORD_DOTS_CARET,      { "¨ ^"   , "\xC2\xA8\x20\x5E", }}, // ¨ ^
-        { KEY_NORD_QUOTE,           { "' *"   , "' *",              }},
-        { KEY_NORD_ANGLE_BRACKET,   { "< >"   , "< >"               }},
-        { KEY_DE_ESZETT,            { "ß"     , "\xc3\x9F",         }},
-        { KEY_DE_DIAERESIS_A,       { "Ä"     , "\xC3\x84",         }},
-        { KEY_DE_DIAERESIS_O,       { "Ö"     , "\xC3\x96",         }},
-        { KEY_DE_DIAERESIS_U,       { "Ü"     , "\xC3\x9C"          }},
-        { KEY_FR_SUPER_2,           { "²"     , "\xc2\xb2"          }},
-        { KEY_FR_AMPERSAND,         { "&"     , "&"                 }},
-        { KEY_FR_ACUTE_E,           { "é"     , "\xc3\xa9"          }},
-        { KEY_FR_DOUBLEQUOTE,       { "\""    , "\""                }},
-        { KEY_FR_LEFT_PARENTHESIS,  { "("     , "("                 }},
-        { KEY_FR_GRAVE_E,           { "è"     , "\xc3\xa8"          }},
-        { KEY_FR_UNDERSCORE,        { "_"     , "_"                 }},
-        { KEY_FR_CEDILLA_C,         { "ç"     , "\xc3\xa7"          }},
-        { KEY_FR_GRAVE_A,           { "à"     , "\xc3\xa0"          }},
-        { KEY_FR_RIGHT_PARENTHESIS, { ")"     , ")"                 }},
-        { KEY_FR_DOLLAR,            { "$"     , "$"                 }},
-        { KEY_FR_GRAVE_U,           { "ù"     , "\xc3\xb9"          }},
-        { KEY_FR_ASTERIX,           { "*"     , "*"                 }},
-        { KEY_FR_EXCLAIMATION,      { "!"     , "!"                 }},
-        { KEY_ES_OPEN_QUESTION_MARK,{ "¿"     , "¡"                 }},
-        { KEY_ES_TILDE,             { "´"     , "¨"                 }},
-        { KEY_ES_ENIE,              { "ñ"     , "Ñ"                 }},
+        { LenovoLegionDaemon::KEY_NORD_HYPHEN,          { "- _"   , "- _"               }},
+        { LenovoLegionDaemon::KEY_NORD_PLUS_QUESTION,   { "+ ?"   , "+ ?",              }},
+        { LenovoLegionDaemon::KEY_NORD_ACUTE_GRAVE,     { "´ `"   , "\xC2\xB4\x20\x60", }}, // ´ `
+        { LenovoLegionDaemon::KEY_NORD_DOTS_CARET,      { "¨ ^"   , "\xC2\xA8\x20\x5E", }}, // ¨ ^
+        { LenovoLegionDaemon::KEY_NORD_QUOTE,           { "' *"   , "' *",              }},
+        { LenovoLegionDaemon::KEY_NORD_ANGLE_BRACKET,   { "< >"   , "< >"               }},
+        { LenovoLegionDaemon::KEY_DE_ESZETT,            { "ß"     , "\xc3\x9F",         }},
+        { LenovoLegionDaemon::KEY_DE_DIAERESIS_A,       { "Ä"     , "\xC3\x84",         }},
+        { LenovoLegionDaemon::KEY_DE_DIAERESIS_O,       { "Ö"     , "\xC3\x96",         }},
+        { LenovoLegionDaemon::KEY_DE_DIAERESIS_U,       { "Ü"     , "\xC3\x9C"          }},
+        { LenovoLegionDaemon::KEY_FR_SUPER_2,           { "²"     , "\xc2\xb2"          }},
+        { LenovoLegionDaemon::KEY_FR_AMPERSAND,         { "&"     , "&"                 }},
+        { LenovoLegionDaemon::KEY_FR_ACUTE_E,           { "é"     , "\xc3\xa9"          }},
+        { LenovoLegionDaemon::KEY_FR_DOUBLEQUOTE,       { "\""    , "\""                }},
+        { LenovoLegionDaemon::KEY_FR_LEFT_PARENTHESIS,  { "("     , "("                 }},
+        { LenovoLegionDaemon::KEY_FR_GRAVE_E,           { "è"     , "\xc3\xa8"          }},
+        { LenovoLegionDaemon::KEY_FR_UNDERSCORE,        { "_"     , "_"                 }},
+        { LenovoLegionDaemon::KEY_FR_CEDILLA_C,         { "ç"     , "\xc3\xa7"          }},
+        { LenovoLegionDaemon::KEY_FR_GRAVE_A,           { "à"     , "\xc3\xa0"          }},
+        { LenovoLegionDaemon::KEY_FR_RIGHT_PARENTHESIS, { ")"     , ")"                 }},
+        { LenovoLegionDaemon::KEY_FR_DOLLAR,            { "$"     , "$"                 }},
+        { LenovoLegionDaemon::KEY_FR_GRAVE_U,           { "ù"     , "\xc3\xb9"          }},
+        { LenovoLegionDaemon::KEY_FR_ASTERIX,           { "*"     , "*"                 }},
+        { LenovoLegionDaemon::KEY_FR_EXCLAIMATION,      { "!"     , "!"                 }},
+        { LenovoLegionDaemon::KEY_ES_OPEN_QUESTION_MARK,{ "¿"     , "¡"                 }},
+        { LenovoLegionDaemon::KEY_ES_TILDE,             { "´"     , "¨"                 }},
+        { LenovoLegionDaemon::KEY_ES_ENIE,              { "ñ"     , "Ñ"                 }},
         };
 
-void DeviceView::setController(RGBControllerInterface *controller_ptr)
+void DeviceView::setController(LenovoLegionDaemon::RGBControllerInterface *controller_ptr)
 {
     /*-----------------------------------------------------*\
     | Store the controller pointer                          |
@@ -275,7 +272,7 @@ void DeviceView::InitDeviceView()
         /*-----------------------------------------------------*\
         | For matrix zones, use matrix height from the map      |
         \*-----------------------------------------------------*/
-        if((controller->GetZones()[zone_idx].type == ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
+        if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
         {
             totalHeight                += controller->GetZones()[zone_idx].matrix_map->height;
             zone_pos[zone_idx].matrix_w = controller->GetZones()[zone_idx].matrix_map->width;
@@ -336,9 +333,9 @@ void DeviceView::InitDeviceView()
         /*-----------------------------------------------------*\
         | Calculate LEDs position and size for zone             |
         \*-----------------------------------------------------*/
-        if((controller->GetZones()[zone_idx].type == ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
+        if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
         {
-            matrix_map_type * map = controller->GetZones()[zone_idx].matrix_map;
+            LenovoLegionDaemon::matrix_map_type * map = controller->GetZones()[zone_idx].matrix_map;
 
             for(unsigned int led_x = 0; led_x < map->width; led_x++)
             {
@@ -380,19 +377,19 @@ void DeviceView::InitDeviceView()
                             \*-----------------------------------------------------*/
                             if(led_x < map->width - 1 && map->map[map_idx + 1] == 0xFFFFFFFF)
                             {
-                                if( ( controller->GetLEDName(color_idx) == KEY_EN_TAB        )
-                                    || ( controller->GetLEDName(color_idx) == KEY_EN_CAPS_LOCK  )
-                                    || ( controller->GetLEDName(color_idx) == KEY_EN_LEFT_SHIFT )
-                                    || ( controller->GetLEDName(color_idx) == KEY_EN_RIGHT_SHIFT)
-                                    || ( controller->GetLEDName(color_idx) == KEY_EN_BACKSPACE  )
-                                    || ( controller->GetLEDName(color_idx) == KEY_EN_NUMPAD_0   )
-                                    || ( controller->GetLEDName(color_idx) == KEY_EN_ANSI_ENTER))
+                                if( ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_TAB        )
+                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_CAPS_LOCK  )
+                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_LEFT_SHIFT )
+                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_RIGHT_SHIFT)
+                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_BACKSPACE  )
+                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_0   )
+                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_ANSI_ENTER))
                                 {
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
                             }
-                            if( ( controller->GetLEDName(color_idx) == KEY_EN_NUMPAD_ENTER   )
-                                || ( controller->GetLEDName(color_idx) == KEY_EN_NUMPAD_PLUS    ) )
+                            if( ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_ENTER   )
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_PLUS    ) )
                             {
                                 /* TODO: check if there isn't another widened key above */
                                 if(led_y > 0 && map->map[map_idx - map->width] == 0xFFFFFFFF)
@@ -405,7 +402,7 @@ void DeviceView::InitDeviceView()
                                     led_pos[color_idx].matrix_h += 1.0f;
                                 }
                             }
-                            if( controller->GetLEDName(color_idx) == KEY_EN_ISO_ENTER)
+                            if( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_ISO_ENTER)
                             {
                                 if(led_y > 0 && map->map[map_idx - map->width] == 0xFFFFFFFF)
                                 {
@@ -413,7 +410,7 @@ void DeviceView::InitDeviceView()
                                     led_pos[color_idx].matrix_h += 1.0f;
                                 }
                             }
-                            else if(controller->GetLEDName(color_idx) == KEY_EN_SPACE)
+                            else if(controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_SPACE)
                             {
                                 for(unsigned int map_idx2 = map_idx - 1; map_idx2 > led_y * map->width && map->map[map_idx2] == 0xFFFFFFFF; map_idx2--)
                                 {
@@ -872,7 +869,7 @@ void DeviceView::updateSelection()
     selectionFlags.resize((int)controller->GetLEDs().size());
 
     QRect sel              = selectionRect.normalized();
-    std::vector<led> leds  = controller->GetLEDs();
+    std::vector<LenovoLegionDaemon::led> leds  = controller->GetLEDs();
 
     for(unsigned int led_idx = 0; led_idx < leds.size(); led_idx++)
     {

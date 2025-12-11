@@ -12,8 +12,6 @@
 #include <QLineEdit>
 
 
-using namespace LenovoLegionDaemon;
-
 namespace LenovoLegionGui {
 
 OpenRGBZoneResizeDialog::OpenRGBZoneResizeDialog(LenovoLegionDaemon::RGBControllerInterface *edit_dev_ptr, unsigned int edit_zone_idx_val, QWidget *parent) :
@@ -193,8 +191,8 @@ int OpenRGBZoneResizeDialog::show()
 
         for(int item_idx = 0; item_idx < ui->SegmentsTreeWidget->topLevelItemCount(); item_idx++)
         {
-            segment new_segment;
-            new_segment.type       = ZONE_TYPE_LINEAR;
+            LenovoLegionDaemon::segment new_segment;
+            new_segment.type       = LenovoLegionDaemon::ZONE_TYPE_LINEAR;
             new_segment.name       = ((QLineEdit*)ui->SegmentsTreeWidget->itemWidget(ui->SegmentsTreeWidget->topLevelItem(item_idx), 0))->text().toStdString();
             new_segment.start_idx  = start_idx;
             new_segment.leds_count = ((QLineEdit*)ui->SegmentsTreeWidget->itemWidget(ui->SegmentsTreeWidget->topLevelItem(item_idx), 1))->text().toInt();
