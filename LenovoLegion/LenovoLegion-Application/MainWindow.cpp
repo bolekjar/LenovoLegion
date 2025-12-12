@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
             /*
              * Cleanup existing widgets
              */
-            Utils::Layout::forAllBoxLayoutsDo(*ui->toolBar_HBoxLayout,[](QLayoutItem& layout)
+            Utils::Layout::forAllLayoutsDo(*ui->toolBar_HBoxLayout,[](QLayoutItem& layout)
             {
                 dynamic_cast<ToolBarWidget *>(layout.widget())->cleanup();
             });
@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
             /*
              * Remove all widgets from toolBar HBoxLayout
              */
-            Utils::Layout::removeAllBoxLayoutWidgets(*ui->toolBar_HBoxLayout);
+            Utils::Layout::removeAllLayoutWidgets(*ui->toolBar_HBoxLayout);
 
             /*
              * Set action checked state
@@ -162,7 +162,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
     /*
      * Delegate timer event to toolbar widgets
      */
-    Utils::Layout::forAllBoxLayoutsDo(*ui->toolBar_HBoxLayout,[event](QLayoutItem& layout)
+    Utils::Layout::forAllLayoutsDo(*ui->toolBar_HBoxLayout,[event](QLayoutItem& layout)
     {
         dynamic_cast<ToolBarWidget *>(layout.widget())->timerEvent(event);
     });
@@ -215,7 +215,7 @@ void MainWindow::daemonNotification(const legion::messages::Notification &msg)
     }
 
 
-    Utils::Layout::forAllBoxLayoutsDo(*ui->toolBar_HBoxLayout,[&msg](QLayoutItem& layout)
+    Utils::Layout::forAllLayoutsDo(*ui->toolBar_HBoxLayout,[&msg](QLayoutItem& layout)
                                       {
                                           dynamic_cast<ToolBarWidget *>(layout.widget())->dataProviderEvent(msg);
                                       });
@@ -277,13 +277,13 @@ void MainWindow::clearUI()
     /*
      * Remove all widgets from toolBar HBoxLayout
      */
-    Utils::Layout::removeAllBoxLayoutWidgets(*ui->toolBar_HBoxLayout);
+    Utils::Layout::removeAllLayoutWidgets(*ui->toolBar_HBoxLayout);
 
 
     /*
      * Remove battery status widget
      */
-    Utils::Layout::removeAllBoxLayoutWidgets(*ui->horizontalLayout_BateryStatus);
+    Utils::Layout::removeAllLayoutWidgets(*ui->horizontalLayout_BateryStatus);
 
     /*
      * Triger toolBar action to initialize proper widget

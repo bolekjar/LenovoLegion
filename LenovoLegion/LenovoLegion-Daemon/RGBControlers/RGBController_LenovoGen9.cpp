@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <unordered_map>
+#include <thread>
 
 namespace LenovoLegionDaemon {
 
@@ -393,7 +394,7 @@ RGBController_LenovoGen9::RGBController_LenovoGen9(LenovoGen9USBController* cont
     mode Direct;
     Direct.name             = "Direct";
     Direct.value            = MODE_DIRECT;
-    Direct.flags            = MODE_FLAG_HAS_PER_LED_COLOR | MODE_FLAG_HAS_BRIGHTNESS;
+    Direct.flags            = MODE_FLAG_HAS_PER_LED_COLOR | MODE_FLAG_HAS_BRIGHTNESS | MODE_FLAGS_DIRECT;
     Direct.color_mode       = MODE_COLORS_PER_LED;
     Direct.brightness_min   = BRIGHTNESS_MIN;
     Direct.brightness_max   = BRIGHTNESS_MAX;
@@ -452,19 +453,7 @@ void RGBController_LenovoGen9::SetupZones()
 
 }
 
-void RGBController_LenovoGen9::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
-void RGBController_LenovoGen9::UpdateSingleLED(int /*led*/)
-{
-    DeviceUpdateLEDs();
-}
-
-void RGBController_LenovoGen9::SetDeviceProfile(size_t profileIdx)
+void RGBController_LenovoGen9::DeviceUpdateProfile()
 {
     auto waitForApplyProfileOnController = [this](int maxWaitTimeinMicros = 1000000) {
         while(fromControlerProfile(controller->getCurrentProfileId()) != active_profile)
@@ -479,20 +468,11 @@ void RGBController_LenovoGen9::SetDeviceProfile(size_t profileIdx)
         }
     };
 
-    active_profile = profileIdx;
-
     controller->switchProfileTo(toControlerProfile(active_profile));
 
     waitForApplyProfileOnController();
 
     readActiveProfileSettings();
-
-    SignalUpdate();
-}
-
-void RGBController_LenovoGen9::UpdateZoneLEDs(int /*zone*/)
-{
-    DeviceUpdateLEDs();
 }
 
 void RGBController_LenovoGen9::DeviceUpdateMode()

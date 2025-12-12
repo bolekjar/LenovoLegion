@@ -22,7 +22,6 @@ SOURCES +=  \
         ProtocolProcessor.cpp \
         ProtocolProcessorBase.cpp \
         ProtocolProcessorNotifier.cpp \
-        RGBControllerInterface.cpp \
         RGBController.cpp \
         SysFSDriverHWMon.cpp \
         SysFSDriverLegionFanMode.cpp \

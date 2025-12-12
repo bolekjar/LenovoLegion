@@ -10,11 +10,6 @@
 
 #include "RGBControllerInterface.h"
 
-#include <thread>
-#include <mutex>
-#include <atomic>
-
-
 namespace LenovoLegionDaemon {
 
 class RGBController : public RGBControllerInterface
@@ -29,93 +24,64 @@ public:
     /*---------------------------------------------------------*\
     | Generic functions implemented in RGBController.cpp        |
     \*---------------------------------------------------------*/
+    std::string             GetName()           const;
+    std::string             GetVendor()         const;
+    std::string             GetDescription()    const;
+    std::string             GetVersion()        const;
+    std::string             GetSerial()         const;
+    std::string             GetLocation()       const;
+    std::string             GetControllerName() const;
+    int                     GetActiveMode()     const;
+
+protected:
     void                    SetupColors();
 
-    unsigned int            GetLEDsInZone(unsigned int zone);
-    std::string             GetName();
-    std::string             GetVendor();
-    std::string             GetDescription();
-    std::string             GetVersion();
-    std::string             GetSerial();
-    std::string             GetLocation();
+public:
 
-    std::string             GetModeName(unsigned int mode);
-    std::string             GetZoneName(unsigned int zone);
-    std::string             GetLEDName(unsigned int led);
+    /*---------------------------------------------------------*\
+    | Functions From RGBControllerInterface      |
+    \*---------------------------------------------------------*/
+    virtual unsigned int                    GetLEDsInZone(unsigned int zone) const   override;
+    virtual std::string                     GetModeName(unsigned int mode) const     override;
+    virtual std::string                     GetZoneName(unsigned int zone) const     override;
+    virtual std::vector<zone>               GetZones() const                         override;
+    virtual std::string                     GetLEDName(unsigned int led)     const   override;
+    virtual std::vector<RGBColor>           GetColors() const                        override;
+    virtual device_type                     GetDeviceType() const                    override;
+    virtual unsigned int                    GetProfiles() const                      override;
+    virtual size_t                          GetActiveProfile() const                 override;
 
-    RGBColor                GetLED(unsigned int led);
-    void                    SetLED(unsigned int led, RGBColor color);
-    void                    SetAllLEDs(RGBColor color);
-    void                    SetAllZoneLEDs(int zone, RGBColor color);
+    virtual RGBColor                GetLED(unsigned int led)        const    override;
+    virtual void                    SetLED(unsigned int led, RGBColor color) override;
+    virtual void                    SetAllLEDs(RGBColor color)               override;
 
-    int                     GetMode();
-    void                    SetMode(int mode);
+    virtual int                     GetMode()                          const override;
+    virtual void                    SetMode(int mode)                        override;
 
-    void                    RegisterUpdateCallback(RGBControllerCallback new_callback, void * new_callback_arg);
-    void                    UnregisterUpdateCallback(void * callback_arg);
-    void                    ClearCallbacks();
-    void                    SignalUpdate();
+    virtual std::vector<led>        GetLEDs() const                          override;
+    virtual void                    SetLEDs(const std::vector<led>& new_leds)override;
 
-    void                    UpdateLEDs();
-
-    void                    UpdateMode();
-    void                    SaveMode();
-
-    void                    DeviceCallThreadFunction();
-
-    void                    ClearSegments(int zone);
-    void                    AddSegment(int zone, segment new_segment);
-
-
-    void                    SetDeviceProfile(size_t profile);
-
-    bool                    IsApplayingSettingsInProgress() const;
-
+    virtual std::vector<mode>        GetModes() const                               override;
+    virtual void                     SetModes(const std::vector<mode>& new_modes)   override;
+    virtual void                     SetProfile(size_t profileIdx)                  override;
+public:
 
     /*---------------------------------------------------------*\
     | Functions to be implemented in device implementation      |
     \*---------------------------------------------------------*/
-    virtual void            SetupZones()                                = 0;
+    virtual void        SetupZones()                            =   0;
 
-    virtual void            ResizeZone(int zone, int new_size)          = 0;
+    virtual void        DeviceUpdateLEDs()                      =   0;
+    virtual void        DeviceUpdateMode()                      =   0;
 
-    virtual void            DeviceUpdateLEDs()                          = 0;
-    virtual void            UpdateZoneLEDs(int zone)                    = 0;
-    virtual void            UpdateSingleLED(int led)                    = 0;
+    virtual void        DeviceUpdateProfile()                   =   0;
 
-    virtual void            DeviceUpdateMode()                          = 0;
-    void                    DeviceSaveMode();
+private:
 
-    void                    SetCustomMode();
-
-
-
-    virtual unsigned int GetFlags() const;
-    virtual void SetFlags(unsigned int new_flags);
-
-    virtual const std::vector<led>&       GetLEDs() const;
-    virtual void  SetLEDs(const std::vector<led>& new_leds);
-
-    virtual const std::vector<zone>&      GetZones() const;
-
-    virtual std::string                   GetControllerName() const;
-
-    virtual int                           GetActiveMode() const ;
-
-    virtual const std::vector<mode>&      GetModes() const;
-    virtual void                          SetModes(const std::vector<mode>& new_modes);
-
-    virtual const std::vector<RGBColor>&  GetColors() const;
-
-    virtual device_type            GetDeviceType() const;
-
-    virtual unsigned int           GetProfiles() const;
-
-    virtual size_t                 GetActiveProfile() const;
+    void                    SetAllZoneLEDs(int zone, RGBColor color);
 
 protected:
 
-    unsigned int            flags;              /* controller flags         */
     std::vector<led>        leds;               /* LEDs                     */
     std::vector<zone>       zones;              /* Zones                    */
     std::string             name;               /* controller name          */
@@ -124,7 +90,7 @@ protected:
     std::vector<RGBColor>   colors;             /* Color buffer             */
     device_type             type;               /* device type              */
     unsigned int            profiles = 0;       /* Supported Device Profiles*/
-    size_t                  active_profile = 0; /* active profile        */
+    size_t                  active_profile = 0; /* active profile           */
 
 
     std::string             vendor;             /* controller vendor        */
@@ -134,15 +100,6 @@ protected:
     std::string             location;           /* controller location      */
     std::vector<std::string>
         led_alt_names;                          /* alternate LED names      */
-private:
-    std::thread*            DeviceCallThread;
-    std::atomic<bool>       CallFlag_UpdateLEDs;
-    std::atomic<bool>       CallFlag_UpdateMode;
-    std::atomic<bool>       DeviceThreadRunning;
-
-    std::mutex                          UpdateMutex;
-    std::vector<RGBControllerCallback>  UpdateCallbacks;
-    std::vector<void *>                 UpdateCallbackArgs;
 };
 
 }

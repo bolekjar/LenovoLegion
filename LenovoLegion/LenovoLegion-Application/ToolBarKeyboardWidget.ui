@@ -16,12 +16,12 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="80,20">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_ToolBarKeyboard"/>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacer_KeyboardWidget">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>

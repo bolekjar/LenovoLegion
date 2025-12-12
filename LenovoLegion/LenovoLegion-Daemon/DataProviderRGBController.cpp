@@ -6,6 +6,7 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 #include "DataProviderRGBController.h"
+#include "RGBController.h"
 
 #include "Core/LoggerHolder.h"
 #include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
@@ -43,8 +44,6 @@ namespace LenovoLegionDaemon {
             rgbController.set_profiles(m_rgbController->GetProfiles());
             rgbController.set_active_profile(m_rgbController->GetActiveProfile());
 
-            // Set applying settings status
-            rgbController.set_applying_settings(m_rgbController->IsApplayingSettingsInProgress());
 
             // Serialize LEDs
             const auto& leds = m_rgbController->GetLEDs();
@@ -171,7 +170,10 @@ namespace LenovoLegionDaemon {
             int currentMode = m_rgbController->GetMode();
             if(currentMode != rgbController.active_mode())
             {
+                LOG_D(QString("Changing mode from %1 to %2").arg(currentMode).arg(rgbController.active_mode()));
+
                 m_rgbController->SetMode(rgbController.active_mode());
+                m_rgbController->DeviceUpdateMode();
             }
         }
 
@@ -181,13 +183,18 @@ namespace LenovoLegionDaemon {
             size_t currentProfile = m_rgbController->GetActiveProfile();
             if(currentProfile != rgbController.active_profile())
             {
-                m_rgbController->SetDeviceProfile(rgbController.active_profile());
+                LOG_D(QString("Changing profile from %1 to %2").arg(currentProfile).arg(rgbController.active_profile()));
+
+                m_rgbController->SetProfile(rgbController.active_profile());
+                m_rgbController->DeviceUpdateProfile();
             }
         }
 
         // Apply modes settings if provided
         if(rgbController.modes_size() > 0)
         {
+            LOG_D(QString("Applying %1 modes").arg(rgbController.modes_size()));
+
             std::vector<mode> modes;
             for(int i = 0; i < rgbController.modes_size(); i++)
             {
@@ -216,11 +223,15 @@ namespace LenovoLegionDaemon {
                 modes.push_back(m);
             }
             m_rgbController->SetModes(modes);
+
+            m_rgbController->DeviceUpdateMode();
         }
 
         // Apply LEDs settings if provided
         if(rgbController.leds_size() > 0)
         {
+            LOG_D(QString("Applying %1 LEDs").arg(rgbController.leds_size()));
+
             std::vector<led> leds;
             for(int i = 0; i < rgbController.leds_size(); i++)
             {
@@ -231,17 +242,22 @@ namespace LenovoLegionDaemon {
                 leds.push_back(l);
             }
             m_rgbController->SetLEDs(leds);
+
+            m_rgbController->DeviceUpdateLEDs();
         }
 
         // Apply individual LED colors if provided
         if(rgbController.colors_size() > 0)
         {
+            LOG_D(QString("Applying %1 individual LED colors").arg(rgbController.colors_size()));
+
             const auto& colors = m_rgbController->GetColors();
             for(int i = 0; i < rgbController.colors_size() && i < static_cast<int>(colors.size()); i++)
             {
                 m_rgbController->SetLED(i, rgbController.colors(i));
             }
-            m_rgbController->UpdateLEDs();
+
+            m_rgbController->DeviceUpdateLEDs();
         }
 
         return {};
@@ -285,7 +301,9 @@ namespace LenovoLegionDaemon {
     }
 
     void DataProviderRGBController::clean()
-    {}
+    {
+        m_rgbController.reset();
+    }
 
     void DataProviderRGBController::registerControler(std::string name, HIDDeviceDetectorFunction det, uint16_t vid, uint16_t pid, int interface, int usage_page, int usage)
     {

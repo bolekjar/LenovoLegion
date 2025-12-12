@@ -13,6 +13,8 @@
 
 #include <QFrame>
 
+#include <memory>
+
 namespace Ui
 {
     class OpenRGBDevicePage;
@@ -28,10 +30,8 @@ public:
     explicit OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface *dev, QWidget *parent = nullptr);
     ~OpenRGBDevicePage();
 
-    LenovoLegionDaemon::RGBControllerInterface* GetController();
-
-    void SetDevice(unsigned char red, unsigned char green, unsigned char blue); // Could be moved to private
-    void SetCustomMode(unsigned char red, unsigned char green, unsigned char blue);
+private:
+    void SetDevice(unsigned char red, unsigned char green, unsigned char blue);
     void UpdateDevice();
     void UpdateMode();
     void UpdateModeUi();
@@ -59,17 +59,13 @@ private slots:
     void on_HexLineEdit_textChanged(const QString &arg1);
     void on_DeviceViewBox_selectionChanged(QVector<int>);
 
-    void on_SetAllButton_clicked();
     void on_RandomCheck_clicked();
     void on_PerLEDCheck_clicked();
     void on_ModeSpecificCheck_clicked();
-    void on_EditZoneButton_clicked();
 
     void on_ApplyColorsButton_clicked();
 
     void on_SelectAllLEDsButton_clicked();
-
-    void on_DeviceSaveButton_clicked();
 
     void on_ProfileBox_currentIndexChanged(int index);
 
@@ -77,7 +73,7 @@ private slots:
 
 private:
     Ui::OpenRGBDevicePage *ui;
-    LenovoLegionDaemon::RGBControllerInterface *device;
+    std::unique_ptr<LenovoLegionDaemon::RGBControllerInterface> device;
 
     bool InvertedSpeed      = false;
     bool InvertedBrightness = false;
@@ -93,10 +89,6 @@ private:
     bool autoUpdateEnabled();
 
     QString ModeDescription(const LenovoLegionDaemon::mode& m);
-
-signals:
-    void SetAllDevices(unsigned char red, unsigned char green, unsigned char blue);
-    void SaveSizeProfile();
 };
 
 }

@@ -17,7 +17,7 @@
 
 #include <vector>
 #include <map>
-
+#include <memory>
 
 namespace LenovoLegionDaemon {
 
@@ -74,17 +74,12 @@ public:
     RGBController_LenovoGen9(LenovoGen9USBController* controller_ptr);
     ~RGBController_LenovoGen9();
 
-    void        SetupZones()                       override;
-    void        ResizeZone(int zone, int new_size) override;
+    void        SetupZones()                           override;
 
-    void        DeviceUpdateLEDs()                 override;
-    void        DeviceUpdateMode()                 override;
+    void        DeviceUpdateLEDs()                     override;
+    void        DeviceUpdateMode()                     override;
 
-
-    void        UpdateZoneLEDs(int zone)           override;
-    void        UpdateSingleLED(int led)           override;
-
-    void        SetDeviceProfile(size_t profileIdx)override;
+    void        DeviceUpdateProfile()                  override;
 
 private:
 

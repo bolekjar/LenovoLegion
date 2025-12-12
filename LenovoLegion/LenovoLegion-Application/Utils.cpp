@@ -66,7 +66,7 @@ namespace LenovoLegionGui {
             }
 
 
-            void removeAllBoxLayoutWidgets(QBoxLayout &layout)
+            void removeAllLayoutWidgets(QLayout &layout)
             {
                 while (layout.count() > 0)
                 {
@@ -74,7 +74,7 @@ namespace LenovoLegionGui {
                 }
             }
 
-            void forAllBoxLayoutsDo(QBoxLayout &layout, const std::function<void (QLayoutItem &)> &func)
+            void forAllLayoutsDo(QLayout &layout, const std::function<void (QLayoutItem &)> &func)
             {
                 for(int i = 0; i < layout.count(); ++i)
                 {

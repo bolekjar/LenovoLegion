@@ -39,8 +39,8 @@ enum
     MODE_FLAG_HAS_PER_LED_COLOR         = (1 << 5), /* Mode has per-LED colors          */
     MODE_FLAG_HAS_MODE_SPECIFIC_COLOR   = (1 << 6), /* Mode has mode specific colors    */
     MODE_FLAG_HAS_RANDOM_COLOR          = (1 << 7), /* Mode has random color option     */
-    MODE_FLAG_MANUAL_SAVE               = (1 << 8), /* Mode can manually be saved       */
-    MODE_FLAG_AUTOMATIC_SAVE            = (1 << 9), /* Mode automatically saves         */
+    MODE_FLAG_AUTOMATIC_SAVE            = (1 << 8), /* Mode automatically saves         */
+    MODE_FLAGS_DIRECT                   = (1 << 9), /* Mode is direct mode              */
 };
 
 /*------------------------------------------------------------------*\
@@ -269,54 +269,41 @@ class RGBControllerInterface
 public:
     virtual ~RGBControllerInterface() {}
 
-    virtual unsigned int    GetLEDsInZone(unsigned int zone)                                                    = 0;
-
-    virtual std::string     GetModeName(unsigned int mode)                                                      = 0;
-    virtual std::string     GetZoneName(unsigned int zone)                                                      = 0;
-    virtual std::string     GetLEDName(unsigned int led)                                                        = 0;
-
-    virtual RGBColor        GetLED(unsigned int led)                                                            = 0;
-    virtual void            SetLED(unsigned int led, RGBColor color)                                            = 0;
-    virtual void            SetAllLEDs(RGBColor color)                                                          = 0;
-
-    virtual int             GetMode()                                                                           = 0;
-    virtual void            SetMode(int mode)                                                                   = 0;
-
-    virtual void            RegisterUpdateCallback(RGBControllerCallback new_callback, void * new_callback_arg) = 0;
-
-    virtual void            UpdateLEDs()                                                                        = 0;
-
-    virtual void            UpdateMode()                                                                        = 0;
-    virtual void            SaveMode()                                                                          = 0;
-
-    virtual void            ClearSegments(int zone)                                                             = 0;
-    virtual void            AddSegment(int zone, segment new_segment)                                           = 0;
-
-    virtual void            SetDeviceProfile(size_t profileIdx)                                                 = 0;
-
-
-    /*---------------------------------------------------------*\
-    | Functions to be implemented in device implementation      |
-    \*---------------------------------------------------------*/
-    virtual void            SetupZones()                                                                        = 0;
-    virtual void            ResizeZone(int zone, int new_size)                                                  = 0;
-    virtual void            SetCustomMode()                                                                     = 0;
-    virtual bool            IsApplayingSettingsInProgress() const                                               = 0;
-
-    virtual const std::vector<led>&       GetLEDs()  const                                                      = 0;
-    virtual void                          SetLEDs(const std::vector<led>& new_leds)                             = 0;
-
-    virtual const std::vector<zone>&      GetZones() const                                                      = 0;
-
-    virtual const std::vector<mode>&      GetModes()           const                                            = 0;
-    virtual void                          SetModes(const std::vector<mode>& new_modes)                          = 0;
-
-
-    virtual const std::vector<RGBColor>&  GetColors()          const                                            = 0;
+    /*
+     * Getters
+     */
+    virtual unsigned int                  GetLEDsInZone(unsigned int zone)    const                             = 0;
+    virtual std::string                   GetModeName(unsigned int mode)      const                             = 0;
+    virtual std::string                   GetZoneName(unsigned int zone)      const                             = 0;
+    virtual std::string                   GetLEDName(unsigned int led)        const                             = 0;
+    virtual std::vector<zone>             GetZones()                          const                             = 0;
+    virtual std::vector<RGBColor>         GetColors()          const                                            = 0;
     virtual device_type                   GetDeviceType()      const                                            = 0;
     virtual unsigned int                  GetProfiles()        const                                            = 0;
     virtual size_t                        GetActiveProfile()   const                                            = 0;
 
+    /*
+     * Getters / Setters
+     */
+    virtual RGBColor                      GetLED(unsigned int led)          const                               = 0;
+    virtual void                          SetLED(unsigned int led, RGBColor color)                              = 0;
+
+    virtual std::vector<led>              GetLEDs() const                                                       = 0;
+    virtual void                          SetLEDs(const std::vector<led>& new_leds)                             = 0;
+
+    virtual int                           GetMode()      const                                                  = 0;
+    virtual void                          SetMode(int mode)                                                     = 0;
+
+    virtual std::vector<mode>             GetModes()           const                                            = 0;
+    virtual void                          SetModes(const std::vector<mode>& new_modes)                          = 0;
+
+    /*
+     * Setters
+     */
+    virtual void                          SetAllLEDs(RGBColor color)                                            = 0;
+    virtual void                          SetProfile(size_t profileIdx)                                         = 0;
+
+    virtual void                          ApplyPendingChanges() {};
 };
 
 }

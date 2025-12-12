@@ -119,8 +119,8 @@ ToolBarHomeWidget::ToolBarHomeWidget(DataProvider* dataProvider,QWidget *parent)
     m_defaultActionsMap["remove"].push_back([this]() {
         removeAllControlTab(*ui->tabWidget_Controls);
 
-        Utils::Layout::removeAllBoxLayoutWidgets(*ui->horizontalLayout_HWMonitoring);
-        Utils::Layout::removeAllBoxLayoutWidgets(*ui->verticalLayout_PowerProfiles);
+        Utils::Layout::removeAllLayoutWidgets(*ui->horizontalLayout_HWMonitoring);
+        Utils::Layout::removeAllLayoutWidgets(*ui->verticalLayout_PowerProfiles);
     });
 
     m_defaultActionsMap["add_customs"].push_back([this]() {
@@ -176,7 +176,7 @@ ToolBarHomeWidget::ToolBarHomeWidget(DataProvider* dataProvider,QWidget *parent)
     });
 
     m_defaultActionsMap["refresh_hw_monitoring"] .push_back([this]() {
-        Utils::Layout::removeAllBoxLayoutWidgets(*ui->horizontalLayout_HWMonitoring);
+        Utils::Layout::removeAllLayoutWidgets(*ui->horizontalLayout_HWMonitoring);
 
         addLayoutWidget(new HWMonitoring(m_dataProvider,this),*ui->horizontalLayout_HWMonitoring,std::bind(&ToolBarHomeWidget::widgetEvent,this,std::placeholders::_1));
     });
@@ -188,7 +188,7 @@ void ToolBarHomeWidget::timerEvent(QTimerEvent *event)
 {
     ToolBarWidget::timerEvent(event);
 
-    Utils::Layout::forAllBoxLayoutsDo(*ui->horizontalLayout_HWMonitoring,[](QLayoutItem &item){
+    Utils::Layout::forAllLayoutsDo(*ui->horizontalLayout_HWMonitoring,[](QLayoutItem &item){
         dynamic_cast<HWMonitoring*>(item.widget())->refresh();
     });
 }
@@ -198,14 +198,14 @@ void ToolBarHomeWidget::dataProviderEvent(const legion::messages::Notification &
     switch (event.action()) {
         case legion::messages::Notification::LENOVO_DRIVER_ADDED:
         {
-            Utils::Layout::forAllBoxLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
+            Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });
         }
         break;
         case legion::messages::Notification::LENOVO_DRIVER_REMOVED:
         {
-            Utils::Layout::forAllBoxLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
+            Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });
         }
@@ -213,14 +213,14 @@ void ToolBarHomeWidget::dataProviderEvent(const legion::messages::Notification &
         case legion::messages::Notification::CPU_X_LIST_RELOADED:
         {
             Utils::Task::executeTasks(m_defaultActionsMap["refresh_cpu_controls"]);
-            Utils::Layout::forAllBoxLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
+            Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });
         }
         break;
         case legion::messages::Notification::ACPI_PLATFORM_PROFILE_CHANGE:
         {
-            Utils::Layout::forAllBoxLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
+            Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });
         }
@@ -268,7 +268,7 @@ void ToolBarHomeWidget::widgetEvent(const WidgetMessage &event)
             Utils::Task::executeTasks(m_defaultActionsMap["refresh_hw_monitoring"]);
             Utils::Task::executeTasks(m_defaultActionsMap["refresh_cpu_controls"]);
 
-            Utils::Layout::forAllBoxLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
+            Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });
 

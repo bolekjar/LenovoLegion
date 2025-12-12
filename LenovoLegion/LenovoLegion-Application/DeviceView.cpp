@@ -1074,7 +1074,6 @@ void DeviceView::setSelectionColor(LenovoLegionDaemon::RGBColor color)
             controller->SetLED(led_idx, color);
         }
     }
-    controller->UpdateLEDs();
     update();
 }
 

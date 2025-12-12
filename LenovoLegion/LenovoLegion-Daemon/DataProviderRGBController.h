@@ -10,7 +10,6 @@
 
 #include "HidApiWrapper.h"
 #include "DataProvider.h"
-#include "RGBControllerInterface.h"
 
 #include <vector>
 #include <memory>
@@ -20,14 +19,15 @@ namespace LenovoLegionDaemon {
 
 #define HID_INTERFACE_ANY -1
 
+class RGBController;
 class DataProviderRGBController : public DataProvider
 {
     Q_OBJECT
 
 public:
 
-    typedef std::function<RGBControllerInterface* (hid_device_info *, const std::string &)> HIDDeviceDetectorFunction;
-    typedef std::function<RGBControllerInterface* (hidapi_wrapper wrapper, hid_device_info *, const std::string &)> HIDWrappedDeviceDetectorFunction;
+    typedef std::function<RGBController* (hid_device_info *, const std::string &)> HIDDeviceDetectorFunction;
+    typedef std::function<RGBController* (hidapi_wrapper wrapper, hid_device_info *, const std::string &)> HIDWrappedDeviceDetectorFunction;
 
 private:
 
@@ -92,7 +92,7 @@ private:
 
 private:
 
-    std::unique_ptr<RGBControllerInterface> m_rgbController;
+    std::unique_ptr<RGBController> m_rgbController;
 
 public:
 

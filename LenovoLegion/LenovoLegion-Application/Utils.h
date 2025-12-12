@@ -70,9 +70,10 @@ namespace Utils
 
     namespace Layout
     {
+
         void deleteLayoutItem(QLayoutItem *layout);
-        void forAllBoxLayoutsDo(QBoxLayout &layout, const std::function<void (QLayoutItem &)>& func);
-        void removeAllBoxLayoutWidgets(QBoxLayout &layout);
+        void forAllLayoutsDo(QLayout &layout, const std::function<void (QLayoutItem &)>& func);
+        void removeAllLayoutWidgets(QLayout &layout);
     }
 }
 

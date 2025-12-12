@@ -45,7 +45,6 @@ SOURCES +=               \
         ToolBarWidget.cpp \
         Utils.cpp \
         OpenRGBDevicePage.cpp \
-        OpenRGBZoneResizeDialog.cpp \
         QTooltipedSlider.cpp \
         ColorWheel.cpp \
         DeviceView.cpp \
@@ -89,7 +88,6 @@ HEADERS +=          \
         ToolBarWidget.h \
         Utils.h \
         OpenRGBDevicePage.h \
-        OpenRGBZoneResizeDialog.h \
         QTooltipedSlider.h \
         ColorWheel.h \
         DeviceView.h \
@@ -161,8 +159,7 @@ FORMS +=           \
     ToolBarKeyboardWidget.ui \
     ToolBarProfilesWidget.ui \
     ToolBarSettingsWidget.ui \
-    OpenRGBDevicePage.ui \
-    OpenRGBZoneResizeDialog.ui
+    OpenRGBDevicePage.ui
 
 INCLUDEPATH += $${CUDA_PATH}/include
 LIBS += -l$${PROJECT_LIBS_NAME}

@@ -107,5 +107,4 @@ message RGBController
     int32              active_mode     = 6;
     uint32             profiles        = 7;
     uint64             active_profile  = 8;
-    bool               applying_settings = 9;
 }

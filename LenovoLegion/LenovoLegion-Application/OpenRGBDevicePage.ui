@@ -89,9 +89,6 @@
           <item row="1" column="1" colspan="2">
            <widget class="QComboBox" name="LEDBox"/>
           </item>
-          <item row="0" column="1" colspan="2">
-           <widget class="QComboBox" name="ZoneBox"/>
-          </item>
           <item row="4" column="3">
            <widget class="QRadioButton" name="RandomCheck">
             <property name="text">
@@ -144,16 +141,6 @@
           <item row="3" column="1" colspan="3">
            <widget class="QComboBox" name="ModeBox"/>
           </item>
-          <item row="2" column="3">
-           <widget class="QPushButton" name="SetAllButton">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Sets all devices to&lt;br/&gt;&lt;b&gt;Static&lt;/b&gt; mode and&lt;br/&gt;applies the selected color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Apply All Devices</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="LEDLabel">
             <property name="text">
@@ -161,24 +148,10 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="3">
-           <widget class="QPushButton" name="EditZoneButton">
-            <property name="text">
-             <string>Edit</string>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="2">
            <widget class="QRadioButton" name="ModeSpecificCheck">
             <property name="text">
              <string>Mode-Specific</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" colspan="2">
-           <widget class="QPushButton" name="ApplyColorsButton">
-            <property name="text">
-             <string>Apply Colors To Selection</string>
             </property>
            </widget>
           </item>
@@ -206,6 +179,16 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1" colspan="3">
+           <widget class="QPushButton" name="ApplyColorsButton">
+            <property name="text">
+             <string>Apply Colors To Selection</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="3">
+           <widget class="QComboBox" name="ZoneBox"/>
+          </item>
          </layout>
         </widget>
        </item>
@@ -227,6 +210,52 @@
           <enum>QFrame::Shadow::Sunken</enum>
          </property>
          <layout class="QGridLayout" name="ColorGridLayout" rowstretch="10,0,0,0" columnstretch="0">
+          <item row="0" column="0">
+           <widget class="LenovoLegionGui::ColorWheel" name="ColorWheelBox" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">/* Basic */
+QWidget {
+	background-color: none;
+    border-radius: 10px;
+    border: 0px;
+}</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="pushButtonToggleLEDView">
+            <property name="text">
+             <string>Toggle LED View</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="LenovoLegionGui::Swatches" name="SwatchBox" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">/* Basic */
+QWidget {
+	background-color: none;
+    border-radius: 10px;
+    border: 0px;
+}</string>
+            </property>
+           </widget>
+          </item>
           <item row="2" column="0">
            <widget class="QFrame" name="ColorEntryFrame">
             <property name="frameShape">
@@ -349,52 +378,6 @@
             </layout>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="LenovoLegionGui::ColorWheel" name="ColorWheelBox" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">/* Basic */
-QWidget {
-	background-color: none;
-    border-radius: 10px;
-    border: 0px;
-}</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="LenovoLegionGui::Swatches" name="SwatchBox" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::LayoutDirection::LeftToRight</enum>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">/* Basic */
-QWidget {
-	background-color: none;
-    border-radius: 10px;
-    border: 0px;
-}</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="DeviceSaveButton">
-            <property name="text">
-             <string>Save To Device</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -424,13 +407,6 @@ QWidget {
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonToggleLEDView">
-         <property name="text">
-          <string>Toggle LED View</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -472,11 +448,9 @@ QWidget {
  </customwidgets>
  <tabstops>
   <tabstop>ZoneBox</tabstop>
-  <tabstop>EditZoneButton</tabstop>
   <tabstop>LEDBox</tabstop>
   <tabstop>SelectAllLEDsButton</tabstop>
   <tabstop>ApplyColorsButton</tabstop>
-  <tabstop>SetAllButton</tabstop>
   <tabstop>ModeBox</tabstop>
   <tabstop>PerLEDCheck</tabstop>
   <tabstop>ModeSpecificCheck</tabstop>
@@ -490,7 +464,6 @@ QWidget {
   <tabstop>HueSpinBox</tabstop>
   <tabstop>SatSpinBox</tabstop>
   <tabstop>ValSpinBox</tabstop>
-  <tabstop>DeviceSaveButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>
