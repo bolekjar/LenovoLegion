@@ -444,7 +444,11 @@ void RGBController_LenovoGen9::SetupZones()
         zones.back().leds_count = m_lenovoZones[i].leds.size();
         zones.back().leds_max   = m_lenovoZones[i].leds.size();
         zones.back().leds_min   = m_lenovoZones[i].leds.size();
-        zones.back().matrix_map = m_lenovoZones[i].matrix_map.size() > 0 ? new matrix_map_type{m_lenovoZones[i].height,m_lenovoZones[i].width,m_lenovoZones[i].matrix_map.data()} : NULL;
+
+        if(m_lenovoZones[i].matrix_map.size() > 0)
+        {
+            zones.back().matrix_map = std::make_unique<matrix_map_type>(m_lenovoZones[i].height,m_lenovoZones[i].width,m_lenovoZones[i].matrix_map.data());
+        }
 
         std::copy(m_lenovoZones[i].leds.begin(), m_lenovoZones[i].leds.end(), std::back_inserter(leds));
     }

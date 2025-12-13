@@ -284,6 +284,8 @@ namespace LenovoLegionDaemon {
 
             current_hid_device = current_hid_device->next;
         }
+
+        clean();
     }
 
     void DataProviderRGBController::clean()

@@ -315,16 +315,11 @@ void RGBController_LenovoUSB::SetupZones()
 
         if(lenovo_zones[i].type == ZONE_TYPE_MATRIX)
         {
-            zones.back().matrix_map         = new matrix_map_type;
+            zones.back().matrix_map = std::make_unique<matrix_map_type>();
             zones.back().matrix_map->height = lenovo_zones[i].height;
             zones.back().matrix_map->width  = lenovo_zones[i].width;
             zones.back().matrix_map->map    = (unsigned int *) lenovo_zones[i].matrix_map;
         }
-        else
-        {
-            zones.back().matrix_map = NULL;
-        }
-
 
         for(unsigned int led_idx = lenovo_zones[i].start; led_idx <= lenovo_zones[i].end; led_idx++ )
         {

@@ -38,6 +38,7 @@ void RGBController::readRGBControllerData()
     m_zones.clear();
     m_leds.clear();
     m_colors.clear();
+    m_matrixMap.clear();
 
     m_profiles      = rgbControllerData.profiles();
     m_activeProfile = rgbControllerData.active_profile();
@@ -48,11 +49,7 @@ void RGBController::readRGBControllerData()
     // Convert LEDs
     for(int i = 0; i < rgbControllerData.leds_size(); i++)
     {
-        const auto& pbLed = rgbControllerData.leds(i);
-        LenovoLegionDaemon::led led;
-        led.name = pbLed.name();
-        led.value = pbLed.value();
-        m_leds.push_back(led);
+        m_leds.emplace_back(rgbControllerData.leds(i).name().data(),rgbControllerData.leds(i).value());
     }
 
     // Convert Colors
@@ -67,56 +64,37 @@ void RGBController::readRGBControllerData()
         const auto& pbZone = rgbControllerData.zones(i);
         LenovoLegionDaemon::zone& zone = m_zones.emplace_back();
 
-        zone.name = pbZone.name();
-        zone.type = static_cast<LenovoLegionDaemon::zone_type>(pbZone.type());
-        zone.start_idx = pbZone.start_idx();
+        zone.name       = pbZone.name();
+        zone.type       = pbZone.type();
+        zone.start_idx  = pbZone.start_idx();
         zone.leds_count = pbZone.leds_count();
-        zone.leds_min = pbZone.leds_min();
-        zone.leds_max = pbZone.leds_max();
-        zone.flags = pbZone.flags();
+        zone.leds_min   = pbZone.leds_min();
+        zone.leds_max   = pbZone.leds_max();
+        zone.flags      = pbZone.flags();
 
-
-        zone.leds   = &m_leds[zone.start_idx];
-        zone.colors = &m_colors[zone.start_idx];
+        zone.leds       = &m_leds[zone.start_idx];
+        zone.colors     = &m_colors[zone.start_idx];
 
 
         // Copy matrix map if present
         if(pbZone.has_matrix_map())
         {
-            zone.matrix_map = new LenovoLegionDaemon::matrix_map_type;
-            zone.matrix_map->height = pbZone.matrix_map().height();
-            zone.matrix_map->width = pbZone.matrix_map().width();
+            zone.matrix_map = std::make_unique<LenovoLegionDaemon::matrix_map_type>(pbZone.matrix_map().height(),pbZone.matrix_map().width(),nullptr);
 
-            unsigned int mapSize = zone.matrix_map->height * zone.matrix_map->width;
-            if(mapSize > 0)
+            m_matrixMap.assign(pbZone.matrix_map().map().begin(),pbZone.matrix_map().map().end());
+
+            if(!m_matrixMap.empty())
             {
-                zone.matrix_map->map = new unsigned int[mapSize];
-                for(unsigned int j = 0; j < mapSize && j < static_cast<unsigned int>(pbZone.matrix_map().map_size()); j++)
-                {
-                    zone.matrix_map->map[j] = pbZone.matrix_map().map(j);
-                }
+                zone.matrix_map->map = m_matrixMap.data();
             }
-            else
-            {
-                zone.matrix_map->map = nullptr;
-            }
-        }
-        else
-        {
-            zone.matrix_map = nullptr;
         }
 
         // Copy segments
         for(int j = 0; j < pbZone.segments_size(); j++)
         {
-            const auto& pbSegment = pbZone.segments(j);
-            LenovoLegionDaemon::segment seg;
-            seg.name = pbSegment.name();
-            seg.type = static_cast<LenovoLegionDaemon::zone_type>(pbSegment.type());
-            seg.start_idx = pbSegment.start_idx();
-            seg.leds_count = pbSegment.leds_count();
-            zone.segments.push_back(seg);
+            zone.segments.emplace_back(pbZone.segments(j).name().data(),pbZone.segments(j).type(),pbZone.segments(j).start_idx(),pbZone.segments(j).leds_count());
         }
+
     }
 
     // Convert Modes
@@ -125,19 +103,19 @@ void RGBController::readRGBControllerData()
         const auto& pbMode = rgbControllerData.modes(i);
         LenovoLegionDaemon::mode& mode = m_modes.emplace_back();
 
-        mode.name = pbMode.name();
-        mode.value = pbMode.value();
-        mode.flags = pbMode.flags();
-        mode.speed_min = pbMode.speed_min();
-        mode.speed_max = pbMode.speed_max();
+        mode.name           = pbMode.name();
+        mode.value          = pbMode.value();
+        mode.flags          = pbMode.flags();
+        mode.speed_min      = pbMode.speed_min();
+        mode.speed_max      = pbMode.speed_max();
         mode.brightness_min = pbMode.brightness_min();
         mode.brightness_max = pbMode.brightness_max();
-        mode.colors_min = pbMode.colors_min();
-        mode.colors_max = pbMode.colors_max();
-        mode.speed = pbMode.speed();
-        mode.brightness = pbMode.brightness();
-        mode.direction = pbMode.direction();
-        mode.color_mode = pbMode.color_mode();
+        mode.colors_min     = pbMode.colors_min();
+        mode.colors_max     = pbMode.colors_max();
+        mode.speed          = pbMode.speed();
+        mode.brightness     = pbMode.brightness();
+        mode.direction      = pbMode.direction();
+        mode.color_mode     = pbMode.color_mode();
 
         // Copy colors
         for(int j = 0; j < pbMode.colors_size(); j++)
@@ -173,6 +151,7 @@ void RGBController::sendRGBControllerData()
         for(const auto& mode : m_modes)
         {
             auto* pbMode = rgbControllerData.add_modes();
+
             pbMode->set_name(mode.name);
             pbMode->set_value(mode.value);
             pbMode->set_flags(mode.flags);

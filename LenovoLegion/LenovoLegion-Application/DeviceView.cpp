@@ -335,7 +335,7 @@ void DeviceView::InitDeviceView()
         \*-----------------------------------------------------*/
         if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
         {
-            LenovoLegionDaemon::matrix_map_type * map = controller->GetZones()[zone_idx].matrix_map;
+            LenovoLegionDaemon::matrix_map_type * map = controller->GetZones()[zone_idx].matrix_map.get();
 
             for(unsigned int led_x = 0; led_x < map->width; led_x++)
             {

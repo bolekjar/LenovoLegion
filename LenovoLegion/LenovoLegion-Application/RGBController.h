@@ -85,6 +85,7 @@ private:
     std::vector<LenovoLegionDaemon::zone>       m_zones;
     std::vector<LenovoLegionDaemon::mode>       m_modes;
     std::vector<LenovoLegionDaemon::RGBColor>   m_colors;
+    std::vector<unsigned int>                   m_matrixMap;
 
     LenovoLegionDaemon::device_type   m_deviceType    = LenovoLegionDaemon::DEVICE_TYPE_UNKNOWN;
     int                               m_activeMode    = -1;
