@@ -87,31 +87,55 @@ QGroupBox::indicator:checked {
 /*-----QPushButton-----*/
 QPushButton
 {
-	background-color:  #b0b0b0;
+	background-color: #b0b0b0;
 	color: #000000;
-	border: 1px solid #888888;
+	border: 2px solid #888888;
 	border-radius: 10px;
-	padding: 6px;
+	padding: 8px 16px;
+	font-weight: bold;
+	min-width: 80px;
+	text-align: center;
 }
 
 
 QPushButton::hover
 {
 	background-color: #cbccd4;
-	border: 1px solid #888888;
-
+	border: 2px solid #b0b0b0;
+	color: #000000;
 }
 
 
 QPushButton::pressed
 {
 	background-color: #787878;
+	border: 2px solid #656565;
+	color: #ffffff;
+	padding-top: 9px;
+	padding-bottom: 7px;
 }
 
 
 QPushButton::checked
 {
 	background-color: #787878;
+	border: 2px solid #b0b0b0;
+	color: #ffffff;
+}
+
+
+QPushButton::disabled
+{
+	background-color: #505050;
+	border: 2px solid #404040;
+	color: #888888;
+}
+
+
+QPushButton::focus
+{
+	border: 2px solid #cbccd4;
+	outline: none;
 }
 
 
@@ -196,22 +220,25 @@ QSlider::handle:horizontal:hover
 
 QSlider::sub-page:horizontal:disabled
 {
-	background-color: gray;
-	border-color: gray;
+	background-color: #505050;
+	border-color: #404040;
 }
 
 
 QSlider::add-page:horizontal:disabled
 {
-	background-color: #363535;
-	border-color: #363535;
+	background-color: #2b2b2b;
+	border-color: #202020;
 }
 
 
 QSlider::handle:horizontal:disabled
 {
-	background-color: gray;
-	border: 1px solid gray;
+	background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5,
+								fx:0.5, fy:0.5,
+								stop:0.6 rgba(80, 80, 80, 255),
+								stop:0.7 rgba(70, 70, 70, 100));
+	border: 1px solid #404040;
 }
 
 QSlider:vertical {
@@ -246,6 +273,30 @@ QSlider::add-page:vertical
 {
 	background-color: transparent;
 	background-color: gray;
+}
+
+
+QSlider::sub-page:vertical:disabled
+{
+	background-color: #2b2b2b;
+	border-color: #202020;
+}
+
+
+QSlider::add-page:vertical:disabled
+{
+	background-color: #505050;
+	border-color: #404040;
+}
+
+
+QSlider::handle:vertical:disabled
+{
+	background: qradialgradient(spread:reflect, cx:0.5, cy:0.5, radius:0.5,
+								fx:0.5, fy:0.5,
+								stop:0.6 rgba(80, 80, 80, 255),
+								stop:0.7 rgba(70, 70, 70, 100));
+	border: 1px solid #404040;
 }
 
 

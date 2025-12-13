@@ -258,12 +258,12 @@ namespace LenovoLegionDaemon {
 
     void DataProviderRGBController::init()
     {
-        hid_device_info *current_hid_device = hid_enumerate(0, 0);;
-
         LOG_D(__PRETTY_FUNCTION__);
 
         clean();
 
+        hid_device_info * hid_devices = hid_enumerate(0, 0);;
+        hid_device_info *current_hid_device = hid_devices;
         while (current_hid_device) {
             /*-----------------------------------------------------------------------------*\
 
@@ -290,7 +290,11 @@ namespace LenovoLegionDaemon {
             }
 
             current_hid_device = current_hid_device->next;
+
+
         }
+
+        hid_free_enumeration(hid_devices);
     }
 
     void DataProviderRGBController::clean()
