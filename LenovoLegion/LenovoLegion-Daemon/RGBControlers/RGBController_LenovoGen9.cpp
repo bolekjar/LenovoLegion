@@ -7,6 +7,7 @@
  */
 
 #include "RGBController_LenovoGen9.h"
+#include "RGBControllerKeyNames.h"
 #include "LenovoDevices.h"
 
 #include <stdexcept>

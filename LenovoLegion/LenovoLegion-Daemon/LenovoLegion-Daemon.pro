@@ -129,13 +129,11 @@ HEADERS += \
 HEADERS += \
         RGBControlers/LenovoDevices.h            \
         RGBControlers/LenovoUSBController.h      \
-        RGBControlers/RGBController_LenovoUSB.h  \
         RGBControlers/LenovoGen9USBController.h  \
         RGBControlers/RGBController_LenovoGen9.h
 
 SOURCES += \
         RGBControlers/LenovoUSBController.cpp      \
-        RGBControlers/RGBController_LenovoUSB.cpp  \
         RGBControlers/LenovoGen9USBController.cpp  \
         RGBControlers/RGBController_LenovoGen9.cpp \
         RGBControlers/LenovoUSBControllerDetect.cpp

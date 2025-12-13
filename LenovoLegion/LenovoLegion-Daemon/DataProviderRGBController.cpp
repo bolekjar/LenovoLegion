@@ -50,6 +50,7 @@ namespace LenovoLegionDaemon {
             for(const auto& led : leds)
             {
                 auto* pbLed = rgbController.add_leds();
+
                 pbLed->set_name(led.name);
                 pbLed->set_value(led.value);
             }
@@ -59,6 +60,7 @@ namespace LenovoLegionDaemon {
             for(const auto& zone : zones)
             {
                 auto* pbZone = rgbController.add_zones();
+
                 pbZone->set_name(zone.name);
                 pbZone->set_type(static_cast<legion::messages::RGBController::ZoneType>(zone.type));
                 pbZone->set_start_idx(zone.start_idx);
@@ -71,8 +73,10 @@ namespace LenovoLegionDaemon {
                 if(zone.matrix_map != nullptr)
                 {
                     auto* pbMatrixMap = pbZone->mutable_matrix_map();
+
                     pbMatrixMap->set_height(zone.matrix_map->height);
                     pbMatrixMap->set_width(zone.matrix_map->width);
+
                     for(unsigned int i = 0; i < zone.matrix_map->height * zone.matrix_map->width; i++)
                     {
                         pbMatrixMap->add_map(zone.matrix_map->map[i]);
@@ -83,11 +87,13 @@ namespace LenovoLegionDaemon {
                 for(const auto& segment : zone.segments)
                 {
                     auto* pbSegment = pbZone->add_segments();
+
                     pbSegment->set_name(segment.name);
                     pbSegment->set_type(static_cast<legion::messages::RGBController::ZoneType>(segment.type));
                     pbSegment->set_start_idx(segment.start_idx);
                     pbSegment->set_leds_count(segment.leds_count);
                 }
+
             }
 
             // Serialize Modes
@@ -95,6 +101,7 @@ namespace LenovoLegionDaemon {
             for(const auto& mode : modes)
             {
                 auto* pbMode = rgbController.add_modes();
+
                 pbMode->set_name(mode.name);
                 pbMode->set_value(mode.value);
                 pbMode->set_flags(mode.flags);
@@ -258,8 +265,8 @@ namespace LenovoLegionDaemon {
         clean();
 
         while (current_hid_device) {
-
             /*-----------------------------------------------------------------------------*\
+
             | Loop through all available detectors.  If all required information matches,   |
             | run the detector                                                              |
             \*-----------------------------------------------------------------------------*/
@@ -284,8 +291,6 @@ namespace LenovoLegionDaemon {
 
             current_hid_device = current_hid_device->next;
         }
-
-        clean();
     }
 
     void DataProviderRGBController::clean()

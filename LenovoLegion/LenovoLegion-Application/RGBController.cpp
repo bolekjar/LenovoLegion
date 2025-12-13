@@ -34,18 +34,43 @@ void RGBController::readRGBControllerData()
 {
     legion::messages::RGBController rgbControllerData = m_dataProvider->getDataMessage<legion::messages::RGBController>(LenovoLegionDaemon::DataProviderRGBController::dataType);
 
+
     m_modes.clear();
     m_zones.clear();
     m_leds.clear();
     m_colors.clear();
     m_matrixMap.clear();
 
-    m_profiles      = rgbControllerData.profiles();
-    m_activeProfile = rgbControllerData.active_profile();
-    m_activeMode    = rgbControllerData.active_mode();
-    m_deviceType    = static_cast<LenovoLegionDaemon::device_type>(rgbControllerData.device_type());
+    m_profiles      = -1;
+    m_activeProfile = -1;
+    m_activeMode    = -1;
+    m_deviceType = LenovoLegionDaemon::DEVICE_TYPE_UNKNOWN;
 
 
+    if(rgbControllerData.ByteSizeLong() == 0)
+    {
+        THROW_EXCEPTION(exception_T,DATA_NOT_AVAILABLE,"RGBController data not available from daemon");
+    }
+
+    if(rgbControllerData.has_profiles())
+    {
+        m_profiles = rgbControllerData.profiles();
+    }
+
+    if(rgbControllerData.has_active_profile())
+    {
+        m_activeProfile = rgbControllerData.active_profile();
+    }
+    if(rgbControllerData.has_active_mode())
+    {
+        m_activeMode = rgbControllerData.active_mode();
+    }
+
+    if(rgbControllerData.has_device_type())
+    {
+        m_deviceType = static_cast<LenovoLegionDaemon::device_type>(rgbControllerData.device_type());
+    }
+    \
     // Convert LEDs
     for(int i = 0; i < rgbControllerData.leds_size(); i++)
     {

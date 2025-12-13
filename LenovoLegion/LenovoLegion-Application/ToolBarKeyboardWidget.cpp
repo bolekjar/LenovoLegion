@@ -4,6 +4,9 @@
 #include "Utils.h"
 #include "WidgetMessage.h"
 
+#include "Core/LoggerHolder.h"
+
+
 #include "RGBController.h"
 #include "OpenRGBDevicePage.h"
 
@@ -20,7 +23,13 @@ ToolBarKeyboardWidget::ToolBarKeyboardWidget(DataProvider* dataProvider,QWidget 
      * Initialize actions map
      */
     m_defaultActionsMap["add"].push_back([this]() {
-        ui->verticalLayout_ToolBarKeyboard->addWidget(new OpenRGBDevicePage(new RGBController(m_dataProvider),this));
+        try {
+            ui->verticalLayout_ToolBarKeyboard->addWidget(new OpenRGBDevicePage(new RGBController(m_dataProvider),this));
+        }
+        catch(RGBController::exception_T &ex)
+        {
+            LOG_D(QString("ToolBarKeyboardWidget: Failed to initialize OpenRGBDevicePage: ").append(ex.what()));
+        }
     });
 
 
