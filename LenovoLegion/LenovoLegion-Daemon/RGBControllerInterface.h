@@ -187,7 +187,7 @@ public:
     unsigned int            leds_count;     /* Number of LEDs in zone   */
     unsigned int            leds_min;       /* Minimum number of LEDs   */
     unsigned int            leds_max;       /* Maximum number of LEDs   */
-    matrix_map_type *       matrix_map;     /* Matrix map pointer       */
+    matrix_map_type*        matrix_map;     /* Matrix map pointer       */
     std::vector<segment>    segments;       /* Segments in zone         */
     unsigned int            flags;          /* Zone flags bitfield      */
 
@@ -204,12 +204,35 @@ public:
         leds_count  = 0;
         leds_min    = 0;
         leds_max    = 0;
-        matrix_map  = NULL;
         flags       = 0;
+    }
+
+    zone(zone &&other)
+    {
+        name        = other.name;
+        type        = other.type;
+        leds        = other.leds;
+        colors      = other.colors;
+        start_idx   = other.start_idx;
+        leds_count  = other.leds_count;
+        leds_min    = other.leds_min;
+        leds_max    = other.leds_max;
+        matrix_map  = other.matrix_map;
+        segments    = std::move(other.segments);
+        flags       = other.flags;
+
+        other.leds       = NULL;
+        other.colors     = NULL;
+        other.matrix_map = NULL;
     }
 
     ~zone()
     {}
+
+    zone(const zone&)  = delete;
+    zone& operator=(const zone&)  = delete;
+    zone& operator=(const zone&&) = delete;
+
 };
 
 /*------------------------------------------------------------------*\
@@ -276,8 +299,8 @@ public:
     virtual std::string                   GetModeName(unsigned int mode)      const                             = 0;
     virtual std::string                   GetZoneName(unsigned int zone)      const                             = 0;
     virtual std::string                   GetLEDName(unsigned int led)        const                             = 0;
-    virtual std::vector<zone>             GetZones()                          const                             = 0;
-    virtual std::vector<RGBColor>         GetColors()          const                                            = 0;
+    virtual const std::vector<zone>&      GetZones()                          const                             = 0;
+    virtual const std::vector<RGBColor>&  GetColors()          const                                            = 0;
     virtual device_type                   GetDeviceType()      const                                            = 0;
     virtual unsigned int                  GetProfiles()        const                                            = 0;
     virtual size_t                        GetActiveProfile()   const                                            = 0;
@@ -288,13 +311,13 @@ public:
     virtual RGBColor                      GetLED(unsigned int led)          const                               = 0;
     virtual void                          SetLED(unsigned int led, RGBColor color)                              = 0;
 
-    virtual std::vector<led>              GetLEDs() const                                                       = 0;
+    virtual const std::vector<led>&       GetLEDs() const                                                       = 0;
     virtual void                          SetLEDs(const std::vector<led>& new_leds)                             = 0;
 
     virtual int                           GetMode()      const                                                  = 0;
     virtual void                          SetMode(int mode)                                                     = 0;
 
-    virtual std::vector<mode>             GetModes()           const                                            = 0;
+    virtual const std::vector<mode>&      GetModes()           const                                            = 0;
     virtual void                          SetModes(const std::vector<mode>& new_modes)                          = 0;
 
     /*

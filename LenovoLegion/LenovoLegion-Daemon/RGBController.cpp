@@ -198,7 +198,7 @@ void RGBController::SetProfile(size_t profileIdx)
     active_profile = profileIdx;
 }
 
-std::vector<led> RGBController::GetLEDs() const
+const std::vector<led>& RGBController::GetLEDs() const
 {
     return leds;
 }
@@ -208,12 +208,12 @@ void RGBController::SetLEDs(const std::vector<led> &new_leds)
     leds = new_leds;
 }
 
-std::vector<zone> RGBController::GetZones() const
+const std::vector<zone>& RGBController::GetZones() const
 {
     return zones;
 }
 
- std::string RGBController::GetControllerName() const
+std::string RGBController::GetControllerName() const
 {
     return name;
 }
@@ -223,7 +223,7 @@ int RGBController::GetActiveMode() const
     return active_mode;
 }
 
-std::vector<mode> RGBController::GetModes() const
+const std::vector<mode>& RGBController::GetModes() const
 {
     return modes;
 }
@@ -233,7 +233,7 @@ void RGBController::SetModes(const std::vector<mode> &new_modes)
     modes = new_modes;
 }
 
-std::vector<RGBColor> RGBController::GetColors() const
+const std::vector<RGBColor>& RGBController::GetColors() const
 {
     return colors;
 }

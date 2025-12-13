@@ -67,20 +67,6 @@ namespace LenovoLegionDaemon {
                 pbZone->set_leds_max(zone.leds_max);
                 pbZone->set_flags(zone.flags);
 
-                // Serialize zone LEDs
-                for(unsigned int i = 0; i < zone.leds_count; i++)
-                {
-                    auto* pbLed = pbZone->add_leds();
-                    pbLed->set_name(zone.leds[i].name);
-                    pbLed->set_value(zone.leds[i].value);
-                }
-
-                // Serialize zone colors
-                for(unsigned int i = 0; i < zone.leds_count; i++)
-                {
-                    pbZone->add_colors(zone.colors[i]);
-                }
-
                 // Serialize matrix map if present
                 if(zone.matrix_map != nullptr)
                 {

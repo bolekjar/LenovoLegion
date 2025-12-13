@@ -100,7 +100,7 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     ui->ModeBox->blockSignals(true);
     ui->ModeBox->clear();
 
-    auto modes = device->GetModes();
+    auto& modes = device->GetModes();
     for(std::size_t i = 0; i < modes.size(); i++)
     {
         ui->ModeBox->addItem(device->GetModeName(i).c_str());
@@ -150,9 +150,9 @@ void OpenRGBDevicePage::on_ZoneBox_currentIndexChanged(int index)
     /*-----------------------------------------------------*\
     | Process zone box change based on color mode           |
     \*-----------------------------------------------------*/
-    auto modes = device->GetModes();
-    auto zones = device->GetZones();
-    auto leds  = device->GetLEDs();
+    auto& modes = device->GetModes();
+    auto& zones = device->GetZones();
+    auto& leds  = device->GetLEDs();
     switch(modes[selected_mode].color_mode)
     {
         case LenovoLegionDaemon::MODE_COLORS_PER_LED:
@@ -370,9 +370,9 @@ void OpenRGBDevicePage::on_LEDBox_currentIndexChanged(int index)
     /*-----------------------------------------------------*\
     | Process zone box change based on color mode           |
     \*-----------------------------------------------------*/
-    auto modes = device->GetModes();
-    auto zones = device->GetZones();
-    auto leds  = device->GetLEDs();
+    auto& modes = device->GetModes();
+    auto& zones = device->GetZones();
+    auto& leds  = device->GetLEDs();
     switch(modes[selected_mode].color_mode)
     {
         case LenovoLegionDaemon::MODE_COLORS_PER_LED:
@@ -670,7 +670,6 @@ void OpenRGBDevicePage::on_ModeBox_currentIndexChanged(int)
     /*-----------------------------------------------------*\
     | Disable the button if we can safely auto apply colors |
     \*-----------------------------------------------------*/
-    auto modes = device->GetModes();
     ui->ApplyColorsButton->setDisabled(autoUpdateEnabled());
 }
 
@@ -771,8 +770,8 @@ void OpenRGBDevicePage::UpdateModeUi()
     /*-----------------------------------------------------*\
     | Don't update the UI if the current mode is invalid    |
     \*-----------------------------------------------------*/
-    auto modes = device->GetModes();
-    auto zones = device->GetZones();
+    auto& modes = device->GetModes();
+    auto& zones = device->GetZones();
     if(selected_mode < modes.size())
     {
         bool supports_per_led       = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_COLOR );
@@ -1070,7 +1069,7 @@ void OpenRGBDevicePage::UpdateMode()
     \*-----------------------------------------------------*/
     int current_mode = ui->ModeBox->currentIndex();
 
-    auto modes = device->GetModes();
+    auto& modes = device->GetModes();
     if(current_mode >= 0)
     {
         int  current_speed          = 0;
@@ -1123,9 +1122,11 @@ void OpenRGBDevicePage::UpdateMode()
                 current_direction = current_dir_idx;
             }
 
-            modes[(unsigned int)current_mode].direction = current_direction;
+            auto l_modes = modes;
 
-            device->SetModes(modes);
+            l_modes[(unsigned int)current_mode].direction = current_direction;
+
+            device->SetModes(l_modes);
         }
 
         /*-----------------------------------------------------*\
@@ -1168,32 +1169,33 @@ void OpenRGBDevicePage::UpdateMode()
         /*-----------------------------------------------------*\
         | Don't set the mode if the current mode is invalid     |
         \*-----------------------------------------------------*/
+        auto l_modes = modes;
         if((unsigned int)current_mode < modes.size() )
         {
             /*-----------------------------------------------------*\
             | Update mode parameters                                |
             \*-----------------------------------------------------*/
-            modes[(unsigned int)current_mode].speed         = current_speed;
-            modes[(unsigned int)current_mode].brightness    = current_brightness;
+            l_modes[(unsigned int)current_mode].speed         = current_speed;
+            l_modes[(unsigned int)current_mode].brightness    = current_brightness;
 
             if(current_per_led)
             {
-                modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_PER_LED;
+                l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_PER_LED;
             }
             else if(current_mode_specific)
             {
-               modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
+               l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
             }
             else if(current_random)
             {
-                modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_RANDOM;
+                l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_RANDOM;
             }
             else
             {
-                modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_NONE;
+                l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_NONE;
             }
 
-            device->SetModes(modes);
+            device->SetModes(l_modes);
 
             /*-----------------------------------------------------*\
             | Change device mode                                    |
@@ -1397,8 +1399,8 @@ void OpenRGBDevicePage::on_HexLineEdit_textChanged(const QString &arg1)
 
 void OpenRGBDevicePage::on_DeviceViewBox_selectionChanged(QVector<int> indices)
 {
-    auto modes = device->GetModes();
-    auto leds  = device->GetLEDs();
+    auto& modes = device->GetModes();
+    auto& leds  = device->GetLEDs();
     if(modes[device->GetMode()].color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED)
     {
         ui->ZoneBox->blockSignals(true);
@@ -1484,7 +1486,7 @@ void OpenRGBDevicePage::on_ApplyColorsButton_clicked()
     \*-----------------------------------------------------*/
     unsigned int selected_mode = (unsigned int)ui->ModeBox->currentIndex();
 
-    auto modes = device->GetModes();
+    auto& modes = device->GetModes();
     switch(modes[selected_mode].color_mode)
     {
         case LenovoLegionDaemon::MODE_COLORS_PER_LED:
@@ -1512,8 +1514,9 @@ void OpenRGBDevicePage::on_ApplyColorsButton_clicked()
                                     current_color.blue()
                                 );
 
-                modes[selected_mode].colors[index] = color;
-                device->SetModes(modes);
+                auto l_mode = modes;
+                l_mode[selected_mode].colors[index] = color;
+                device->SetModes(l_mode);
             }
             break;
     }
@@ -1535,7 +1538,7 @@ void OpenRGBDevicePage::colorChanged()
 {
     updateColorUi();
 
-    auto modes  = device->GetModes();
+    auto& modes  = device->GetModes();
     unsigned int selected_mode   = (unsigned int)ui->ModeBox->currentIndex();
 
 
@@ -1558,8 +1561,9 @@ void OpenRGBDevicePage::colorChanged()
             {
                 unsigned int index = ui->LEDBox->currentIndex();
 
-                modes[selected_mode].colors[index] = rgb_color;
-                device->SetModes(modes);
+                auto l_modes = modes;
+                l_modes[selected_mode].colors[index] = rgb_color;
+                device->SetModes(l_modes);
                 break;
             }
         }

@@ -304,27 +304,27 @@ void RGBController_LenovoUSB::SetupZones()
 
     for(unsigned int i = 0; i < lenovo_zones.size(); i++)
     {
-        zone new_zone;
-        new_zone.name       = lenovo_zones[i].name;
-        new_zone.type       = lenovo_zones[i].type;
-        new_zone.leds_count = lenovo_zones[i].end - lenovo_zones[i].start + 1;
-        new_zone.leds_max   = new_zone.leds_count;
-        new_zone.leds_min   = new_zone.leds_count;
+        zones.emplace_back();
+
+        zones.back().name       = lenovo_zones[i].name;
+        zones.back().type       = lenovo_zones[i].type;
+        zones.back().leds_count = lenovo_zones[i].end - lenovo_zones[i].start + 1;
+        zones.back().leds_max   = zones.back().leds_count;
+        zones.back().leds_min   = zones.back().leds_count;
 
 
         if(lenovo_zones[i].type == ZONE_TYPE_MATRIX)
         {
-            new_zone.matrix_map         = new matrix_map_type;
-            new_zone.matrix_map->height = lenovo_zones[i].height;
-            new_zone.matrix_map->width  = lenovo_zones[i].width;
-            new_zone.matrix_map->map    = (unsigned int *) lenovo_zones[i].matrix_map;
+            zones.back().matrix_map         = new matrix_map_type;
+            zones.back().matrix_map->height = lenovo_zones[i].height;
+            zones.back().matrix_map->width  = lenovo_zones[i].width;
+            zones.back().matrix_map->map    = (unsigned int *) lenovo_zones[i].matrix_map;
         }
         else
         {
-            new_zone.matrix_map = NULL;
+            zones.back().matrix_map = NULL;
         }
 
-        zones.push_back(new_zone);
 
         for(unsigned int led_idx = lenovo_zones[i].start; led_idx <= lenovo_zones[i].end; led_idx++ )
         {

@@ -10,8 +10,8 @@
 #include <Core/ExceptionBuilder.h>
 
 #include "../LenovoLegion-Daemon/RGBControllerInterface.h"
-#include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
 
+#include <bitset>
 
 namespace LenovoLegionGui {
 
@@ -59,15 +59,15 @@ public:
 
     virtual void            SetProfile(size_t profileIdx)                                                       override;
 
-    virtual std::vector<LenovoLegionDaemon::led>       GetLEDs()  const                                         override;
+    virtual const std::vector<LenovoLegionDaemon::led>&       GetLEDs()  const                                  override;
     virtual void                          SetLEDs(const std::vector<LenovoLegionDaemon::led>& new_leds)         override;
 
-    virtual std::vector<LenovoLegionDaemon::zone>      GetZones() const                                         override;
+    virtual const std::vector<LenovoLegionDaemon::zone>&      GetZones() const                                  override;
 
-    virtual std::vector<LenovoLegionDaemon::mode>      GetModes()           const                               override;
+    virtual const std::vector<LenovoLegionDaemon::mode>&      GetModes()           const                        override;
     virtual void                          SetModes(const std::vector<LenovoLegionDaemon::mode>& new_modes)      override;
 
-    virtual std::vector<LenovoLegionDaemon::RGBColor>   GetColors()          const                              override;
+    virtual const std::vector<LenovoLegionDaemon::RGBColor>&   GetColors()          const                       override;
     virtual LenovoLegionDaemon::device_type                   GetDeviceType()      const                        override;
     virtual unsigned int                  GetProfiles()        const                                            override;
     virtual size_t                        GetActiveProfile()   const                                            override;
@@ -81,7 +81,18 @@ private:
 private:
     DataProvider* m_dataProvider;
 
-    legion::messages::RGBController         m_rgbControllerData;
+    std::vector<LenovoLegionDaemon::led>        m_leds;
+    std::vector<LenovoLegionDaemon::zone>       m_zones;
+    std::vector<LenovoLegionDaemon::mode>       m_modes;
+    std::vector<LenovoLegionDaemon::RGBColor>   m_colors;
+
+    LenovoLegionDaemon::device_type   m_deviceType    = LenovoLegionDaemon::DEVICE_TYPE_UNKNOWN;
+    int                               m_activeMode    = -1;
+    size_t                            m_activeProfile = -1;
+    int                               m_profiles      = -1;
+
+
+
     std::bitset<MAXIMUM_CHANGES>            m_pendingChanges;
 };
 

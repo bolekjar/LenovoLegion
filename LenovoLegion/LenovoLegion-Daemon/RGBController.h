@@ -44,9 +44,9 @@ public:
     virtual unsigned int                    GetLEDsInZone(unsigned int zone) const   override;
     virtual std::string                     GetModeName(unsigned int mode) const     override;
     virtual std::string                     GetZoneName(unsigned int zone) const     override;
-    virtual std::vector<zone>               GetZones() const                         override;
+    virtual const std::vector<zone>&        GetZones() const                         override;
     virtual std::string                     GetLEDName(unsigned int led)     const   override;
-    virtual std::vector<RGBColor>           GetColors() const                        override;
+    virtual const std::vector<RGBColor>&    GetColors() const                        override;
     virtual device_type                     GetDeviceType() const                    override;
     virtual unsigned int                    GetProfiles() const                      override;
     virtual size_t                          GetActiveProfile() const                 override;
@@ -58,10 +58,10 @@ public:
     virtual int                     GetMode()                          const override;
     virtual void                    SetMode(int mode)                        override;
 
-    virtual std::vector<led>        GetLEDs() const                          override;
+    virtual const std::vector<led>& GetLEDs() const                          override;
     virtual void                    SetLEDs(const std::vector<led>& new_leds)override;
 
-    virtual std::vector<mode>        GetModes() const                               override;
+    virtual const std::vector<mode>& GetModes() const                               override;
     virtual void                     SetModes(const std::vector<mode>& new_modes)   override;
     virtual void                     SetProfile(size_t profileIdx)                  override;
 public:

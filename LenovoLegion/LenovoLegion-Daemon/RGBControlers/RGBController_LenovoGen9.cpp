@@ -437,16 +437,14 @@ void RGBController_LenovoGen9::SetupZones()
      */
     for(unsigned int i = 0; i < m_lenovoZones.size(); i++)
     {
-        zone new_zone;
+        zones.emplace_back();
 
-        new_zone.name       = m_lenovoZones[i].name;
-        new_zone.type       = m_lenovoZones[i].type;
-        new_zone.leds_count = m_lenovoZones[i].leds.size();
-        new_zone.leds_max   = m_lenovoZones[i].leds.size();
-        new_zone.leds_min   = m_lenovoZones[i].leds.size();
-        new_zone.matrix_map = m_lenovoZones[i].matrix_map.size() > 0 ? new matrix_map_type{m_lenovoZones[i].height,m_lenovoZones[i].width,m_lenovoZones[i].matrix_map.data()} : NULL;
-
-        zones.push_back(new_zone);
+        zones.back().name       = m_lenovoZones[i].name;
+        zones.back().type       = m_lenovoZones[i].type;
+        zones.back().leds_count = m_lenovoZones[i].leds.size();
+        zones.back().leds_max   = m_lenovoZones[i].leds.size();
+        zones.back().leds_min   = m_lenovoZones[i].leds.size();
+        zones.back().matrix_map = m_lenovoZones[i].matrix_map.size() > 0 ? new matrix_map_type{m_lenovoZones[i].height,m_lenovoZones[i].width,m_lenovoZones[i].matrix_map.data()} : NULL;
 
         std::copy(m_lenovoZones[i].leds.begin(), m_lenovoZones[i].leds.end(), std::back_inserter(leds));
     }
