@@ -63,9 +63,18 @@ public:
         MinimizeToTray,
         AppDebugLogging,
         SaveSettingsOnDaemonExit,
-        DaemonDebugLogging
+        DaemonDebugLogging,
+        StylesheetTheme
     };
     Q_ENUM(SettingType)
+
+    enum class ThemeType {
+        NoTheme     = 0,
+        WhiteTheme  = 1,
+        GrayTheme   = 2,
+        DarkTheme   = 3
+    };
+    Q_ENUM(ThemeType)
 
     explicit ApplicationSettings(QObject* parent = nullptr);
 
@@ -78,6 +87,7 @@ public:
     ApplicationSettings& loadAppDebugLogging(bool& value);
     ApplicationSettings& loadSaveSettingsOnDaemonExit(bool& value);
     ApplicationSettings& loadDaemonDebugLogging(bool& value);
+    ApplicationSettings& loadStylesheetTheme(ThemeType& value);
 
     // Save settings
     ApplicationSettings& saveStartMinimized(bool value);
@@ -85,12 +95,14 @@ public:
     ApplicationSettings& saveAppDebugLogging(bool value);
     ApplicationSettings& saveSaveSettingsOnDaemonExit(bool value);
     ApplicationSettings& saveDaemonDebugLogging(bool value);
+    ApplicationSettings& saveStylesheetTheme(ThemeType value);
 
     // Reset to defaults
     void resetToDefaults();
 
 signals:
     void settingChanged(ApplicationSettings::SettingType setting, bool value);
+    void themeChanged(ApplicationSettings::ThemeType theme);
 };
 
 

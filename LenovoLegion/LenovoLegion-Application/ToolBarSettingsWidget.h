@@ -8,6 +8,7 @@
 #pragma once
 
 #include "ToolBarWidget.h"
+#include "Settings.h"
 
 namespace Ui {
 class ToolBarSettingsWidget;
@@ -44,6 +45,7 @@ protected slots:
     void onDaemonSettingChanged();
     void onSaveCurrentConfiguration();
     void onReconnectDaemon();
+    void onStylesheetThemeChanged(int index);
 
 private:
 
@@ -53,7 +55,17 @@ private:
     void loadDaemonSettings();
     void sendDaemonSettingsToDaemon();
     void connectSignals();
+    void applyStylesheetTheme(ApplicationSettings::ThemeType theme);
+    static QString getWhiteStylesheet();
+    static QString getGrayStylesheet();
+    static QString getDarkStylesheet();
 
+public:
+    // Static methods for external access (wrappers)
+    static QString getModernBlueStylesheetStatic();
+    static QString getClassicGrayStylesheetStatic();
+    static QString getCompleteModernBlueStylesheetStatic();
+private:
     Ui::ToolBarSettingsWidget *ui;
 
     /*

@@ -72,7 +72,7 @@ CPUFrequencyControl::CPUFrequencyControl(DataProvider *dataProvider,QWidget *par
                                                                                                          m_cpuFreqData.cpus().at(i).max_freq()    / 1000,
                                                                                                          m_cpuFreqData.cpus().at(i).scaling_min_freq() / 1000,
                                                                                                          m_cpuFreqData.cpus().at(i).scaling_max_freq() / 1000,
-                                                                                                         "#979797",
+                                                                                                         "#3D2B1F",
                                                                                                          this
                                                                                                          )
                                                                                       ,

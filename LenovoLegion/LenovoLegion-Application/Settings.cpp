@@ -71,6 +71,12 @@ ApplicationSettings& ApplicationSettings::loadDaemonDebugLogging(bool& value)
     return *this;
 }
 
+ApplicationSettings& ApplicationSettings::loadStylesheetTheme(ThemeType& value)
+{
+    value = static_cast<ThemeType>(m_settings.value("StylesheetTheme", static_cast<int>(ThemeType::NoTheme)).toInt());
+    return *this;
+}
+
 ApplicationSettings& ApplicationSettings::saveStartMinimized(bool value)
 {
     m_settings.setValue("StartMinimized", value);
@@ -106,13 +112,21 @@ ApplicationSettings& ApplicationSettings::saveDaemonDebugLogging(bool value)
     return *this;
 }
 
+ApplicationSettings& ApplicationSettings::saveStylesheetTheme(ThemeType value)
+{
+    m_settings.setValue("StylesheetTheme", static_cast<int>(value));
+    emit themeChanged(value);
+    return *this;
+}
+
 void ApplicationSettings::resetToDefaults()
 {
     saveStartMinimized(false)
         .saveMinimizeToTray(false)
         .saveAppDebugLogging(false)
         .saveSaveSettingsOnDaemonExit(true)
-        .saveDaemonDebugLogging(false);
+        .saveDaemonDebugLogging(false)
+        .saveStylesheetTheme(ThemeType::NoTheme);
 }
 
 // ProfileSettings implementation

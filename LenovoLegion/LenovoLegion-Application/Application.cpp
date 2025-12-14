@@ -9,6 +9,7 @@
 #include "DataProviderManager.h"
 #include "ProtocolProcessor.h"
 #include "ProtocolProcessorNotifier.h"
+#include "ToolBarSettingsWidget.h"
 
 #include <Core/LoggerHolder.h>
 #include <Core/Application.h>
@@ -142,6 +143,12 @@ void Application::applyStartupSettings()
     ApplicationSettings::instance()->loadAppDebugLogging(appDebugLogging);
     applyDebugLogging(appDebugLogging);
     
+    // Apply theme setting
+    ApplicationSettings::ThemeType theme = ApplicationSettings::ThemeType::NoTheme;
+    ApplicationSettings::instance()->loadStylesheetTheme(theme);
+    applyTheme(theme);
+    LOG_D(QString("Applied theme: ").append(QString::number(static_cast<int>(theme))));
+    
     // Apply start minimized setting
     bool startMinimized = false;
     ApplicationSettings::instance()->loadStartMinimized(startMinimized);
@@ -176,6 +183,29 @@ void Application::applyDebugLogging(bool enable)
     }
 }
 
+void Application::applyTheme(ApplicationSettings::ThemeType theme)
+{
+    QString stylesheet;
+    
+    switch (theme) {
+        case ApplicationSettings::ThemeType::NoTheme:
+            stylesheet = "";
+            LOG_D("Applying No Theme (default system theme)");
+            break;
+        case ApplicationSettings::ThemeType::WhiteTheme:
+            stylesheet = ToolBarSettingsWidget::getModernBlueStylesheetStatic();
+            break;
+        case ApplicationSettings::ThemeType::GrayTheme:
+            stylesheet = ToolBarSettingsWidget::getClassicGrayStylesheetStatic();
+            break;
+        case ApplicationSettings::ThemeType::DarkTheme:
+            stylesheet = ToolBarSettingsWidget::getCompleteModernBlueStylesheetStatic();
+            break;
+    }
+    
+    setStyleSheet(stylesheet);
+}
+
 void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::SettingType setting, bool value)
 {
     using SettingType = ApplicationSettings::SettingType;
@@ -195,7 +225,9 @@ void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::Setting
             LOG_D(QString("Setting changed: AppDebugLogging = ").append(value ? "true" : "false"));
             applyDebugLogging(value);
             break;
-            
+        case SettingType::StylesheetTheme:
+            LOG_D(QString("Setting changed: StylesheetTheme = ").append(value ? "true" : "false"));
+            break;
         default:
             break;
     }

@@ -23,66 +23,6 @@
    <iconset resource="Resources.qrc">
     <normaloff>:/images/icons/LenovoLegionIco.png</normaloff>:/images/icons/LenovoLegionIco.png</iconset>
   </property>
-  <property name="styleSheet">
-   <string notr="true">/* ===========================
-   Modern Lenovo Legion Theme
-   Enhanced Readability and Styling
-   =========================== */
-
-/* Basic Styling */
-QWidget {
-	background-color: #2d2d30;
-    border-radius: 12px;
-    border: 0px;
-    color: #e0e0e0;
-    font-family: "Segoe UI", "Ubuntu", sans-serif;
-    font-size: 13px;
-}
-
-#CPUFrequency {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                              stop:0 #1e1e1e, stop:1 #2d2d30);
-}
-
-/* ===== QGroupBox ===== */
-QGroupBox {
-    border: 2px solid #3e3e42;
-    margin-top: 18px;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 12px;
-	background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                      stop:0 #3a3a3d, stop:1 #2d2d30);
-    padding: 8px;
-}
-
-QGroupBox::title {
-    subcontrol-position: top left;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 6px 16px;
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                stop:0 #007acc, stop:1 #005a9e);
-    color: #ffffff;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-
-/* ===== QToolTip ===== */
-QToolTip {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #007acc, stop:1 #005a9e);
-    background-clip: padding-box;
-    color: #ffffff;
-    border: 2px solid #00a8ff;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    margin: 2px;
-}
-</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QGroupBox" name="groupBox">

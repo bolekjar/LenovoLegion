@@ -145,7 +145,7 @@ CPUControl::CPUControl(DataProvider *dataProvider, QWidget *parent)
         ui->gridLayout_CPUControl->addWidget(new ThreadControl(QString("P-Thread: %1, CoreId: %2, DieId: %3").
                                                                arg(i).
                                                                arg(m_cpuInfoData.cpus().at(i).cpu_core_id()).
-                                                               arg(m_cpuInfoData.cpus().at(i).die_id()),i,m_cpuInfoData.cpus().at(i).cpu_online(),m_cpuInfoData.cpus().at(i).governor().data(),m_cpuInfoData.cpus().at(i).cpu_core_id(),l_ColorGenerator.getColor(m_cpuInfoData.cpus().at(i).cpu_core_id()),"#979797",this),i % 8,i/8);
+                                                               arg(m_cpuInfoData.cpus().at(i).die_id()),i,m_cpuInfoData.cpus().at(i).cpu_online(),m_cpuInfoData.cpus().at(i).governor().data(),m_cpuInfoData.cpus().at(i).cpu_core_id(),l_ColorGenerator.getColor(m_cpuInfoData.cpus().at(i).cpu_core_id()),"#3D2B1F",this),i % 8,i/8);
         return true;
     });
 

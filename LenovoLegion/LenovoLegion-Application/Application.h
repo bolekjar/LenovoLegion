@@ -58,6 +58,7 @@ private:
     void loadSettings();
     void applyStartupSettings();
     void applyDebugLogging(bool enable);
+    void applyTheme(ApplicationSettings::ThemeType theme);
 
     std::unique_ptr<MainWindow>      m_mainWindow;
     std::unique_ptr<AboutWindow>     m_aboutWindow;
