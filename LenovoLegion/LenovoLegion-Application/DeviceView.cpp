@@ -769,11 +769,38 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         \*-----------------------------------------------------*/
         if(selectionFlags[led_idx])
         {
-            painter.setPen(palette().highlight().color());
+            // Draw outer glow effect
+            QColor glowColor = palette().highlight().color();
+            glowColor.setAlpha(180);
+            QPen glowPen(glowColor);
+            glowPen.setWidth(8);
+            painter.setPen(glowPen);
+            painter.drawRect(rect);
+            
+            // Draw main highlight border
+            QColor highlightColor = palette().highlight().color();
+            highlightColor.setAlpha(255);
+            QPen highlightPen(highlightColor);
+            highlightPen.setWidth(5);
+            highlightPen.setStyle(Qt::SolidLine);
+            painter.setPen(highlightPen);
+            painter.drawRect(rect);
+            
+            // Draw strong semi-transparent overlay for selected LEDs
+            QColor overlayColor = palette().highlight().color();
+            overlayColor.setAlpha(140);
+            painter.fillRect(rect, overlayColor);
+            
+            // Draw inner bright border for maximum visibility
+            QPen innerPen(Qt::white);
+            innerPen.setWidth(3);
+            painter.setPen(innerPen);
         }
         else
         {
-            painter.setPen(palette().dark().color());
+            QPen defaultPen(palette().dark().color());
+            defaultPen.setWidth(1);
+            painter.setPen(defaultPen);
         }
         painter.drawRect(rect);
 
