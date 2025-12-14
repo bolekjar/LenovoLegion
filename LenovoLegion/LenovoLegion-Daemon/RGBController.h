@@ -75,6 +75,7 @@ public:
     virtual void        DeviceUpdateMode()                      =   0;
 
     virtual void        DeviceUpdateProfile()                   =   0;
+    virtual void        Refresh()                               =   0;
 
 private:
 

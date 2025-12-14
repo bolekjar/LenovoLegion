@@ -34,6 +34,9 @@ namespace LenovoLegionDaemon {
         }
         else
         {
+            // Refresh controller state
+            m_rgbController->Refresh();
+
             // Set device type
             rgbController.set_device_type(static_cast<legion::messages::RGBController::DeviceType>(m_rgbController->GetDeviceType()));
 

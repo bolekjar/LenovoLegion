@@ -113,6 +113,12 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
             {
                 msg.set_action(legion::messages::Notification::KEYLOCK_STATUS_CHANGE);
             }
+
+            if(static_cast<SysFsDriverLegionEvents::LegionVmiEventType>(QString(event.m_DriverSpecificEventType.data()).toInt()) == SysFsDriverLegionEvents::LegionVmiEventType::LENOVO_WMI_EVENT_UTILITY)
+            {
+                msg.set_action(legion::messages::Notification::SPECIAL_KEY_PRESSED);
+                msg.set_special_key(static_cast<legion::messages::Notification_SpecialKey>(QString(event.m_DriverSpecificEventValue.data()).toUInt()));
+            }
         }
     }
 

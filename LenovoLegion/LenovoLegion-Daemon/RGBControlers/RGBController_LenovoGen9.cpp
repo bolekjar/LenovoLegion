@@ -478,6 +478,19 @@ void RGBController_LenovoGen9::DeviceUpdateProfile()
     readActiveProfileSettings();
 }
 
+void RGBController_LenovoGen9::Refresh()
+{
+    /*
+     * Read active profile
+     */
+    active_profile =  fromControlerProfile(controller->getCurrentProfileId());
+
+    /*
+     * Read active profile settings
+     */
+    readActiveProfileSettings();
+}
+
 void RGBController_LenovoGen9::DeviceUpdateMode()
 {
     controller->setBrightness(modes[active_mode].brightness);

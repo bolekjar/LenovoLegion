@@ -81,6 +81,8 @@ public:
 
     void        DeviceUpdateProfile()                  override;
 
+    void        Refresh()                              override;
+
 private:
 
 
