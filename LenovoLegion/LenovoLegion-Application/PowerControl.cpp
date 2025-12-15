@@ -20,6 +20,7 @@
 
 #include <QStringList>
 #include <QList>
+#include <QAbstractItemView>
 
 namespace LenovoLegionGui {
 
@@ -44,6 +45,23 @@ PowerControl::PowerControl(DataProvider *dataProvider,QWidget *parent)
     , m_dataProvider(dataProvider)
 {
     ui->setupUi(this);
+
+
+    ui->comboBox_CPUBoostPowerControl->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_CPUBoostPowerControl->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->comboBox_GPUBoostClockPowerControl->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_GPUBoostClockPowerControl->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->comboBox_GPUTargetPowerPowerControl->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_GPUTargetPowerPowerControl->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->comboBox_PL1TauPowerControl->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_PL1TauPowerControl->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->comboBox_PresetConfiguration->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_PresetConfiguration->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
 
     /*
      * Read Data

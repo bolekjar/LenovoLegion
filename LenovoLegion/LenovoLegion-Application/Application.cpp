@@ -18,6 +18,8 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QMenu>
+#include <QToolTip>
+#include <QEvent>
 
 
 namespace LenovoLegionGui {
@@ -235,6 +237,15 @@ void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::Setting
 
 bool Application::notify(QObject* receiver, QEvent* event) noexcept {
   try {
+
+      // Handle tooltip window creation to enable translucent background for rounded corners
+      if (event->type() == QEvent::Polish) {
+          QWidget* widget = qobject_cast<QWidget*>(receiver);
+          if (widget && widget->inherits("QTipLabel")) {
+              widget->setAttribute(Qt::WA_TranslucentBackground, true);
+          }
+      }
+
       return QApplication::notify(receiver, event);
   }
   catch (const ProtocolProcessor::exception_T& ex)

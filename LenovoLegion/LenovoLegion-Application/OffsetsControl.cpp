@@ -8,6 +8,8 @@
 #include "../LenovoLegion-Daemon/SysFsDataProviderIntelMSR.h"
 #include "../LenovoLegion-Daemon/DataProviderNvidiaNvml.h"
 
+#include <QAbstractItemView>
+
 namespace LenovoLegionGui {
 
 const QString OffsetsControl::NAME = "Offset Control";;
@@ -101,6 +103,14 @@ OffsetsControl::OffsetsControl(DataProvider *dataProvider,QWidget *parent)
     , m_dataProvider(dataProvider)
 {
     ui->setupUi(this);
+
+
+    ui->comboBox_GPUPreset->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_GPUPreset->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->comboBox_cpuVoltagePreset->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_cpuVoltagePreset->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
 
     readCpuIntelMsrData();
     readGpuNvmlData();

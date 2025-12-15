@@ -15,6 +15,9 @@
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUFrequency.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUTopology.h"
 
+
+#include <QAbstractItemView>
+
 namespace LenovoLegionGui {
 
 QString const CPUFrequencyControl::NAME =  "CPU Frequency Control";
@@ -52,6 +55,10 @@ CPUFrequencyControl::CPUFrequencyControl(DataProvider *dataProvider,QWidget *par
 
     m_cpuFreqData           = m_dataProvider->getDataMessage<legion::messages::CPUFrequency>(LenovoLegionDaemon::SysFsDataProviderCPUFrequency::dataType);;
     m_cpuTopologyData       = m_dataProvider->getDataMessage<legion::messages::CPUTopology>(LenovoLegionDaemon::SysFsDataProviderCPUTopology::dataType);
+
+
+    ui->comboBoxApplyTo->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBoxApplyTo->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
 
 
     if(m_cpuFreqData.cpus().empty() ||

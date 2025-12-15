@@ -17,6 +17,8 @@
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUTopology.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUSMT.h"
 
+#include <QAbstractItemView>
+
 namespace LenovoLegionGui {
 
 
@@ -104,6 +106,13 @@ CPUControl::CPUControl(DataProvider *dataProvider, QWidget *parent)
     {
         THROW_EXCEPTION(exception_T, ERROR_CODES::DATA_NOT_READY, "CPU Control data not available");
     }
+
+
+    ui->comboBox_CPUGovernor->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBox_CPUGovernor->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->comboBoxApplyTo->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->comboBoxApplyTo->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
 
 
     /*

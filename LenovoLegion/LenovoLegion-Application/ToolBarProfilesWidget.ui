@@ -31,54 +31,7 @@
         <item>
          <widget class="QListWidget" name="listWidget_Profiles">
           <property name="styleSheet">
-           <string notr="true">QListWidget {
-	background-color: rgb(58, 59, 58);
-    border: 2px solid qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                      stop:0 #404040, stop:1 #505050);
-    border-radius: 12px;
-    padding: 2px;
-    color: #e8e8e8;
-    font-size: 12px;
-    outline: none;
-}
-
-QListWidget::item {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #2d2d2d, stop:1 #353535);
-    border: 1px solid #454545;
-    border-left: 4px solid #606060;
-    border-radius: 8px;
-    padding: 6px 12px;
-    margin: 5px 3px;
-    color: #d5d5d5;
-    font-weight: 500;
-}
-
-QListWidget::item:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #3f3f3f, stop:1 #505050);
-    border-left: 4px solid #f0f0f0;
-    border: 1px solid #5a5a5a;
-    color: #ffffff;
-    padding-left: 12px;
-}
-
-QListWidget::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #3f3f3f, stop:1 #474747);
-    border-left: 4px solid #f0f0f0;
-    border: 1px solid #5a5a5a;
-    color: #ffffff;
-    padding-left: 12px;
-}
-QListWidget::item:selected:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #3f3f3f, stop:1 #505050);
-    border-left: 4px solid #f0f0f0;
-    border: 1px solid #5a5a5a;
-    color: #ffffff;
-    padding-left: 22px;
-}</string>
+           <string notr="true"/>
           </property>
           <property name="alternatingRowColors">
            <bool>false</bool>

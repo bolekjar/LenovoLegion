@@ -13,6 +13,8 @@
 #include "ui_OpenRGBDevicePage.h"
 
 
+#include <QAbstractItemView>
+
 namespace LenovoLegionGui {
 
 
@@ -53,6 +55,22 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     ui(new Ui::OpenRGBDevicePage)
 {
     ui->setupUi(this);
+
+    ui->LEDBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->LEDBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->ModeBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->ModeBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->DirectionBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->DirectionBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->ZoneBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->ZoneBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->ProfileBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->ProfileBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
 
     /*-----------------------------------------------------*\
     | Store device pointer                                  |
