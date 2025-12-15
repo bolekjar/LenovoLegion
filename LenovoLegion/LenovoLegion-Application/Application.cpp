@@ -68,6 +68,10 @@ void Application::appInitImpl(std::unique_ptr<ApplicationModulesHandler_T>)
      */
     connect(ApplicationSettings::instance(), &ApplicationSettings::settingChanged,
             this, &Application::onSettingChanged);
+    connect(ApplicationSettings::instance(), &ApplicationSettings::themeChanged,
+            this, &Application::onThemeChanged);
+
+
     
     /*
      * Load and apply settings
@@ -83,6 +87,8 @@ void Application::appStopImpl() noexcept
      */
     disconnect(ApplicationSettings::instance(), &ApplicationSettings::settingChanged,
                this, &Application::onSettingChanged);
+    disconnect(ApplicationSettings::instance(), &ApplicationSettings::themeChanged,
+               this, &Application::onThemeChanged);
     
     m_aboutWindow->close();
     m_mainWindow->close();
@@ -187,25 +193,7 @@ void Application::applyDebugLogging(bool enable)
 
 void Application::applyTheme(ApplicationSettings::ThemeType theme)
 {
-    QString stylesheet;
-    
-    switch (theme) {
-        case ApplicationSettings::ThemeType::NoTheme:
-            stylesheet = "";
-            LOG_D("Applying No Theme (default system theme)");
-            break;
-        case ApplicationSettings::ThemeType::WhiteTheme:
-            stylesheet = ToolBarSettingsWidget::getModernBlueStylesheetStatic();
-            break;
-        case ApplicationSettings::ThemeType::GrayTheme:
-            stylesheet = ToolBarSettingsWidget::getClassicGrayStylesheetStatic();
-            break;
-        case ApplicationSettings::ThemeType::DarkTheme:
-            stylesheet = ToolBarSettingsWidget::getCompleteModernBlueStylesheetStatic();
-            break;
-    }
-    
-    setStyleSheet(stylesheet);
+    setStyleSheet(ToolBarSettingsWidget::getStylesheetTheme(theme));
 }
 
 void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::SettingType setting, bool value)
@@ -229,10 +217,16 @@ void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::Setting
             break;
         case SettingType::StylesheetTheme:
             LOG_D(QString("Setting changed: StylesheetTheme = ").append(value ? "true" : "false"));
+            // This is handled in ToolBarSettingsWidget::onStylesheetThemeChanged
             break;
         default:
             break;
     }
+}
+
+void Application::onThemeChanged(LenovoLegionGui::ApplicationSettings::ThemeType theme)
+{
+    applyTheme(theme);
 }
 
 bool Application::notify(QObject* receiver, QEvent* event) noexcept {

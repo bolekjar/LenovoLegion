@@ -55,16 +55,18 @@ private:
     void loadDaemonSettings();
     void sendDaemonSettingsToDaemon();
     void connectSignals();
-    void applyStylesheetTheme(ApplicationSettings::ThemeType theme);
+
+
+private:
+
     static QString getWhiteStylesheet();
     static QString getGrayStylesheet();
     static QString getDarkStylesheet();
 
 public:
-    // Static methods for external access (wrappers)
-    static QString getModernBlueStylesheetStatic();
-    static QString getClassicGrayStylesheetStatic();
-    static QString getCompleteModernBlueStylesheetStatic();
+
+    static QString getStylesheetTheme(ApplicationSettings::ThemeType theme);
+
 private:
     Ui::ToolBarSettingsWidget *ui;
 

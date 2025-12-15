@@ -129,8 +129,7 @@ void ToolBarSettingsWidget::loadSettings()
     ApplicationSettings::ThemeType theme;
     settings->loadStylesheetTheme(theme);
     ui->comboBox_StylesheetTheme->setCurrentIndex(static_cast<int>(theme));
-    applyStylesheetTheme(theme);
-    
+
     // Load daemon settings from daemon (not from app INI)
     loadDaemonSettings();
     
@@ -285,12 +284,9 @@ void ToolBarSettingsWidget::onStylesheetThemeChanged(int index)
     
     // Save the theme preference
     ApplicationSettings::instance()->saveStylesheetTheme(theme);
-    
-    // Apply the theme immediately
-    applyStylesheetTheme(theme);
 }
 
-void ToolBarSettingsWidget::applyStylesheetTheme(ApplicationSettings::ThemeType theme)
+QString ToolBarSettingsWidget::getStylesheetTheme(ApplicationSettings::ThemeType theme)
 {
     QString stylesheet;
     
@@ -312,12 +308,8 @@ void ToolBarSettingsWidget::applyStylesheetTheme(ApplicationSettings::ThemeType 
             LOG_D("Applying Modern Blue (Complete) theme");
             break;
     }
-    
-    // Apply to the entire application
-    if (QApplication* app = qobject_cast<QApplication*>(QApplication::instance())) {
-        app->setStyleSheet(stylesheet);
-        LOG_D("Theme applied to application");
-    }
+
+    return stylesheet;
 }
 
 QString ToolBarSettingsWidget::getWhiteStylesheet()
@@ -1129,7 +1121,7 @@ QLineEdit {
     border: 2px solid #007acc;
     border-radius: 10px;
     padding: 8px 12px;
-    color: #2d2d30;
+    color: #007acc;
     selection-background-color: #007acc;
     selection-color: #ffffff;
     font-size: 13px;
@@ -2259,7 +2251,7 @@ QLineEdit {
     border: 2px solid #3c6844;
     border-radius: 10px;
     padding: 8px 12px;
-    color: #e0e0e0;
+    color: #3c6844;
     selection-background-color: #3c6844;
     selection-color: #808080;
     font-size: 13px;
@@ -3382,7 +3374,7 @@ QLineEdit {
     border: 2px solid #ff8800;
     border-radius: 10px;
     padding: 8px 12px;
-    color: #e0e0e0;
+    color: #ff8800;
     selection-background-color: #ff8800;
     selection-color: #ffffff;
     font-size: 13px;
@@ -3699,23 +3691,6 @@ QListWidget::item:selected:hover {
     background-color: rgba(#fff, 0.5);
 }
     )";
-}
-
-// Static methods for external access - just call the instance methods
-// Since the methods don't use any instance data, they can be called this way
-QString ToolBarSettingsWidget::getModernBlueStylesheetStatic()
-{
-    return getWhiteStylesheet();
-}
-
-QString ToolBarSettingsWidget::getClassicGrayStylesheetStatic()
-{
-    return getGrayStylesheet();
-}
-
-QString ToolBarSettingsWidget::getCompleteModernBlueStylesheetStatic()
-{
-    return getDarkStylesheet();
 }
 
 }
