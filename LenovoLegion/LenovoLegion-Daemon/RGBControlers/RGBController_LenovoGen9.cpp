@@ -160,7 +160,7 @@ RGBController_LenovoGen9::RGBController_LenovoGen9(LenovoGen9USBController* cont
                 6,
                 {},
             {
-                {"Neon group 1", 0xF5 | 0x0100},//0
+                    {"Neon group 1", 0xF5 | 0x0100},//0
                     {"Neon group 2", 0xF6 | 0x0100},//1
                     {"Neon group 3", 0xF7 | 0x0100},//2
                     {"Neon group 4", 0xF8 | 0x0100},//3

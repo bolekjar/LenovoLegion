@@ -101,8 +101,8 @@ public:
     void resetToDefaults();
 
 signals:
-    void settingChanged(ApplicationSettings::SettingType setting, bool value);
-    void themeChanged(ApplicationSettings::ThemeType theme);
+    void settingChanged(LenovoLegionGui::ApplicationSettings::SettingType setting, bool value);
+    void themeChanged(LenovoLegionGui::ApplicationSettings::ThemeType theme);
 };
 
 
