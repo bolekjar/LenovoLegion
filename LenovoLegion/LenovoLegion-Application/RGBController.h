@@ -11,6 +11,8 @@
 
 #include "../LenovoLegion-Daemon/RGBControllerInterface.h"
 
+#include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
+
 #include <bitset>
 
 namespace LenovoLegionGui {
@@ -20,12 +22,11 @@ class DataProvider;
 class RGBController : public LenovoLegionDaemon::RGBControllerInterface
 {
     enum PENDING_CHANGES : int {
-        CHANGE_LEDS            = 0,
-        CHANGE_MODES           = 1,
-        CHANGE_PROFILES        = 2,
-        CHANGE_ACTIVE_MODE     = 3,
-        CHANGE_COLORS          = 4,
-        MAXIMUM_CHANGES        = 5
+        CHANGE_PROFILES        = 0,
+        CHANGE_BRIGHTNESS      = 1,
+        CHANGE_EFFECTS         = 2,
+        CHANGE_RESET_EFFECTS   = 3,
+        MAXIMUM_CHANGES        = 4
     };
 
 public:
@@ -40,42 +41,73 @@ public:
     explicit RGBController(DataProvider* dataProvider);
     virtual ~RGBController() override;
 
-    // Refresh data from daemon
-    void refresh();
-
-    // RGBControllerInterface implementation
-    virtual unsigned int    GetLEDsInZone(unsigned int zone)  const                                             override;
-
-    virtual std::string     GetModeName(unsigned int mode)    const                                             override;
-    virtual std::string     GetZoneName(unsigned int zone)    const                                             override;
-    virtual std::string     GetLEDName(unsigned int led)      const                                             override;
-
-    virtual LenovoLegionDaemon::RGBColor        GetLED(unsigned int led)    const                               override;
-    virtual void            SetLED(unsigned int led, LenovoLegionDaemon::RGBColor color)                        override;
-    virtual void            SetAllLEDs(LenovoLegionDaemon::RGBColor color)                                      override;
-
-    virtual int             GetMode()              const                                                        override;
-    virtual void            SetMode(int mode)                                                                   override;
-
-    virtual void            SetProfile(size_t profileIdx)                                                       override;
-
-    virtual const std::vector<LenovoLegionDaemon::led>&       GetLEDs()  const                                  override;
-    virtual void                          SetLEDs(const std::vector<LenovoLegionDaemon::led>& new_leds)         override;
-
-    virtual const std::vector<LenovoLegionDaemon::zone>&      GetZones() const                                  override;
-
-    virtual const std::vector<LenovoLegionDaemon::mode>&      GetModes()           const                        override;
-    virtual void                          SetModes(const std::vector<LenovoLegionDaemon::mode>& new_modes)      override;
-
-    virtual const std::vector<LenovoLegionDaemon::RGBColor>&   GetColors()          const                       override;
+    /*
+     * Device Type
+     */
     virtual LenovoLegionDaemon::device_type                   GetDeviceType()      const                        override;
-    virtual unsigned int                  GetProfiles()        const                                            override;
-    virtual size_t                        GetActiveProfile()   const                                            override;
+
+
+    /*
+     * Profiles
+     */
+    virtual const LenovoLegionDaemon::Profiles&         GetProfiles()                          const            override;
+    virtual void                                        SetProfile(unsigned int profileIdx)                     override;
+
+
+    /*
+     * Zones
+     */
+    virtual const std::vector<LenovoLegionDaemon::zone>&      GetZones()    const                              override;
+    virtual unsigned int    GetLEDsInZone(unsigned int zone)                const                              override;
+    virtual std::string     GetZoneName(unsigned int zone)                  const                              override;
+
+    /*
+     * Brightnesses
+     */
+    virtual const LenovoLegionDaemon::Brightnesses&     GetBrightness()      const                             override;
+    virtual void                                        SetBrightness(unsigned int brightness)                 override;
+
+
+
+    /*
+     * Effects
+     */
+    virtual const std::vector<LenovoLegionDaemon::led_group_effect>&   GetEffects()                         const                                   override;
+    virtual const LenovoLegionDaemon::led_group_effect&                GetEffect(unsigned int effectIdx)    const                                   override;
+    virtual void                                                       SetEfects(const std::vector<LenovoLegionDaemon::led_group_effect>& effects)  override;
+    virtual void                                                       AddEffect(const LenovoLegionDaemon::led_group_effect& effect)                override;
+    virtual void                                                       RemoveEffect(unsigned int effectIdx)                                         override;
+    virtual void                                                       ClearEffects()                                                               override;
+    virtual void                                                       ResetEffectsToDefault()                                                      override;
+
+
+    /*
+     * Modes
+     */
+    virtual const std::vector<LenovoLegionDaemon::mode>&      GetModes()                                const                        override;
+    virtual std::string                                       GetModeNameByIdx(unsigned int mode)       const                        override;
+    virtual LenovoLegionDaemon::mode                          GetModeByIdx(unsigned int mode)           const                        override;
+    virtual LenovoLegionDaemon::mode                          GetModeByModeValue(int mode)              const                        override;
+
+
+    /*
+     * Leds maping information
+     */
+    virtual const std::vector<LenovoLegionDaemon::led>&       GetLEDs()                         const              override;
+    virtual std::string                                       GetLEDName(unsigned int led)      const              override;
+    virtual std::set<int>              GetLedsIndexesByDeviceSpecificValue(unsigned int value)  const              override;
+
+
+    /*
+     * Current states of leds
+     */
+    virtual std::vector<LenovoLegionDaemon::RGBColor>         GetStateForAllLeds()              const              override;
+
 
     virtual void ApplyPendingChanges()                                                                          override;
 
 private:
-    void readRGBControllerData();
+    void readRGBControllerData(const legion::messages::RGBControllerRequest::RequestFlags& requestFlags);
     void sendRGBControllerData();
 
 private:
@@ -84,15 +116,12 @@ private:
     std::vector<LenovoLegionDaemon::led>        m_leds;
     std::vector<LenovoLegionDaemon::zone>       m_zones;
     std::vector<LenovoLegionDaemon::mode>       m_modes;
-    std::vector<LenovoLegionDaemon::RGBColor>   m_colors;
-    std::vector<unsigned int>                   m_matrixMap;
 
     LenovoLegionDaemon::device_type   m_deviceType    = LenovoLegionDaemon::DEVICE_TYPE_UNKNOWN;
-    int                               m_activeMode    = -1;
-    size_t                            m_activeProfile = -1;
-    int                               m_profiles      = -1;
 
-
+    LenovoLegionDaemon::Profiles                        m_profiles;
+    LenovoLegionDaemon::Brightnesses                    m_brightness;
+    std::vector<LenovoLegionDaemon::led_group_effect>   m_effects;
 
     std::bitset<MAXIMUM_CHANGES>            m_pendingChanges;
 };

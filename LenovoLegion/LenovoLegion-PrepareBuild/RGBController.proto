@@ -10,8 +10,9 @@ message RGBController
         MODE_DIRECTION_RIGHT        = 1;
         MODE_DIRECTION_UP           = 2;
         MODE_DIRECTION_DOWN         = 3;
-        MODE_DIRECTION_HORIZONTAL   = 4;
-        MODE_DIRECTION_VERTICAL     = 5;
+        MODE_DIRECTION_SPINLEFT     = 4;
+        MODE_DIRECTION_SPINRIGHT    = 5;
+        MODE_DIRECTION_NA           = 6;
     }
 
     enum ModeColorType {
@@ -28,26 +29,7 @@ message RGBController
     }
 
     enum DeviceType {
-        DEVICE_TYPE_MOTHERBOARD     = 0;
-        DEVICE_TYPE_DRAM            = 1;
-        DEVICE_TYPE_GPU             = 2;
-        DEVICE_TYPE_COOLER          = 3;
-        DEVICE_TYPE_LEDSTRIP        = 4;
-        DEVICE_TYPE_KEYBOARD        = 5;
-        DEVICE_TYPE_MOUSE           = 6;
-        DEVICE_TYPE_MOUSEMAT        = 7;
-        DEVICE_TYPE_HEADSET         = 8;
-        DEVICE_TYPE_HEADSET_STAND   = 9;
-        DEVICE_TYPE_GAMEPAD         = 10;
-        DEVICE_TYPE_LIGHT           = 11;
-        DEVICE_TYPE_SPEAKER         = 12;
-        DEVICE_TYPE_VIRTUAL         = 13;
-        DEVICE_TYPE_STORAGE         = 14;
-        DEVICE_TYPE_CASE            = 15;
-        DEVICE_TYPE_MICROPHONE      = 16;
-        DEVICE_TYPE_ACCESSORY       = 17;
-        DEVICE_TYPE_KEYPAD          = 18;
-        DEVICE_TYPE_UNKNOWN         = 19;
+        DEVICE_TYPE_KEYBOARD        = 0;
     }
 
     message Mode {
@@ -56,15 +38,12 @@ message RGBController
         uint32   flags          = 3;
         uint32   speed_min      = 4;
         uint32   speed_max      = 5;
-        uint32   brightness_min = 6;
-        uint32   brightness_max = 7;
-        uint32   colors_min     = 8;
-        uint32   colors_max     = 9;
-        uint32   speed          = 10;
-        uint32   brightness     = 11;
-        uint32   direction      = 12;
-        uint32   color_mode     = 13;
-        repeated uint32 colors  = 14;
+        uint32   colors_min     = 6;
+        uint32   colors_max     = 7;
+        uint32   speed          = 8;
+        uint32   direction      = 9;
+        uint32   color_mode     = 10;
+        repeated uint32 colors  = 11;
     }
 
     message LED {
@@ -78,31 +57,75 @@ message RGBController
         repeated uint32 map    = 3;
     }
 
-    message Segment {
-        string   name       = 1;
-        ZoneType type       = 2;
-        uint32   start_idx  = 3;
-        uint32   leds_count = 4;
-    }
-
     message Zone {
         string            name       = 1;
         ZoneType          type       = 2;
-        uint32            start_idx  = 3;
         uint32            leds_count = 4;
         uint32            leds_min   = 5;
         uint32            leds_max   = 6;
         MatrixMap         matrix_map = 7;
-        repeated Segment  segments   = 8;
         uint32            flags      = 9;
     }
 
-    DeviceType         device_type     = 1;
-    repeated LED       leds            = 2;
-    repeated Zone      zones           = 3;
-    repeated Mode      modes           = 4;
-    repeated uint32    colors          = 5;
-    int32              active_mode     = 6;
-    uint32             profiles        = 7;
-    uint64             active_profile  = 8;
+    message Britness {
+        uint32 min      = 1;
+        uint32 max      = 2;
+        uint32 current  = 3;
+    }
+
+    message Profile {
+        uint32 min      = 1;
+        uint32 max      = 2;
+        uint32 current  = 3;
+    }
+
+    message LedGroupEffect
+    {
+        int32                 mode          = 1;
+
+        uint32                speed         = 2;
+        uint32                direction     = 3;
+        uint32                color_mode    = 4;
+
+        repeated uint32       colors        = 5;
+        repeated LED          leds          = 6;
+    };
+}
+
+message RGBControllerRequest
+{
+    enum RequestFlags {
+        REQUEST_NONE                = 0x000;
+        REQUEST_DEVICE_TYPE         = 0x001;
+        REQUEST_LEDS                = 0x002;
+        REQUEST_ZONES               = 0x004;
+        REQUEST_MODES               = 0x008;
+        REQUEST_PROFILE             = 0x010;
+        REQUEST_BRITNESS            = 0x020;
+        REQUEST_LED_GROUP_EFFECTS   = 0x040;
+        REQUEST_STATE_FOR_ALL_LEDS  = 0x080;
+        REQUEST_ALL                 = 0xFFF;
+    }
+
+    uint32 request_flags = 1;
+}
+
+message RGBControllerResponse
+{
+             RGBController.DeviceType         device_type           = 1;
+    repeated RGBController.LED                leds                  = 2;
+    repeated RGBController.Zone               zones                 = 3;
+    repeated RGBController.Mode               modes                 = 4;
+             RGBController.Profile            profile               = 5;
+             RGBController.Britness           britness              = 6;
+    repeated RGBController.LedGroupEffect     led_group_effects     = 7;
+    repeated uint32                           colors                = 8;
+}
+
+message RGBControllerSetRequest
+{
+             RGBController.Profile            profile               = 1;
+             RGBController.Britness           britness              = 2;
+    repeated RGBController.LedGroupEffect     led_group_effects     = 3;
+             bool                             reset_effects_to_def  = 4;
 }

@@ -38,8 +38,9 @@ public:
 
     virtual ~DataProvider() = default;
 
-    virtual QByteArray serializeAndGetData()                      const = 0;
-    virtual QByteArray deserializeAndSetData(const QByteArray&)         = 0;
+    virtual QByteArray serializeAndGetData()                      const {return {};};
+    virtual QByteArray serializeAndGetData(const QByteArray&)     const {return {};};
+    virtual QByteArray deserializeAndSetData(const QByteArray&)         {return {};};
 
     virtual void init()  {};
     virtual void clean() {};

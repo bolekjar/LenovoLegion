@@ -40,8 +40,8 @@ public:
     virtual ~ProtocolProcessor();
 
 
-    QByteArray getDataRequest(quint8 dataType);
-    QByteArray setDataRequest(quint8 dataType,const QByteArray& data);
+    QByteArray getDataRequest(quint8 dataType, const QByteArray& data = {});
+    QByteArray setDataRequest(quint8 dataType, const QByteArray& data);
 
 };
 

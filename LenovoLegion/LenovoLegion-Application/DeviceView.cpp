@@ -36,6 +36,8 @@ DeviceView::DeviceView(QWidget *parent) :
     setMouseTracking(1);
 
     size = width();
+
+    startTimer(50);
 }
 
 DeviceView::~DeviceView()
@@ -248,6 +250,8 @@ void DeviceView::InitDeviceView()
     zone_pos.resize(controller->GetZones().size());
     led_pos.resize(controller->GetLEDs().size());
     led_labels.resize(controller->GetLEDs().size());
+    led_colors.resize(controller->GetLEDs().size());
+    led_to_color_map.clear();
 
     /*-----------------------------------------------------*\
     | Process position and size for zones                   |
@@ -272,25 +276,10 @@ void DeviceView::InitDeviceView()
         /*-----------------------------------------------------*\
         | For matrix zones, use matrix height from the map      |
         \*-----------------------------------------------------*/
-        if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
+        if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map.map.size() > 0))
         {
-            totalHeight                += controller->GetZones()[zone_idx].matrix_map->height;
-            zone_pos[zone_idx].matrix_w = controller->GetZones()[zone_idx].matrix_map->width;
-        }
-        /*-----------------------------------------------------*\
-        | For all other zones, compute the height including     |
-        | wrap-around                                           |
-        \*-----------------------------------------------------*/
-        else if(controller->GetZones()[zone_idx].segments.size() > 0)
-        {
-            for(std::size_t segment_idx = 0; segment_idx < controller->GetZones()[zone_idx].segments.size(); segment_idx++)
-            {
-                unsigned int count          = controller->GetZones()[zone_idx].segments[segment_idx].leds_count;
-                zone_pos[zone_idx].matrix_w = std::min(count, (unsigned int)MAX_COLS);
-                totalHeight                += (count / MAX_COLS) + ((count % MAX_COLS) > 0);
-
-                segment_count++;
-            }
+            totalHeight                += controller->GetZones()[zone_idx].matrix_map.height;
+            zone_pos[zone_idx].matrix_w = controller->GetZones()[zone_idx].matrix_map.width;
         }
         else
         {
@@ -333,9 +322,9 @@ void DeviceView::InitDeviceView()
         /*-----------------------------------------------------*\
         | Calculate LEDs position and size for zone             |
         \*-----------------------------------------------------*/
-        if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map))
+        if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map.map.size()))
         {
-            LenovoLegionDaemon::matrix_map_type * map = controller->GetZones()[zone_idx].matrix_map.get();
+            const LenovoLegionDaemon::matrix_map_type * map = &controller->GetZones()[zone_idx].matrix_map;
 
             for(unsigned int led_x = 0; led_x < map->width; led_x++)
             {
@@ -357,6 +346,8 @@ void DeviceView::InitDeviceView()
 
                         if(!disable_expansion)
                         {
+
+
                             /*-----------------------------------------------------*\
                             | Expand large keys to fill empty spaces in matrix, if  |
                             | possible.  Large keys can fill left, down, up, or wide|
@@ -375,96 +366,71 @@ void DeviceView::InitDeviceView()
                             | Fill Wide:                                            |
                             |    Space                                              |
                             \*-----------------------------------------------------*/
-                            if(led_x < map->width - 1 && map->map[map_idx + 1] == 0xFFFFFFFF)
+                            if( ( controller->GetLEDName(color_idx)    == LenovoLegionDaemon::KEY_EN_TAB        )
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_CAPS_LOCK  )
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_LEFT_SHIFT )
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_RIGHT_SHIFT)
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_BACKSPACE  )
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_0   )
+                                || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_ANSI_ENTER))
                             {
-                                if( ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_TAB        )
-                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_CAPS_LOCK  )
-                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_LEFT_SHIFT )
-                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_RIGHT_SHIFT)
-                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_BACKSPACE  )
-                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_0   )
-                                    || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_ANSI_ENTER))
+
+                                if(led_x > 0 && controller->GetLEDName(map->map[map_idx - 1] + controller->GetZones()[zone_idx].start_idx)  == controller->GetLEDName(color_idx))
+                                {
+                                    led_pos[color_idx].matrix_x -= 1.0f;
+                                    led_pos[color_idx].matrix_w += 1.0f;
+                                } else if(led_x < map->width - 1 && controller->GetLEDName(map->map[map_idx + 1] + controller->GetZones()[zone_idx].start_idx)  == controller->GetLEDName(color_idx))
                                 {
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
                             }
+
+
                             if( ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_ENTER   )
                                 || ( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_NUMPAD_PLUS    ) )
                             {
-                                /* TODO: check if there isn't another widened key above */
-                                if(led_y > 0 && map->map[map_idx - map->width] == 0xFFFFFFFF)
+                                if(led_y > 0 && controller->GetLEDName(map->map[map_idx - map->width ] + controller->GetZones()[zone_idx].start_idx)  == controller->GetLEDName(color_idx))
                                 {
                                     led_pos[color_idx].matrix_y -= 1.0f;
                                     led_pos[color_idx].matrix_h += 1.0f;
                                 }
-                                else if(led_y < map->height - 1 && map->map[map_idx + map->width] == 0xFFFFFFFF)
+                                else if(led_y < map->height - 1 && controller->GetLEDName(map->map[map_idx + map->width ] + controller->GetZones()[zone_idx].start_idx)  == controller->GetLEDName(color_idx))
                                 {
                                     led_pos[color_idx].matrix_h += 1.0f;
                                 }
                             }
+
+
                             if( controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_ISO_ENTER)
                             {
-                                if(led_y > 0 && map->map[map_idx - map->width] == 0xFFFFFFFF)
+                                if(led_y > 0 && controller->GetLEDName(map->map[map_idx - map->width ] + controller->GetZones()[zone_idx].start_idx) == controller->GetLEDName(color_idx))
                                 {
                                     led_pos[color_idx].matrix_y -= 1.0f;
                                     led_pos[color_idx].matrix_h += 1.0f;
                                 }
                             }
-                            else if(controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_SPACE)
+
+
+
+                            if(controller->GetLEDName(color_idx) == LenovoLegionDaemon::KEY_EN_SPACE)
                             {
-                                for(unsigned int map_idx2 = map_idx - 1; map_idx2 > led_y * map->width && map->map[map_idx2] == 0xFFFFFFFF; map_idx2--)
+                                for(unsigned int map_idx2 = map_idx - 1; map_idx2 > led_y * map->width && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2--)
                                 {
                                     led_pos[color_idx].matrix_x -= 1.0f;
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
-                                for(unsigned int map_idx2 = map_idx + 1; map_idx2 < (led_y + 1) * map->width && map->map[map_idx2] == 0xFFFFFFFF; map_idx2++)
+                                for(unsigned int map_idx2 = map_idx + 1; map_idx2 < (led_y + 1) * map->width && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2++)
                                 {
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
                             }
                         }
+
                     }
                 }
             }
 
             current_y += map->height;
-        }
-        else if(controller->GetZones()[zone_idx].segments.size() > 0)
-        {
-            for(std::size_t segment_idx = 0; segment_idx < controller->GetZones()[zone_idx].segments.size(); segment_idx++)
-            {
-                /*-----------------------------------------------------*\
-                | Calculate segment label position and size             |
-                \*-----------------------------------------------------*/
-                segment_pos[segment_count].matrix_x = (maxWidth - zone_pos[zone_idx].matrix_w) / 2.0f;
-                segment_pos[segment_count].matrix_y = current_y + SIZE_TEXT;
-                segment_pos[segment_count].matrix_w = zone_pos[zone_idx].matrix_w;
-                segment_pos[segment_count].matrix_h = SIZE_TEXT - PAD_TEXT;
-                current_y                          += PAD_SEGMENT;
-
-                segment_count++;
-
-                /*-----------------------------------------------------*\
-                | Calculate LED box positions for segmented zones       |
-                \*-----------------------------------------------------*/
-                unsigned int leds_count = controller->GetZones()[zone_idx].segments[segment_idx].leds_count;
-
-                for(unsigned int led_idx = 0; led_idx < leds_count; led_idx++)
-                {
-                    unsigned int led_pos_idx = controller->GetZones()[zone_idx].start_idx + controller->GetZones()[zone_idx].segments[segment_idx].start_idx + led_idx;
-
-                    led_pos[led_pos_idx].matrix_x = zone_pos[zone_idx].matrix_x + ((led_idx % MAX_COLS) + PAD_LED);
-                    led_pos[led_pos_idx].matrix_y = current_y + ((led_idx / MAX_COLS) + PAD_LED);
-
-                    /*-----------------------------------------------------*\
-                    | LED is a 1x1 square, minus padding on all sides       |
-                    \*-----------------------------------------------------*/
-                    led_pos[led_pos_idx].matrix_w = (1.0f - (2.0f * PAD_LED));
-                    led_pos[led_pos_idx].matrix_h = (1.0f - (2.0f * PAD_LED));
-                }
-
-                current_y += (leds_count / MAX_COLS) + ((leds_count % MAX_COLS) > 0);
-            }
         }
         else
         {
@@ -485,6 +451,34 @@ void DeviceView::InitDeviceView()
                 \*-----------------------------------------------------*/
                 led_pos[led_pos_idx].matrix_w = (1.0f - (2.0f * PAD_LED));
                 led_pos[led_pos_idx].matrix_h = (1.0f - (2.0f * PAD_LED));
+
+                /*-----------------------------------------------------*\
+                 | Merge same named LEDs into larger rectangles         |
+                 *-----------------------------------------------------*/
+                for (unsigned int led_i = 1; (led_idx + led_i) < leds_count ; ++led_i)
+                {
+                    if(controller->GetLEDName(led_pos_idx) == controller->GetLEDName(led_pos_idx + led_i))
+                    {
+                        led_pos[led_pos_idx].matrix_w += 1.0f;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                for (int led_i = 1; (static_cast<int>(led_idx) - led_i) >= 0 ; ++led_i)
+                {
+                    if(controller->GetLEDName(led_pos_idx) == controller->GetLEDName(led_pos_idx - led_i))
+                    {
+                        led_pos[led_pos_idx].matrix_x -= 1.0f;
+                        led_pos[led_pos_idx].matrix_w += 1.0f;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
             current_y += (leds_count / MAX_COLS) + ((leds_count % MAX_COLS) > 0);
@@ -564,6 +558,21 @@ void DeviceView::setNumericalLabels(bool enable)
 void DeviceView::setPerLED(bool per_led_mode)
 {
     per_led = per_led_mode;
+    update();
+}
+
+void DeviceView::markLeds(const  QMap<int,QColor> &leds)
+{
+    for(auto item = leds.begin();item != leds.end(); ++item)
+    {
+        if(item.key() < 0 || size_t(item.key()) >= controller->GetLEDs().size())
+        {
+            return;
+        }
+    }
+
+    marketLeds = leds;
+
     update();
 }
 
@@ -653,8 +662,6 @@ void DeviceView::mouseReleaseEvent(QMouseEvent* event)
                 offset_x = (width() - size) / 2;
             }
 
-            unsigned int segment_count = 0;
-
             for(unsigned int zone_idx = 0; zone_idx < controller->GetZones().size(); zone_idx++)
             {
                 int posx = zone_pos[zone_idx].matrix_x * size + offset_x + 12;
@@ -667,23 +674,6 @@ void DeviceView::mouseReleaseEvent(QMouseEvent* event)
                 if(rect.contains(event->pos()))
                 {
                     selectZone(zone_idx, ctrlDown);
-                }
-
-                for(unsigned int segment_idx = 0; segment_idx < controller->GetZones()[zone_idx].segments.size(); segment_idx++)
-                {
-                    posx = segment_pos[segment_count].matrix_x * size + offset_x + 12;
-                    posy = segment_pos[segment_count].matrix_y * size;
-                    posw = segment_pos[segment_count].matrix_w * size;
-                    posh = segment_pos[segment_count].matrix_h * size;
-
-                    segment_count++;
-
-                    rect = {posx, posy, posw, posh};
-
-                    if(rect.contains(event->pos()))
-                    {
-                        selectSegment(zone_idx, segment_idx, ctrlDown);
-                    }
                 }
             }
         }
@@ -725,23 +715,6 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         InitDeviceView();
     }
 
-    /*-----------------------------------------------------*\
-    | If segments have resized, reinitialize local data     |
-    \*-----------------------------------------------------*/
-    unsigned int segments = 0;
-
-    for(std::size_t zone_idx = 0; zone_idx < controller->GetZones().size(); zone_idx++)
-    {
-        for(std::size_t segment_idx = 0; segment_idx < controller->GetZones()[zone_idx].segments.size(); segment_idx++)
-        {
-            segments++;
-        }
-    }
-
-    if(segments != segment_pos.size())
-    {
-        InitDeviceView();
-    }
 
     /*-----------------------------------------------------*\
     | LED rectangles                                        |
@@ -758,40 +731,46 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         /*-----------------------------------------------------*\
         | Fill color                                            |
         \*-----------------------------------------------------*/
-        QColor currentColor = QColor::fromRgb(
-            RGBGetRValue(controller->GetColors()[led_idx]),
-            RGBGetGValue(controller->GetColors()[led_idx]),
-            RGBGetBValue(controller->GetColors()[led_idx]));
+        QColor currentColor = QColor();
+
+        if(led_to_color_map.contains(led_idx))
+        {
+            currentColor = led_to_color_map[led_idx];
+        }
+        else if(led_colors.size() > led_idx)
+        {
+            currentColor = QColor::fromRgb(RGBGetRValue(led_colors[led_idx]),RGBGetGValue(led_colors[led_idx]),RGBGetBValue(led_colors[led_idx]));
+        }
+        else
+        {
+            currentColor = QColor::fromRgb(0,0,0);
+        }
+
         painter.setBrush(currentColor);
+
+        /*
+         * Market LEDs (when in per-LED mode) with a distinct border
+         */
+        if(marketLeds.contains(static_cast<int>(led_idx)))
+        {
+            QRect rect = { posx , posy, posw , posh };
+
+            QPen pen1(QColor(marketLeds[led_idx]), 4);
+
+            QPen currentPen = painter.pen();
+
+            painter.setPen(pen1);
+
+            painter.drawRect(rect);
+
+            painter.setPen(currentPen);
+        }
 
         /*-----------------------------------------------------*\
         | Border color                                          |
         \*-----------------------------------------------------*/
         if(selectionFlags[led_idx])
         {
-            // Draw outer glow effect
-            QColor glowColor = palette().highlight().color();
-            glowColor.setAlpha(180);
-            QPen glowPen(glowColor);
-            glowPen.setWidth(8);
-            painter.setPen(glowPen);
-            painter.drawRect(rect);
-            
-            // Draw main highlight border
-            QColor highlightColor = palette().highlight().color();
-            highlightColor.setAlpha(255);
-            QPen highlightPen(highlightColor);
-            highlightPen.setWidth(5);
-            highlightPen.setStyle(Qt::SolidLine);
-            painter.setPen(highlightPen);
-            painter.drawRect(rect);
-            
-            // Draw strong semi-transparent overlay for selected LEDs
-            QColor overlayColor = palette().highlight().color();
-            overlayColor.setAlpha(140);
-            painter.fillRect(rect, overlayColor);
-            
-            // Draw inner bright border for maximum visibility
             QPen innerPen(Qt::white);
             innerPen.setWidth(3);
             painter.setPen(innerPen);
@@ -802,6 +781,7 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
             defaultPen.setWidth(1);
             painter.setPen(defaultPen);
         }
+
         painter.drawRect(rect);
 
         /*-----------------------------------------------------*\
@@ -830,8 +810,6 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
     /*-----------------------------------------------------*\
     | Zone and Segment names                                |
     \*-----------------------------------------------------*/
-    unsigned int segment_count = 0;
-
     for(std::size_t zone_idx = 0; zone_idx < controller->GetZones().size(); zone_idx++)
     {
         int posx = zone_pos[zone_idx].matrix_x * size + offset_x;
@@ -850,28 +828,6 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
             painter.setPen(palette().windowText().color());
         }
         painter.drawText(posx, posy + posh, QString(controller->GetZoneName(zone_idx).c_str()));
-
-        for(std::size_t segment_idx = 0; segment_idx < controller->GetZones()[zone_idx].segments.size(); segment_idx++)
-        {
-            posx = segment_pos[segment_count].matrix_x * size + offset_x;
-            posy = segment_pos[segment_count].matrix_y * size;
-            posw = segment_pos[segment_count].matrix_w * size;
-            posh = segment_pos[segment_count].matrix_h * size;
-
-            segment_count++;
-
-            rect = {posx, posy, posw, posh};
-
-            if(rect.contains(lastMousePos) && (!mouseDown || !mouseMoved))
-            {
-                painter.setPen(palette().highlight().color());
-            }
-            else
-            {
-                painter.setPen(palette().windowText().color());
-            }
-            painter.drawText(posx, posy + posh, QString(controller->GetZones()[zone_idx].segments[segment_idx].name.c_str()));
-        }
     }
 
     /*-----------------------------------------------------*\
@@ -886,6 +842,15 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         color.setAlpha(127);
         painter.setBrush(color);
         painter.drawRect(rect);
+    }
+}
+
+void DeviceView::timerEvent(QTimerEvent *)
+{
+    if(controller && isVisible())
+    {
+        led_colors = controller->GetStateForAllLeds();
+        update();
     }
 }
 
@@ -926,7 +891,6 @@ void DeviceView::updateSelection()
             selectedLeds.push_back(led_idx);
         }
     }
-    controller->SetLEDs(leds);
 
     update();
 
@@ -1002,47 +966,6 @@ bool DeviceView::selectLeds(QVector<int> target)
     return true;
 }
 
-bool DeviceView::selectSegment(int zone, int segment, bool add)
-{
-    if(zone < 0 || size_t(zone) >= controller->GetZones().size())
-    {
-        return false;
-    }
-
-    if(segment < 0 || size_t(segment) >= controller->GetZones()[zone].segments.size())
-    {
-        return false;
-    }
-
-    if(!add)
-    {
-        selectedLeds.clear();
-        selectionFlags.clear();
-        selectionFlags.resize((int)controller->GetLEDs().size());
-    }
-
-    int zoneStart = controller->GetZones()[zone].start_idx;
-    int segStart = controller->GetZones()[zone].segments[segment].start_idx;
-
-    for(int led_idx = 0; led_idx < (int)controller->GetZones()[zone].segments[segment].leds_count; led_idx++)
-    {
-        if(!selectionFlags[zoneStart + segStart + led_idx])
-        {
-            selectedLeds.push_back(zoneStart + segStart + led_idx);
-            selectionFlags[zoneStart + segStart + led_idx] = 1;
-        }
-    }
-
-    update();
-
-    /*-----------------------------------------------------*\
-    | Send selection changed signal                         |
-    \*-----------------------------------------------------*/
-    emit selectionChanged(selectedLeds);
-
-    return true;
-}
-
 bool DeviceView::selectZone(int zone, bool add)
 {
     if(zone < 0 || size_t(zone) >= controller->GetZones().size())
@@ -1090,17 +1013,16 @@ void DeviceView::clearSelection()
 
 void DeviceView::setSelectionColor(LenovoLegionDaemon::RGBColor color)
 {
-    if(selectedLeds.isEmpty())
+    led_to_color_map.clear();
+
+    for(int led_idx : std::as_const(selectedLeds))
     {
-        controller->SetAllLEDs(color);
+        led_to_color_map[led_idx] = QColor::fromRgb(
+            RGBGetRValue(color),
+            RGBGetGValue(color),
+            RGBGetBValue(color));
     }
-    else
-    {
-        for(int led_idx : std::as_const(selectedLeds))
-        {
-            controller->SetLED(led_idx, color);
-        }
-    }
+
     update();
 }
 

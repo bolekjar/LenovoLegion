@@ -27,19 +27,22 @@ public:
     explicit DeviceView(QWidget *parent = 0);
     ~DeviceView();
 
-    virtual QSize sizeHint () const;
-    virtual QSize minimumSizeHint () const;
+    virtual QSize sizeHint () const         override;
+    virtual QSize minimumSizeHint () const  override;
 
     void setController(LenovoLegionDaemon::RGBControllerInterface * controller_ptr);
     void setNumericalLabels(bool enable);
     void setPerLED(bool per_led_mode);
+    void markLeds(const QMap<int,QColor> &leds);
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *);
-    void resizeEvent(QResizeEvent *event);
-    void paintEvent(QPaintEvent *);
+    void mousePressEvent(QMouseEvent *event)    override;
+    void mouseMoveEvent(QMouseEvent *event)     override;
+    void mouseReleaseEvent(QMouseEvent *)       override;
+    void resizeEvent(QResizeEvent *event)       override;
+    void paintEvent(QPaintEvent *)              override;
+
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     QSize initSize;
@@ -52,14 +55,17 @@ private:
     QPoint lastMousePos;
     QVector<int> previousSelection;
     QVector<int> selectedLeds;
+    QMap<int,QColor>    marketLeds;
     QVector<bool> selectionFlags;
     QVector<bool> previousFlags;
     bool per_led;
 
-    std::vector<matrix_pos_size_type>   zone_pos;
-    std::vector<matrix_pos_size_type>   segment_pos;
-    std::vector<matrix_pos_size_type>   led_pos;
-    std::vector<QString>                led_labels;
+    std::vector<matrix_pos_size_type>           zone_pos;
+    std::vector<matrix_pos_size_type>           segment_pos;
+    std::vector<matrix_pos_size_type>           led_pos;
+    std::vector<QString>                        led_labels;
+    std::map<int,QColor>                        led_to_color_map; //selected leds to color
+    std::vector<LenovoLegionDaemon::RGBColor>   led_colors;
 
     float                               matrix_h;
 
@@ -77,7 +83,6 @@ signals:
 public slots:
     bool selectLed(int);
     bool selectLeds(QVector<int>);
-    bool selectSegment(int zone, int segment, bool add = false);
     bool selectZone(int zone, bool add = false);
     void clearSelection(); // Same as selecting the entire device
     void setSelectionColor(LenovoLegionDaemon::RGBColor);

@@ -9,7 +9,6 @@
 
 #include <Core/LoggerHolder.h>
 
-#include <thread>
 namespace LenovoLegionDaemon {
 
 

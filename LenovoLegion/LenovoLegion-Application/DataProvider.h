@@ -34,10 +34,24 @@ public:
 
     DataProvider(ProtocolProcessor * protocolProcessor,QObject *parent);
 
-    template<class Message>
-    Message getDataMessage(quint8 m_dataType) const {
 
-        QByteArray                    byte = m_protocolProcessor->getDataRequest(m_dataType);
+    template<class Message, class Request = Message>
+    Message getDataMessage(quint8 m_dataType,const Request& data = {}) const {
+
+        QByteArray                    byte = m_protocolProcessor->getDataRequest(m_dataType,[&data]{
+
+            QByteArray    requestData;
+
+            requestData.resize(data.ByteSizeLong());
+            if(!data.SerializeToArray(requestData.data(),requestData.size()))
+            {
+                THROW_EXCEPTION(exception_T,ERROR_CODES::SERIALIZE_ERROR,"Serialize of data message error !");
+            }
+
+            return requestData;
+        }());
+
+
         Message                       msg;
 
         if(!msg.ParsePartialFromArray(byte,byte.size()))

@@ -12,294 +12,215 @@
 
 namespace LenovoLegionDaemon {
 
-RGBController::RGBController()
+RGBController::RGBController(const Profiles&            profiles,
+                             const Brightnesses&        britnesses,
+                             const std::string&         name,
+                             const std::string&         vendor,
+                             const std::string&         description,
+                             const std::string&         serial,
+                             const std::string&         location,
+                             device_type                type,
+                             const std::vector<mode>    &modes,
+                             const std::vector<zone>    &zones) :
+    m_profiles(profiles)      ,
+    m_britnesses(britnesses)  ,
+    m_type(type)              ,
+    m_name(name)              ,
+    m_vendor(vendor)          ,
+    m_description(description),
+    m_serial(serial)          ,
+    m_location(location)      ,
+    m_modes(modes)            ,
+    m_zones(zones)            ,
+    m_leds
+    (
+        [] (const std::vector<zone> &zones) {
+            std::vector<led> leds;
+            for (const zone &z : zones) {
+                leds.insert(leds.end(), z.leds.begin(), z.leds.end());
+            }
+            return leds;
+        }(zones)
+    )
 {}
 
 RGBController::~RGBController()
-{
-    leds.clear();
-    colors.clear();
-    zones.clear();
-    modes.clear();
-}
+{}
 
 std::string RGBController::GetName() const
 {
-    return(name);
+    return m_name;
 }
 
 std::string RGBController::GetVendor() const
 {
-    return(vendor);
+    return m_vendor;
 }
 
 std::string RGBController::GetDescription() const
 {
-    return(description);
-}
-
-std::string RGBController::GetVersion() const
-{
-    return(version);
+    return m_description;
 }
 
 std::string RGBController::GetSerial() const
 {
-    return(serial);
+    return m_serial;
 }
 
 std::string RGBController::GetLocation() const
 {
-    return(location);
+    return m_location;
 }
 
-std::string RGBController::GetModeName(unsigned int mode) const
+std::string RGBController::GetModeNameByIdx(unsigned int mode) const
 {
-    return(modes[mode].name);
+    return m_modes.at(mode).name;
+}
+
+mode RGBController::GetModeByModeValue(int mode) const
+{
+    for (const auto & m : m_modes)
+    {
+        if(m.value == mode)
+        {
+            return m;
+        }
+    }
+
+    throw std::out_of_range("Mode value not found");
+}
+
+mode RGBController::GetModeByIdx(unsigned int mode) const
+{
+    return m_modes.at(mode);
 }
 
 std::string RGBController::GetZoneName(unsigned int zone) const
 {
-    return(zones[zone].name);
+    return m_zones.at(zone).name;
 }
 
 std::string RGBController::GetLEDName(unsigned int led) const
 {
-    if(led < led_alt_names.size())
-    {
-        if(led_alt_names[led] != "")
-        {
-            return(led_alt_names[led]);
-        }
-    }
-
-    return(leds[led].name);
+    return m_leds.at(led).name;
 }
 
-
-
-
-void RGBController::SetupColors()
-{
-    unsigned int total_led_count;
-    unsigned int zone_led_count;
-
-    /*---------------------------------------------------------*\
-    | Determine total number of LEDs on the device              |
-    \*---------------------------------------------------------*/
-    total_led_count = 0;
-
-    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-    {
-        total_led_count += GetLEDsInZone(zone_idx);
-    }
-
-    /*---------------------------------------------------------*\
-    | Set the size of the color buffer to the number of LEDs    |
-    \*---------------------------------------------------------*/
-    colors.resize(total_led_count);
-
-    /*---------------------------------------------------------*\
-    | Set the color buffer pointers on each zone                |
-    \*---------------------------------------------------------*/
-    total_led_count = 0;
-
-    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-    {
-        zones[zone_idx].start_idx   = total_led_count;
-        zone_led_count              = GetLEDsInZone(zone_idx);
-
-        if((colors.size() > 0) && (zone_led_count > 0))
-        {
-            zones[zone_idx].colors = &colors[total_led_count];
-        }
-        else
-        {
-            zones[zone_idx].colors = NULL;
-        }
-
-        if((leds.size() > 0) && (zone_led_count > 0))
-        {
-            zones[zone_idx].leds   = &leds[total_led_count];
-        }
-        else
-        {
-            zones[zone_idx].leds    = NULL;
-        }
-
-
-        total_led_count += zone_led_count;
-    }
-}
 
 unsigned int RGBController::GetLEDsInZone(unsigned int zone) const
 {
-    unsigned int leds_count = zones[zone].leds_count;
-
-    if(zones[zone].flags & ZONE_FLAG_RESIZE_EFFECTS_ONLY)
-    {
-        if(leds_count > 1)
-        {
-            leds_count = 1;
-        }
-    }
-
-    return(leds_count);
+    return m_zones.at(zone).leds_count;
 }
 
-RGBColor RGBController::GetLED(unsigned int led) const
+void RGBController::SetProfile(unsigned int profileIdx)
 {
-    if(led < colors.size())
-    {
-        return(colors[led]);
-    }
-    else
-    {
-        return(0x00000000);
-    }
-}
-
-void RGBController::SetLED(unsigned int led, RGBColor color)
-{
-    if(led < colors.size())
-    {
-        colors[led] = color;
-    }
-}
-
-void RGBController::SetAllLEDs(RGBColor color)
-{
-    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-    {
-        SetAllZoneLEDs((int)zone_idx, color);
-    }
-}
-
-void RGBController::SetAllZoneLEDs(int zone, RGBColor color)
-{
-    for (std::size_t color_idx = 0; color_idx < GetLEDsInZone(zone); color_idx++)
-    {
-        zones[zone].colors[color_idx] = color;
-    }
-}
-
-int RGBController::GetMode() const
-{
-    return(active_mode);
-}
-
-void RGBController::SetMode(int mode)
-{
-    active_mode = mode;
-}
-
-void RGBController::SetProfile(size_t profileIdx)
-{
-    active_profile = profileIdx;
+    m_profiles.active = profileIdx;
 }
 
 const std::vector<led>& RGBController::GetLEDs() const
 {
-    return leds;
+    return m_leds;
 }
 
-void RGBController::SetLEDs(const std::vector<led> &new_leds)
-{
-    leds = new_leds;
-}
 
 const std::vector<zone>& RGBController::GetZones() const
 {
-    return zones;
+    return m_zones;
 }
 
 std::string RGBController::GetControllerName() const
 {
-    return name;
+    return m_name;
 }
 
-int RGBController::GetActiveMode() const
-{
-    return active_mode;
-}
 
 const std::vector<mode>& RGBController::GetModes() const
 {
-    return modes;
+    return m_modes;
 }
 
-void RGBController::SetModes(const std::vector<mode> &new_modes)
-{
-    modes = new_modes;
-}
-
-const std::vector<RGBColor>& RGBController::GetColors() const
-{
-    return colors;
-}
 
 device_type RGBController::GetDeviceType() const
 {
-    return type;
+    return m_type;
 }
 
-unsigned int RGBController::GetProfiles() const
+const std::vector<led_group_effect> &RGBController::GetEffects() const
 {
-    return profiles;
+    return m_effects;
 }
 
- size_t RGBController::GetActiveProfile() const
+const led_group_effect &RGBController::GetEffect(unsigned int effectIdx) const
 {
-    return active_profile;
+    return m_effects.at(effectIdx);
 }
 
-void RGBController::DeviceUpdateMode()
+void RGBController::SetEfects(const std::vector<led_group_effect> &effects)
 {
-
+    m_effects = effects;
 }
+
+void RGBController::AddEffect(const led_group_effect &effect)
+{
+    m_effects.push_back(effect);
+}
+
+void RGBController::RemoveEffect(unsigned int effectIdx)
+{
+    m_effects.erase(m_effects.begin() + effectIdx);
+}
+
+void RGBController::ClearEffects()
+{
+    m_effects.clear();
+}
+
+void RGBController::ResetEffectsToDefault()
+{
+    DeviceResetEffectsToDefault();
+}
+
+std::set<int> RGBController::GetLedsIndexesByDeviceSpecificValue(unsigned int value) const
+{
+    std::set<int> indices;
+
+    for(std::size_t i = 0; i < m_leds.size(); i++)
+    {
+        if(m_leds[i].value == value)
+        {
+            indices.insert((int)i);
+        }
+    }
+
+    return indices;
+}
+
+std::vector<RGBColor> RGBController::GetStateForAllLeds() const
+{
+    return DeviceGetState();
+}
+
+const Profiles &RGBController::GetProfiles() const
+{
+    return m_profiles;
+}
+
+const Brightnesses& RGBController::GetBrightness() const
+{
+    return m_britnesses;
+}
+
+void RGBController::SetBrightness(unsigned int brightness)
+{
+    m_britnesses.active = brightness;
+}
+
 
 std::string device_type_to_str(device_type type)
 {
     switch(type)
     {
-    case DEVICE_TYPE_MOTHERBOARD:
-        return "Motherboard";
-    case DEVICE_TYPE_DRAM:
-        return "DRAM";
-    case DEVICE_TYPE_GPU:
-        return "GPU";
-    case DEVICE_TYPE_COOLER:
-        return "Cooler";
-    case DEVICE_TYPE_LEDSTRIP:
-        return "LED Strip";
     case DEVICE_TYPE_KEYBOARD:
         return "Keyboard";
-    case DEVICE_TYPE_MOUSE:
-        return "Mouse";
-    case DEVICE_TYPE_MOUSEMAT:
-        return "Mousemat";
-    case DEVICE_TYPE_HEADSET:
-        return "Headset";
-    case DEVICE_TYPE_HEADSET_STAND:
-        return "Headset Stand";
-    case DEVICE_TYPE_GAMEPAD:
-        return "Gamepad";
-    case DEVICE_TYPE_LIGHT:
-        return "Light";
-    case DEVICE_TYPE_SPEAKER:
-        return "Speaker";
-    case DEVICE_TYPE_VIRTUAL:
-        return "Virtual";
-    case DEVICE_TYPE_STORAGE:
-        return "Storage";
-    case DEVICE_TYPE_CASE:
-        return "Case";
-    case DEVICE_TYPE_MICROPHONE:
-        return "Microphone";
-    case DEVICE_TYPE_ACCESSORY:
-        return "Accessory";
-    case DEVICE_TYPE_KEYPAD:
-        return "Keypad";
     default:
         return "Unknown";
     }

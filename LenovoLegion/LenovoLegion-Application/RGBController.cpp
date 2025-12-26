@@ -10,7 +10,6 @@
 #include "DataProvider.h"
 
 #include "../LenovoLegion-Daemon/DataProviderRGBController.h"
-#include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
 
 #include <Core/LoggerHolder.h>
 
@@ -19,196 +18,214 @@ namespace LenovoLegionGui {
 RGBController::RGBController(DataProvider* dataProvider)
     : m_dataProvider(dataProvider)
 {
-    refresh();
+    readRGBControllerData(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_ALL);
 }
 
 RGBController::~RGBController()
 {}
 
-void RGBController::refresh()
+void RGBController::readRGBControllerData(const legion::messages::RGBControllerRequest::RequestFlags& requestFlags)
 {
-    readRGBControllerData();
-}
+    legion::messages::RGBControllerResponse rgbControllerData = m_dataProvider->getDataMessage<legion::messages::RGBControllerResponse,legion::messages::RGBControllerRequest>(LenovoLegionDaemon::DataProviderRGBController::dataType,[&requestFlags]{
+        legion::messages::RGBControllerRequest request;
+        request.set_request_flags(requestFlags);
 
-void RGBController::readRGBControllerData()
-{
-    legion::messages::RGBController rgbControllerData = m_dataProvider->getDataMessage<legion::messages::RGBController>(LenovoLegionDaemon::DataProviderRGBController::dataType);
+        return request;
+    }());
 
-
-    m_modes.clear();
-    m_zones.clear();
-    m_leds.clear();
-    m_colors.clear();
-    m_matrixMap.clear();
-
-    m_profiles      = -1;
-    m_activeProfile = -1;
-    m_activeMode    = -1;
-    m_deviceType = LenovoLegionDaemon::DEVICE_TYPE_UNKNOWN;
-
-
-    if(rgbControllerData.ByteSizeLong() == 0)
+    // Device Type
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_DEVICE_TYPE)
     {
-        THROW_EXCEPTION(exception_T,DATA_NOT_AVAILABLE,"RGBController data not available from daemon");
+        m_deviceType = LenovoLegionDaemon::DEVICE_TYPE_UNKNOWN;
+
+        if(rgbControllerData.has_device_type())
+        {
+            m_deviceType = static_cast<LenovoLegionDaemon::device_type>(rgbControllerData.device_type());
+        }
     }
 
-    if(rgbControllerData.has_profiles())
+    // Convert Profiles
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_PROFILE)
     {
-        m_profiles = rgbControllerData.profiles();
+        m_profiles = {0,0,0};
+
+        if(rgbControllerData.has_profile())
+        {
+            m_profiles = {rgbControllerData.profile().min(),
+                          rgbControllerData.profile().max(),
+                          rgbControllerData.profile().current()};
+        }
     }
 
-    if(rgbControllerData.has_active_profile())
+    // Convert Brightness
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_BRITNESS)
     {
-        m_activeProfile = rgbControllerData.active_profile();
-    }
-    if(rgbControllerData.has_active_mode())
-    {
-        m_activeMode = rgbControllerData.active_mode();
+        m_brightness    = {0,0,0};
+
+        if(rgbControllerData.has_britness())
+        {
+            m_brightness    = {0,0,0};
+
+            m_brightness = {rgbControllerData.britness().min(),
+                            rgbControllerData.britness().max(),
+                            rgbControllerData.britness().current()};
+        }
     }
 
-    if(rgbControllerData.has_device_type())
+
+    // Convert Effects
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS)
     {
-        m_deviceType = static_cast<LenovoLegionDaemon::device_type>(rgbControllerData.device_type());
+        m_effects.clear();
+
+        for(int i = 0; i < rgbControllerData.led_group_effects_size(); i++)
+        {
+            LenovoLegionDaemon::led_group_effect effect;
+
+            const auto& pbEffect = rgbControllerData.led_group_effects(i);
+
+            effect.m_mode       = pbEffect.mode();
+            effect.m_direction  = pbEffect.direction();
+            effect.m_speed      = pbEffect.speed();
+            effect.m_color_mode = pbEffect.color_mode();
+
+            for (int j = 0; j < pbEffect.colors_size(); j++)
+            {
+                effect.m_colors.push_back(pbEffect.colors(j));
+            }
+
+            for (int j = 0; j < pbEffect.leds_size(); j++)
+            {
+                effect.m_leds.push_back({pbEffect.leds(j).name().data(),pbEffect.leds(j).value()});
+            }
+
+            m_effects.push_back(effect);
+        }
     }
-    \
+
     // Convert LEDs
-    for(int i = 0; i < rgbControllerData.leds_size(); i++)
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LEDS)
     {
-        m_leds.emplace_back(rgbControllerData.leds(i).name().data(),rgbControllerData.leds(i).value());
-    }
+        m_leds.clear();
 
-    // Convert Colors
-    for(int i = 0; i < rgbControllerData.colors_size(); i++)
-    {
-        m_colors.push_back(rgbControllerData.colors(i));
+        for(int i = 0; i < rgbControllerData.leds_size(); i++)
+        {
+            m_leds.emplace_back(rgbControllerData.leds(i).name().data(),rgbControllerData.leds(i).value());
+        }
     }
 
     // Convert Zones
-    for(int i = 0; i < rgbControllerData.zones_size(); i++)
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_ZONES)
     {
-        const auto& pbZone = rgbControllerData.zones(i);
-        LenovoLegionDaemon::zone& zone = m_zones.emplace_back();
+        m_zones.clear();
 
-        zone.name       = pbZone.name();
-        zone.type       = pbZone.type();
-        zone.start_idx  = pbZone.start_idx();
-        zone.leds_count = pbZone.leds_count();
-        zone.leds_min   = pbZone.leds_min();
-        zone.leds_max   = pbZone.leds_max();
-        zone.flags      = pbZone.flags();
-
-        zone.leds       = &m_leds[zone.start_idx];
-        zone.colors     = &m_colors[zone.start_idx];
-
-
-        // Copy matrix map if present
-        if(pbZone.has_matrix_map())
+        for(int i = 0; i < rgbControllerData.zones_size(); i++)
         {
-            zone.matrix_map = std::make_unique<LenovoLegionDaemon::matrix_map_type>(pbZone.matrix_map().height(),pbZone.matrix_map().width(),nullptr);
+            const auto& pbZone = rgbControllerData.zones(i);
 
-            m_matrixMap.assign(pbZone.matrix_map().map().begin(),pbZone.matrix_map().map().end());
+            m_zones.push_back( {
+                .name               = pbZone.name().data(),
+                .type               = pbZone.type(),
+                .flags              = pbZone.flags(),
+                .leds_count         = pbZone.leds_count(),
+                .leds_min           = pbZone.leds_min(),
+                .leds_max           = pbZone.leds_max(),
+                .leds               = m_leds,
+                .matrix_map         = [&pbZone](){
+                    LenovoLegionDaemon::matrix_map_type matrix;
 
-            if(!m_matrixMap.empty())
-            {
-                zone.matrix_map->map = m_matrixMap.data();
-            }
+                    matrix.height = pbZone.matrix_map().height();
+                    matrix.width  = pbZone.matrix_map().width();
+
+                    for(int r = 0; r < pbZone.matrix_map().map_size(); r++)
+                    {
+                        matrix.map.push_back(pbZone.matrix_map().map().at(r));
+                    }
+
+                    return matrix;
+                }(),
+                .start_idx         = 0,
+            });
         }
-
-        // Copy segments
-        for(int j = 0; j < pbZone.segments_size(); j++)
-        {
-            zone.segments.emplace_back(pbZone.segments(j).name().data(),pbZone.segments(j).type(),pbZone.segments(j).start_idx(),pbZone.segments(j).leds_count());
-        }
-
     }
-
     // Convert Modes
-    for(int i = 0; i < rgbControllerData.modes_size(); i++)
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_MODES)
     {
-        const auto& pbMode = rgbControllerData.modes(i);
-        LenovoLegionDaemon::mode& mode = m_modes.emplace_back();
+        m_modes.clear();
 
-        mode.name           = pbMode.name();
-        mode.value          = pbMode.value();
-        mode.flags          = pbMode.flags();
-        mode.speed_min      = pbMode.speed_min();
-        mode.speed_max      = pbMode.speed_max();
-        mode.brightness_min = pbMode.brightness_min();
-        mode.brightness_max = pbMode.brightness_max();
-        mode.colors_min     = pbMode.colors_min();
-        mode.colors_max     = pbMode.colors_max();
-        mode.speed          = pbMode.speed();
-        mode.brightness     = pbMode.brightness();
-        mode.direction      = pbMode.direction();
-        mode.color_mode     = pbMode.color_mode();
-
-        // Copy colors
-        for(int j = 0; j < pbMode.colors_size(); j++)
+        for(int i = 0; i < rgbControllerData.modes_size(); i++)
         {
-            mode.colors.push_back(pbMode.colors(j));
+            const auto& pbMode = rgbControllerData.modes(i);
+            m_modes.push_back({
+                .name           = pbMode.name().data(),
+                .value          = pbMode.value(),
+                .flags          = pbMode.flags(),
+                .speed_min      = pbMode.speed_min(),
+                .speed_max      = pbMode.speed_max(),
+                .colors_min     = pbMode.colors_min(),
+                .colors_max     = pbMode.colors_max(),
+                .speed          = pbMode.speed(),
+                .direction      = pbMode.direction(),
+                .color_mode     = pbMode.color_mode(),
+                .colors         = [&pbMode]{
+                    std::vector<LenovoLegionDaemon::RGBColor> colors;
+
+                    for (int j = 0; j < pbMode.colors_size(); j++)
+                    {
+                        colors.push_back(pbMode.colors(j));
+                    }
+
+                    return colors;
+                }(),
+
+            });
         }
     }
-
 }
 
 void RGBController::sendRGBControllerData()
 {
 
-    legion::messages::RGBController rgbControllerData;
+    legion::messages::RGBControllerSetRequest rgbControllerData;
 
-    if(m_pendingChanges.test(CHANGE_ACTIVE_MODE))
+    if(m_pendingChanges.test(CHANGE_PROFILES))
     {
-        rgbControllerData.set_active_mode(m_activeMode);
+        rgbControllerData.mutable_profile()->set_current(m_profiles.active);
     }
 
-    if(m_pendingChanges.test(CHANGE_LEDS))
+    if(m_pendingChanges.test(CHANGE_BRIGHTNESS))
     {
-        for(const auto& led : m_leds)
-        {
-            auto* pbLed = rgbControllerData.add_leds();
-            pbLed->set_name(led.name);
-            pbLed->set_value(led.value);
-        }
+        rgbControllerData.mutable_britness()->set_current(m_brightness.active);
     }
 
-    if(m_pendingChanges.test(CHANGE_MODES))
+    if(m_pendingChanges.test(CHANGE_EFFECTS))
     {
-        for(const auto& mode : m_modes)
+        for(const auto& effect : m_effects)
         {
-            auto* pbMode = rgbControllerData.add_modes();
+            auto* pbEffect = rgbControllerData.add_led_group_effects();
 
-            pbMode->set_name(mode.name);
-            pbMode->set_value(mode.value);
-            pbMode->set_flags(mode.flags);
-            pbMode->set_speed_min(mode.speed_min);
-            pbMode->set_speed_max(mode.speed_max);
-            pbMode->set_brightness_min(mode.brightness_min);
-            pbMode->set_brightness_max(mode.brightness_max);
-            pbMode->set_colors_min(mode.colors_min);
-            pbMode->set_colors_max(mode.colors_max);
-            pbMode->set_speed(mode.speed);
-            pbMode->set_brightness(mode.brightness);
-            pbMode->set_direction(mode.direction);
-            pbMode->set_color_mode(mode.color_mode);
+            pbEffect->set_mode(effect.m_mode);
+            pbEffect->set_direction(effect.m_direction);
+            pbEffect->set_speed(effect.m_speed);
+            pbEffect->set_color_mode(effect.m_color_mode);
 
-            for(const auto& color : mode.colors)
+            for (const auto& color : effect.m_colors)
             {
-                pbMode->add_colors(color);
+                pbEffect->add_colors(color);
+            }
+
+            for (const auto& led : effect.m_leds)
+            {
+                auto* pbLed = pbEffect->add_leds();
+                pbLed->set_name(led.name);
+                pbLed->set_value(led.value);
             }
         }
     }
 
-    if(m_pendingChanges.test(CHANGE_PROFILES))
+    if(m_pendingChanges.test(CHANGE_RESET_EFFECTS))
     {
-        rgbControllerData.set_active_profile(m_activeProfile);
-    }
-
-    if(m_pendingChanges.test(CHANGE_COLORS))
-    {
-        for (const auto& color : m_colors)
-        {
-            rgbControllerData.add_colors(color);
-        }
+        rgbControllerData.set_reset_effects_to_def(true);
     }
 
     if(m_pendingChanges.any())
@@ -216,9 +233,9 @@ void RGBController::sendRGBControllerData()
         m_dataProvider->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,rgbControllerData);
     }
 
-    if(m_pendingChanges.test(CHANGE_PROFILES))
+    if(m_pendingChanges.test(CHANGE_PROFILES) || m_pendingChanges.test(CHANGE_RESET_EFFECTS))
     {
-        readRGBControllerData();
+        readRGBControllerData(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS);
     }
 
     m_pendingChanges.reset();
@@ -233,13 +250,35 @@ unsigned int RGBController::GetLEDsInZone(unsigned int zone) const
     return m_zones[zone].leds_count;
 }
 
-std::string RGBController::GetModeName(unsigned int mode) const
+std::string RGBController::GetModeNameByIdx(unsigned int mode) const
 {
     if(mode >= static_cast<unsigned int>(m_modes.size()))
     {
         return "";
     }
     return m_modes[mode].name;
+}
+
+LenovoLegionDaemon::mode RGBController::GetModeByIdx(unsigned int mode) const
+{
+    if(mode >= static_cast<unsigned int>(m_modes.size()))
+    {
+        return {};
+    }
+    return m_modes[mode];
+}
+
+LenovoLegionDaemon::mode RGBController::GetModeByModeValue(int mode) const
+{
+    for (const auto & m : m_modes)
+    {
+        if(m.value == mode)
+        {
+            return m;
+        }
+    }
+
+    return {};
 }
 
 std::string RGBController::GetZoneName(unsigned int zone) const
@@ -260,45 +299,9 @@ std::string RGBController::GetLEDName(unsigned int led) const
     return m_leds[led].name;
 }
 
-LenovoLegionDaemon::RGBColor RGBController::GetLED(unsigned int led) const
+void RGBController::SetProfile(unsigned int profileIdx)
 {
-    if(led >= static_cast<unsigned int>(m_colors.size()))
-    {
-        return 0;
-    }
-    return m_colors[led];
-}
-
-void RGBController::SetLED(unsigned int led, LenovoLegionDaemon::RGBColor color)
-{
-    m_colors[led] = color;
-    m_pendingChanges.set(CHANGE_COLORS);
-}
-
-void RGBController::SetAllLEDs(LenovoLegionDaemon::RGBColor color)
-{
-    for(size_t i = 0; i < m_colors.size(); i++)
-    {
-        m_colors[i] = color;
-    }
-    m_pendingChanges.set(CHANGE_COLORS);
-}
-
-int RGBController::GetMode() const
-{
-    return m_activeMode;
-}
-
-void RGBController::SetMode(int mode)
-{
-    m_activeMode = mode;
-    m_pendingChanges.set(CHANGE_ACTIVE_MODE);
-}
-
-
-void RGBController::SetProfile(size_t profileIdx)
-{
-    m_activeProfile = profileIdx;
+    m_profiles.active = profileIdx;
     m_pendingChanges.set(CHANGE_PROFILES);
 }
 
@@ -307,11 +310,6 @@ const std::vector<LenovoLegionDaemon::led>& RGBController::GetLEDs() const
     return m_leds;
 }
 
-void RGBController::SetLEDs(const std::vector<LenovoLegionDaemon::led>& new_leds)
-{
-    m_leds = new_leds;
-    m_pendingChanges.set(CHANGE_LEDS);
-}
 
 const std::vector<LenovoLegionDaemon::zone>& RGBController::GetZones() const
 {
@@ -323,15 +321,41 @@ const std::vector<LenovoLegionDaemon::mode>& RGBController::GetModes() const
     return m_modes;
 }
 
-void RGBController::SetModes(const std::vector<LenovoLegionDaemon::mode>& new_modes)
+std::set<int> RGBController::GetLedsIndexesByDeviceSpecificValue(unsigned int value) const
 {
-    m_modes = new_modes;
-    m_pendingChanges.set(CHANGE_MODES);
+    return (std::set<int>)[&]() {
+
+        std::set<int> indices;
+
+        for (size_t i = 0; i < m_leds.size(); i++)
+        {
+            if (m_leds[i].value == value)
+            {
+                indices.insert(i);
+            }
+        }
+        return indices;
+    }();
 }
 
-const std::vector<LenovoLegionDaemon::RGBColor>& RGBController::GetColors() const
+std::vector<LenovoLegionDaemon::RGBColor> RGBController::GetStateForAllLeds() const
 {
-    return m_colors;
+    legion::messages::RGBControllerResponse rgbControllerData = m_dataProvider->getDataMessage<legion::messages::RGBControllerResponse,legion::messages::RGBControllerRequest>(LenovoLegionDaemon::DataProviderRGBController::dataType,[]{
+        legion::messages::RGBControllerRequest request;
+        request.set_request_flags(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_STATE_FOR_ALL_LEDS);
+
+        return request;
+    }());
+
+
+    std::vector<LenovoLegionDaemon::RGBColor> colors;
+
+    for(int i = 0; i < rgbControllerData.colors_size(); i++)
+    {
+        colors.push_back(rgbControllerData.colors(i));
+    }
+
+    return colors;
 }
 
 LenovoLegionDaemon::device_type RGBController::GetDeviceType() const
@@ -339,14 +363,59 @@ LenovoLegionDaemon::device_type RGBController::GetDeviceType() const
     return m_deviceType;
 }
 
-unsigned int RGBController::GetProfiles() const
+const LenovoLegionDaemon::Profiles& RGBController::GetProfiles() const
 {
     return m_profiles;;
 }
 
-size_t RGBController::GetActiveProfile() const
+const LenovoLegionDaemon::Brightnesses& RGBController::GetBrightness() const
 {
-    return m_activeProfile;
+    return m_brightness;
+}
+
+void RGBController::SetBrightness(unsigned int brightness)
+{
+    m_brightness.active = brightness;
+    m_pendingChanges.set(CHANGE_BRIGHTNESS);
+}
+
+const std::vector<LenovoLegionDaemon::led_group_effect> &RGBController::GetEffects() const
+{
+    return m_effects;
+}
+
+const LenovoLegionDaemon::led_group_effect &RGBController::GetEffect(unsigned int effectIdx) const
+{
+    return m_effects.at(effectIdx);
+}
+
+void RGBController::SetEfects(const std::vector<LenovoLegionDaemon::led_group_effect> &effects)
+{
+    m_effects = effects;
+    m_pendingChanges.set(CHANGE_EFFECTS);
+}
+
+void RGBController::AddEffect(const LenovoLegionDaemon::led_group_effect &effect)
+{
+    m_effects.push_back(effect);
+    m_pendingChanges.set(CHANGE_EFFECTS);
+}
+
+void RGBController::RemoveEffect(unsigned int effectIdx)
+{
+    m_effects.erase(m_effects.begin() + effectIdx);
+    m_pendingChanges.set(CHANGE_EFFECTS);
+}
+
+void RGBController::ClearEffects()
+{
+    m_effects.clear();
+    m_pendingChanges.set(CHANGE_EFFECTS);
+}
+
+void RGBController::ResetEffectsToDefault()
+{
+    m_pendingChanges.set(CHANGE_RESET_EFFECTS);
 }
 
 void RGBController::ApplyPendingChanges()

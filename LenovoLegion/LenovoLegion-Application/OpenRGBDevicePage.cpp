@@ -8,12 +8,14 @@
 \*---------------------------------------------------------*/
 
 #include "OpenRGBDevicePage.h"
-
-
 #include "ui_OpenRGBDevicePage.h"
 
 
+#include <Core/LoggerHolder.h>
+
+
 #include <QAbstractItemView>
+#include <QScreen>
 
 namespace LenovoLegionGui {
 
@@ -71,6 +73,19 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     ui->ProfileBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
     ui->ProfileBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
 
+    ui->DirectionEffectsBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->DirectionEffectsBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->LEDEffectsBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->LEDEffectsBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->ModeEffectsBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->ModeEffectsBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+    ui->SpeedEffectsComboBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
+    ui->SpeedEffectsComboBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
+
+
 
     /*-----------------------------------------------------*\
     | Store device pointer                                  |
@@ -80,58 +95,94 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     /*-----------------------------------------------------*\
     | Set up the device view                                |
     \*-----------------------------------------------------*/
+    ui->DeviceViewBox->setController(device.get());
+    ui->DeviceViewBoxFrame->hide();
+
     connect(ui->DeviceViewBox, &DeviceView::selectionChanged, this, &OpenRGBDevicePage::on_DeviceViewBox_selectionChanged);
 
     /*-----------------------------------------------------*\
-     | Hide the profile selection  box                      |
+     | The profile selection  box                           |
     \*-----------------------------------------------------*/
+    ui->ProfileBox->blockSignals(true);
     ui->ProfileBox->setVisible(false);
     ui->ProfileLabel->setVisible(false);
+    ui->ProfileBox->clear();
 
     auto profiles = device->GetProfiles();
-    if(profiles > 0)
+    if(profiles.max > 0)
     {
-        ui->ProfileBox->setVisible(true);
-        ui->ProfileLabel->setVisible(true);
-
         /*-----------------------------------------------------*\
         | Fill in the profile selection box                    |
         \*-----------------------------------------------------*/
-        ui->ProfileBox->blockSignals(true);
-        ui->ProfileBox->clear();
-
-        for (std::size_t i = 0; i < profiles; i++)
+        for (std::size_t i = profiles.min; i < profiles.max + 1; i++)
         {
-            ui->ProfileBox->addItem(QString("Profile ").append(QString::number(i + 1)));
+            ui->ProfileBox->addItem(QString("Profile ").append(QString::number(i)),QVariant::fromValue(i));          
         }
 
-        ui->ProfileBox->setCurrentIndex(device->GetActiveProfile());
+        ui->ProfileBox->setCurrentIndex(profiles.active - profiles.min);
+
+        ui->ProfileBox->setVisible(true);
+        ui->ProfileLabel->setVisible(true);
         ui->ProfileBox->blockSignals(false);
     }
 
-    ui->DeviceViewBox->setController(device.get());
-    ui->DeviceViewBoxFrame->hide();
+
+
+
+    /*-----------------------------------------------------*\
+     | Fill the brightness slider                           |
+    \*-----------------------------------------------------*/
+    ui->BrightnessSlider->blockSignals(true);
+    ui->BrightnessSlider->setVisible(false);
+    ui->BrightnessSlider->setEnabled(false);
+
+    auto brightness = device->GetBrightness();
+    if(brightness.min < brightness.max)
+    {
+        ui->BrightnessSlider->setMinimum(brightness.min);
+        ui->BrightnessSlider->setMaximum(brightness.max);
+
+        ui->BrightnessSlider->setValue(brightness.active);
+        ui->BrightnessSlider->setEnabled(true);
+        ui->BrightnessSlider->setVisible(true);
+        ui->BrightnessSlider->blockSignals(false);
+    }
+
 
     /*-----------------------------------------------------*\
     | Fill in the mode selection box                        |
     \*-----------------------------------------------------*/
     ui->ModeBox->blockSignals(true);
+    ui->ModeBox->setVisible(false);
+    ui->ModeBox->setEnabled(false);
     ui->ModeBox->clear();
 
     auto& modes = device->GetModes();
     for(std::size_t i = 0; i < modes.size(); i++)
     {
-        ui->ModeBox->addItem(device->GetModeName(i).c_str());
+        ui->ModeBox->addItem(device->GetModeNameByIdx(i).c_str());
         ui->ModeBox->setItemData((int)i, ModeDescription(modes[i]), Qt::ToolTipRole);
     }
 
-    ui->ModeBox->setCurrentIndex(device->GetMode());
-    ui->ModeBox->blockSignals(false);
+    if(ui->ModeBox->count() > 0 )
+    {
+        ui->ModeBox->setCurrentIndex(0);
+        ui->ModeBox->blockSignals(false);
+        ui->ModeBox->setVisible(true);
+        ui->ModeBox->setEnabled(true);
+    }
 
     /*-----------------------------------------------------*\
     | Update mode user interface elements                   |
     \*-----------------------------------------------------*/
     UpdateModeUi();
+
+
+    /*-----------------------------------------------------*\
+     | Update effect user interface elements                |
+    \*-----------------------------------------------------*/
+    UpdateEffectUi();
+
 
     /*-----------------------------------------------------*\
     | Set initial color to black and update UI              |
@@ -139,7 +190,11 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     current_color.setRgb(0, 0, 0);
     updateColorUi();
 
-    ui->ApplyColorsButton->setDisabled(autoUpdateEnabled());
+    ui->pushButton_AddEffects->setEnabled(true);
+    ui->pushButton_AddEffects->setVisible(true);
+    ui->pushButton_AddEffects->blockSignals(false);
+
+    startTimer(100);
 }
 
 OpenRGBDevicePage::~OpenRGBDevicePage()
@@ -147,1082 +202,245 @@ OpenRGBDevicePage::~OpenRGBDevicePage()
     delete ui;
 }
 
-void OpenRGBDevicePage::changeEvent(QEvent *event)
+void OpenRGBDevicePage::timerEvent(QTimerEvent *)
 {
-    /*-----------------------------------------------------*\
-    | Retranslate the UI when a language change event occurs|
-    \*-----------------------------------------------------*/
-    if(event->type() == QEvent::LanguageChange)
-    {
-        ui->retranslateUi(this);
-    }
-}
+    // Adjust contrast
+    /*float contrast = 1.5;  // 1.0 = no change, >1.0 = more contrast, <1.0 = less contrast
 
-void OpenRGBDevicePage::on_ZoneBox_currentIndexChanged(int index)
-{
-    /*-----------------------------------------------------*\
-    | Read selected mode                                    |
-    \*-----------------------------------------------------*/
-    unsigned int selected_mode   = (unsigned int)ui->ModeBox->currentIndex();
-
-    /*-----------------------------------------------------*\
-    | Process zone box change based on color mode           |
-    \*-----------------------------------------------------*/
     auto& modes = device->GetModes();
-    auto& zones = device->GetZones();
     auto& leds  = device->GetLEDs();
-    switch(modes[selected_mode].color_mode)
+    if(modes[device->GetMode()].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECT_CONTROL)
     {
-        case LenovoLegionDaemon::MODE_COLORS_PER_LED:
+        QScreen *screen = QGuiApplication::primaryScreen();
+
+        if (screen) {
+
+            QPixmap screenshot = screen->grabWindow(0).scaled(20,8, Qt::IgnoreAspectRatio); //TODO
+
+            for(size_t i = 0; i < leds.size(); i++)
             {
-                /*-----------------------------------------*\
-                | Initialize both selected zone and segment |
-                | to -1 to indicate there is no selection   |
-                \*-----------------------------------------*/
-                unsigned int    current_index       = 0;
-                bool            selected_all_zones  = false;
-                int             selected_zone       = -1;
-                int             selected_segment    = -1;
+                QColor color = screenshot.toImage().pixelColor(i % 20, i / 20);
 
-                /*-----------------------------------------*\
-                | Handle condition where device has more    |
-                | than one zone, which adds an "All Zones"  |
-                | entry to the Zone menu in the first index |
-                \*-----------------------------------------*/
-                if(zones.size() > 1)
-                {
-                    if(index == (int)current_index)
-                    {
-                        selected_all_zones = true;
-                    }
-
-                    current_index++;
-                }
-
-                /*-----------------------------------------*\
-                | Determine selected zone and optionally    |
-                | selected segment based on index if "All   |
-                | Zones" is not the selected index          |
-                \*-----------------------------------------*/
-                if(!selected_all_zones)
-                {
-                    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-                    {
-                        if(index == (int)current_index)
-                        {
-                            selected_zone = (int)zone_idx;
-                            break;
-                        }
-
-                        current_index++;
-
-                        for(std::size_t segment_idx = 0; segment_idx < zones[zone_idx].segments.size(); segment_idx++)
-                        {
-                            if(index == (int)current_index)
-                            {
-                                selected_zone    = (int)zone_idx;
-                                selected_segment = (int)segment_idx;
-                                break;
-                            }
-
-                            current_index++;
-                        }
-
-                        if(selected_segment != -1)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                /*-----------------------------------------*\
-                | Clear LED box                             |
-                \*-----------------------------------------*/
-                ui->LEDBox->blockSignals(true);
-                ui->LEDBox->clear();
-
-                /*-----------------------------------------*\
-                | Clear multiple selected flag              |
-                \*-----------------------------------------*/
-                MultipleSelected = false;
-
-                /*-----------------------------------------*\
-                | Handle "All Zones" selected condition or  |
-                | multiple selection condition              |
-                \*-----------------------------------------*/
-                if(selected_all_zones)
-                {
-                    /*-------------------------------------*\
-                    | If there are multiple LEDs, add the   |
-                    | "Entire Device" option to the LED box |
-                    | and enable it, otherwise there is     |
-                    | only one LED so disable it            |
-                    \*-------------------------------------*/
-                    if(leds.size() > 1)
-                    {
-                        ui->LEDBox->addItem(tr("Entire Device"));
-                        ui->LEDBox->setEnabled(1);
-                    }
-                    else
-                    {
-                        ui->LEDBox->setDisabled(1);
-                    }
-
-                    /*-------------------------------------*\
-                    | Fill in the LED list with all LEDs in |
-                    | the device                            |
-                    \*-------------------------------------*/
-                    for(std::size_t i = 0; i < leds.size(); i++)
-                    {
-                        ui->LEDBox->addItem(device->GetLEDName(i).c_str());
-                    }
-
-                    if(!ui->ZoneBox->signalsBlocked())
-                    {
-                        ui->DeviceViewBox->blockSignals(true);
-                        ui->DeviceViewBox->clearSelection();
-                        ui->DeviceViewBox->blockSignals(false);
-                    }
-                }
-
-                /*-----------------------------------------*\
-                | Handle a zone selected condition          |
-                \*-----------------------------------------*/
-                else if(selected_zone != -1 && selected_segment == -1)
-                {
-                    unsigned int leds_in_zone = device->GetLEDsInZone(selected_zone);
-
-                    /*-------------------------------------*\
-                    | If there are multiple LEDs, add the   |
-                    | "Entire Zone" option to the LED box   |
-                    | and enable it, otherwise there is     |
-                    | only one LED so disable it            |
-                    \*-------------------------------------*/
-                    if(leds_in_zone > 1)
-                    {
-                        ui->LEDBox->addItem(tr("Entire Zone"));
-                        ui->LEDBox->setEnabled(1);
-                    }
-                    else
-                    {
-                        ui->LEDBox->setDisabled(1);
-                    }
-
-                    /*-------------------------------------*\
-                    | Fill in the LED list with all LEDs in |
-                    | the zone                              |
-                    \*-------------------------------------*/
-                    for(std::size_t led_idx = 0; led_idx < leds_in_zone; led_idx++)
-                    {
-                        ui->LEDBox->addItem(zones[selected_zone].leds[led_idx].name.c_str());
-                    }
-
-                    /*-------------------------------------*\
-                    | Enable editing if:                    |
-                    |   Zone has variable size              |
-                    | OR                                    |
-                    |   Zone is LINEAR and device type is   |
-                    |   LEDSTRIP                            |
-                    \*-------------------------------------*/
-                    if(!ui->ZoneBox->signalsBlocked())
-                    {
-                        ui->DeviceViewBox->blockSignals(true);
-                        ui->DeviceViewBox->selectZone(selected_zone);
-                        ui->DeviceViewBox->blockSignals(false);
-                    }
-                }
-
-                /*-----------------------------------------*\
-                | Handle a segment selected condition       |
-                \*-----------------------------------------*/
-                else if(selected_zone != -1 && selected_segment != -1)
-                {
-                    /*-------------------------------------*\
-                    | If there are multiple LEDs, add the   |
-                    | "Entire Segment" option to the LED    |
-                    | box and enable it, otherwise there is |
-                    | only one LED so disable it            |
-                    \*-------------------------------------*/
-                    if(zones[selected_zone].segments[selected_segment].leds_count > 1)
-                    {
-                        ui->LEDBox->addItem(tr("Entire Segment"));
-                        ui->LEDBox->setEnabled(1);
-                    }
-                    else
-                    {
-                        ui->LEDBox->setDisabled(1);
-                    }
-
-                    /*-------------------------------------*\
-                    | Fill in the LED list with all LEDs in |
-                    | the segment                           |
-                    \*-------------------------------------*/
-                    for(std::size_t led_idx = 0; led_idx < zones[selected_zone].segments[selected_segment].leds_count; led_idx++)
-                    {
-                        ui->LEDBox->addItem(zones[selected_zone].leds[led_idx + zones[selected_zone].segments[selected_segment].start_idx].name.c_str());
-                    }
-
-                    if(!ui->ZoneBox->signalsBlocked())
-                    {
-                        ui->DeviceViewBox->blockSignals(true);
-                        ui->DeviceViewBox->selectSegment(selected_zone, selected_segment);
-                        ui->DeviceViewBox->blockSignals(false);
-                    }
-                }
-
-                ui->LEDBox->setCurrentIndex(0);
-                on_LEDBox_currentIndexChanged(0);
-                ui->LEDBox->blockSignals(false);
+                device->SetLED(i, ToRGBColor(
+                                       qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
+                                       qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
+                                       qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
+                                       ));
             }
-            break;
-    }
+
+            device->ApplyPendingChanges();
+        }
+
+    }*/
 }
 
-void OpenRGBDevicePage::on_LEDBox_currentIndexChanged(int index)
+void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int value)
 {
     /*-----------------------------------------------------*\
-    | Read selected mode                                    |
+    | Set device brightness                                 |
     \*-----------------------------------------------------*/
-    unsigned int selected_mode   = (unsigned int)ui->ModeBox->currentIndex();
+    device->SetBrightness((unsigned int)value);
 
-    /*-----------------------------------------------------*\
-    | Process zone box change based on color mode           |
-    \*-----------------------------------------------------*/
-    auto& modes = device->GetModes();
-    auto& zones = device->GetZones();
-    auto& leds  = device->GetLEDs();
-    switch(modes[selected_mode].color_mode)
-    {
-        case LenovoLegionDaemon::MODE_COLORS_PER_LED:
-            {
-                /*-----------------------------------------*\
-                | Initialize both selected zone and segment |
-                | to -1 to indicate there is no selection   |
-                \*-----------------------------------------*/
-                unsigned int    current_index       = 0;
-                bool            selected_all_zones  = false;
-                bool            selected_all_leds   = false;
-                int             selected_led        = -1;
-                int             selected_zone       = -1;
-                int             selected_segment    = -1;
-
-                /*-----------------------------------------*\
-                | Handle condition where device has more    |
-                | than one zone, which adds an "All Zones"  |
-                | entry to the Zone menu in the first index |
-                \*-----------------------------------------*/
-                if(zones.size() > 1)
-                {
-                    if(ui->ZoneBox->currentIndex() == (int)current_index)
-                    {
-                        selected_all_zones = true;
-                    }
-
-                    current_index++;
-                }
-
-                /*-----------------------------------------*\
-                | Determine selected zone and optionally    |
-                | selected segment based on index if "All   |
-                | Zones" is not the selected index          |
-                \*-----------------------------------------*/
-                if(!selected_all_zones)
-                {
-                    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-                    {
-                        if(ui->ZoneBox->currentIndex() == (int)current_index)
-                        {
-                            selected_zone = (int)zone_idx;
-                            break;
-                        }
-
-                        current_index++;
-
-                        for(std::size_t segment_idx = 0; segment_idx < zones[zone_idx].segments.size(); segment_idx++)
-                        {
-                            if(ui->ZoneBox->currentIndex() == (int)current_index)
-                            {
-                                selected_zone    = (int)zone_idx;
-                                selected_segment = (int)segment_idx;
-                                break;
-                            }
-
-                            current_index++;
-                        }
-
-                        if(selected_segment != -1)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                /*-----------------------------------------*\
-                | Handle selection of "Entire Device/Zone/  |
-                | Segment" index is selected                |
-                |                                           |
-                | There should always be an Entire index as |
-                | long as the LED box is enabled            |
-                \*-----------------------------------------*/
-                if(index == 0)
-                {
-                    selected_all_leds = true;
-                }
-                /*-----------------------------------------*\
-                | Determine selected LED if "Entire Device/ |
-                | Zone/Segment" is not selected             |
-                \*-----------------------------------------*/
-                else
-                {
-                    selected_led = index - 1;
-                }
-
-                /*-----------------------------------------*\
-                | Initialize variables                      |
-                \*-----------------------------------------*/
-                bool        multiple    = (std::size_t(selected_led) == (leds.size() + 1));
-                LenovoLegionDaemon::RGBColor    color       = 0x00000000;
-                bool        updateColor = false;
-
-                /*-----------------------------------------*\
-                | Remove multiple selection                 |
-                \*-----------------------------------------*/
-                if(MultipleSelected)
-                {
-                    ui->LEDBox->removeItem((int)(leds.size() + 1));
-                }
-
-                MultipleSelected = false;
-
-                /*-----------------------------------------*\
-                | Handle "All Zones" selected condition     |
-                \*-----------------------------------------*/
-                if(selected_all_zones)
-                {
-                    /*-------------------------------------*\
-                    | Handle Entire Device selection        |
-                    \*-------------------------------------*/
-                    if(selected_all_leds)
-                    {
-                        if(!ui->LEDBox->signalsBlocked())
-                        {
-                            ui->DeviceViewBox->blockSignals(true);
-                            ui->DeviceViewBox->clearSelection();
-                            ui->DeviceViewBox->blockSignals(false);
-                        }
-                    }
-
-                    /*-------------------------------------*\
-                    | Handle single selected LED            |
-                    \*-------------------------------------*/
-                    if((leds.size() == 1 || selected_led != -1) && !multiple)
-                    {
-                        /*---------------------------------*\
-                        | Get selected LED's current color  |
-                        \*---------------------------------*/
-                        color = device->GetLED(selected_led);
-
-                        /*---------------------------------*\
-                        | Set update color flag             |
-                        \*---------------------------------*/
-                        updateColor = true;
-
-                        /*---------------------------------*\
-                        | Select LED in device view         |
-                        \*---------------------------------*/
-                        if(!ui->LEDBox->signalsBlocked())
-                        {
-                            ui->DeviceViewBox->blockSignals(true);
-                            ui->DeviceViewBox->selectLed(selected_led);
-                            ui->DeviceViewBox->blockSignals(false);
-                        }
-                    }
-                }
-                /*-----------------------------------------*\
-                | Handle a zone selected condition          |
-                \*-----------------------------------------*/
-                else if(selected_zone != -1 && selected_segment == -1)
-                {
-                    /*-------------------------------------*\
-                    | Handle Entire Zone selection          |
-                    \*-------------------------------------*/
-                    if(selected_all_leds)
-                    {
-                        if(!ui->LEDBox->signalsBlocked())
-                        {
-                            ui->DeviceViewBox->blockSignals(true);
-                            ui->DeviceViewBox->selectZone(selected_zone);
-                            ui->DeviceViewBox->blockSignals(false);
-                        }
-                    }
-
-                    /*-------------------------------------*\
-                    | Handle single selected LED            |
-                    \*-------------------------------------*/
-                    if(device->GetLEDsInZone(selected_zone) == 1 || selected_led != -1)
-                    {
-                        if((unsigned int)selected_led < device->GetLEDsInZone(selected_zone))
-                        {
-                            /*-----------------------------*\
-                            | Get selected LED's current    |
-                            | color                         |
-                            \*-----------------------------*/
-                            color = zones[selected_zone].colors[selected_led];
-
-                            /*-----------------------------*\
-                            | Set update color flag         |
-                            \*-----------------------------*/
-                            updateColor = 1;
-
-                            /*-----------------------------*\
-                            | Set global index              |
-                            \*-----------------------------*/
-                            int globalIndex = zones[selected_zone].leds - &(leds[0]) + selected_led;
-
-                            /*-----------------------------*\
-                            | Select LED in device view     |
-                            \*-----------------------------*/
-                            if(!ui->LEDBox->signalsBlocked())
-                            {
-                                ui->DeviceViewBox->blockSignals(true);
-                                ui->DeviceViewBox->selectLed(globalIndex);
-                                ui->DeviceViewBox->blockSignals(false);
-                            }
-                        }
-                    }
-                }
-                /*-----------------------------------------*\
-                | Handle a segment selected condition       |
-                \*-----------------------------------------*/
-                else if(selected_zone != -1 && selected_segment != -1)
-                {
-                    /*-------------------------------------*\
-                    | Handle Entire Zone selection          |
-                    \*-------------------------------------*/
-                    if(selected_all_leds)
-                    {
-                        if(!ui->LEDBox->signalsBlocked())
-                        {
-                            ui->DeviceViewBox->blockSignals(true);
-                            ui->DeviceViewBox->selectSegment(selected_zone, selected_segment);
-                            ui->DeviceViewBox->blockSignals(false);
-                        }
-                    }
-
-                    /*-------------------------------------*\
-                    | Handle single selected LED            |
-                    \*-------------------------------------*/
-                    if(zones[selected_zone].segments[selected_segment].leds_count == 1 || selected_led != -1)
-                    {
-                        if((unsigned int)selected_led < zones[selected_zone].segments[selected_segment].leds_count)
-                        {
-                            /*-----------------------------*\
-                            | Get selected LED's current    |
-                            | color                         |
-                            \*-----------------------------*/
-                            color = zones[selected_zone].colors[selected_led + zones[selected_zone].segments[selected_segment].start_idx];
-
-                            /*-----------------------------*\
-                            | Set update color flag         |
-                            \*-----------------------------*/
-                            updateColor = 1;
-
-                            /*-----------------------------*\
-                            | Set global index              |
-                            \*-----------------------------*/
-                            int globalIndex = zones[selected_zone].leds - &(leds[0]) + selected_led + zones[selected_zone].segments[selected_segment].start_idx;
-
-                            /*-----------------------------*\
-                            | Select LED in device view     |
-                            \*-----------------------------*/
-                            if(!ui->LEDBox->signalsBlocked())
-                            {
-                                ui->DeviceViewBox->blockSignals(true);
-                                ui->DeviceViewBox->selectLed(globalIndex);
-                                ui->DeviceViewBox->blockSignals(false);
-                            }
-                        }
-                    }
-                }
-
-                /*-----------------------------------------------------*\
-                | Update color picker with color of selected LED        |
-                \*-----------------------------------------------------*/
-                if(updateColor)
-                {
-                    current_color.setRgb(RGBGetRValue(color), RGBGetGValue(color), RGBGetBValue(color));
-
-                    updateColorUi();
-                }
-            }
-            break;
-
-        case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
-            {
-                /*-----------------------------------------------------*\
-                | Update color picker with color of selected mode       |
-                \*-----------------------------------------------------*/
-                LenovoLegionDaemon::RGBColor color = modes[selected_mode].colors[index];
-
-                current_color.setRgb(RGBGetRValue(color), RGBGetGValue(color), RGBGetBValue(color));
-
-                updateColorUi();
-            }
-            break;
-    }
-
-}
-
-void OpenRGBDevicePage::on_ModeBox_currentIndexChanged(int)
-{
-    /*-----------------------------------------------------*\
-    | Update mode user interface elements                   |
-    \*-----------------------------------------------------*/
-    UpdateModeUi();
-
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
-
-    /*-----------------------------------------------------*\
-    | Disable the button if we can safely auto apply colors |
-    \*-----------------------------------------------------*/
-    ui->ApplyColorsButton->setDisabled(autoUpdateEnabled());
-}
-
-void OpenRGBDevicePage::on_PerLEDCheck_clicked()
-{
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
-
-    /*-----------------------------------------------------*\
-    | Update mode user interface elements                   |
-    \*-----------------------------------------------------*/
-    UpdateModeUi();
-}
-
-void OpenRGBDevicePage::on_ModeSpecificCheck_clicked()
-{
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
-
-    /*-----------------------------------------------------*\
-    | Update mode user interface elements                   |
-    \*-----------------------------------------------------*/
-    UpdateModeUi();
-}
-
-void OpenRGBDevicePage::on_RandomCheck_clicked()
-{
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
-
-    /*-----------------------------------------------------*\
-    | Update mode user interface elements                   |
-    \*-----------------------------------------------------*/
-    UpdateModeUi();
-}
-
-void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int /*value*/)
-{
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
-}
-
-void OpenRGBDevicePage::on_SpeedSlider_valueChanged(int /*value*/)
-{
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
-}
-
-void OpenRGBDevicePage::on_DirectionBox_currentIndexChanged(int /*index*/)
-{
-    /*-----------------------------------------------------*\
-    | Change device mode                                    |
-    \*-----------------------------------------------------*/
-    UpdateMode();
+    device->ApplyPendingChanges();
 }
 
 void OpenRGBDevicePage::UpdateInterface()
 {
     /*-----------------------------------------------------*\
-    | Read current mode can change by profile               |
-    \*-----------------------------------------------------*/
-    if(static_cast<unsigned int>(device->GetMode()) < device->GetModes().size()        &&
-        device->GetMode() != ui->ModeBox->currentIndex()
-        )
-    {
-        ui->ModeBox->blockSignals(true);
-        ui->ModeBox->setCurrentIndex(device->GetMode());
-        ui->ModeBox->blockSignals(false);
-    }
-
-
-    /*-----------------------------------------------------*\
     | Update mode user interface elements                   |
     \*-----------------------------------------------------*/
     UpdateModeUi();
 
 
-    ui->DeviceViewBox->repaint();
+    /*-----------------------------------------------------*\
+     | Update effect user interface elements                |
+    \*-----------------------------------------------------*/
+    UpdateEffectUi();
+
+
+    repaint();
 }
 
-void OpenRGBDevicePage::UpdateModeUi()
+void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
 {
+
+    /*-----------------------------------------------------*\
+     *
+     * Block signals to avoid recursive updates
+     * -----------------------------------------------------*/
+    ui->ZoneBox->blockSignals(true);
+    ui->LEDBox->blockSignals(true);
+    ui->PerLEDCheck->blockSignals(true);
+    ui->ModeSpecificCheck->blockSignals(true);
+    ui->RandomCheck->blockSignals(true);
+    ui->SpeedSlider->blockSignals(true);
+    ui->DirectionBox->blockSignals(true);
+    ui->comboBox_modeSpecificColor->blockSignals(true);
+
+
+
+    /*
+     * Clear all controls initially
+     */
+    ui->ZoneBox->clear();
+    ui->LEDBox->clear();
+    ui->PerLEDCheck->setAutoExclusive(false);
+    ui->ModeSpecificCheck->setAutoExclusive(false);
+    ui->RandomCheck->setAutoExclusive(false);
+    ui->PerLEDCheck->setChecked(false);
+    ui->ModeSpecificCheck->setChecked(false);
+    ui->RandomCheck->setChecked(false);
+    ui->SpeedSlider->setValue(0);
+    ui->DirectionBox->clear();
+    ui->comboBox_modeSpecificColor->clear();
+
+    /*
+     *
+     * Disable all controls initially
+     *
+     * -----------------------------------------------------*/
+    ui->ZoneBox->setEnabled(false);
+    ui->LEDBox->setEnabled(false);
+    ui->PerLEDCheck->setEnabled(false);
+    ui->ModeSpecificCheck->setEnabled(false);
+    ui->RandomCheck->setEnabled(false);
+    ui->SpeedSlider->setEnabled(false);
+    ui->DirectionBox->setEnabled(false);
+    ui->comboBox_modeSpecificColor->setEnabled(false);
+
+
+
+    ui->ColorFrame->setVisible(false);
+    ui->pushButtonToggleLEDView->setEnabled(false);
+    HideDeviceView();
+
+
     /*-----------------------------------------------------*\
     | Read selected mode                                    |
     \*-----------------------------------------------------*/
-    unsigned int selected_mode   = (unsigned int)ui->ModeBox->currentIndex();
+    auto mode = device->GetModeByIdx(ui->ModeBox->currentIndex());
 
-    /*-----------------------------------------------------*\
-    | Don't update the UI if the current mode is invalid    |
-    \*-----------------------------------------------------*/
-    auto& modes = device->GetModes();
-    auto& zones = device->GetZones();
-    if(selected_mode < modes.size())
+    unsigned int  effective_color_mode      = (selectColorMode < LenovoLegionDaemon::MODE_COLORS_MAX) ? selectColorMode : mode.color_mode;
+    bool supports_per_led_selection         = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_SELECTION;
+    bool supports_per_led                   = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_COLOR;
+    bool supports_mode_specific             = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_MODE_SPECIFIC_COLOR;
+    bool supports_random                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR;
+    bool supports_speed                     = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_SPEED;
+    bool supports_dir_lr                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_LR;
+    bool supports_dir_ud                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_UD;
+    bool supports_spin_lr                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_SPINLR;
+
+    bool per_led                = effective_color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED;
+    bool mode_specific          = effective_color_mode == LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
+    bool random                 = effective_color_mode == LenovoLegionDaemon::MODE_COLORS_RANDOM;
+
+    if(supports_speed)
     {
-        bool supports_per_led       = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_COLOR );
-        bool supports_mode_specific = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_MODE_SPECIFIC_COLOR );
-        bool supports_random        = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR );
-        bool supports_speed         = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_SPEED );
-        bool supports_brightness    = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_BRIGHTNESS);
-        bool supports_dir_lr        = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_LR );
-        bool supports_dir_ud        = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_UD );
-        bool supports_dir_hv        = ( modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_HV );
-        bool per_led                = modes[selected_mode].color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED;
-        bool mode_specific          = modes[selected_mode].color_mode == LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
-        bool random                 = modes[selected_mode].color_mode == LenovoLegionDaemon::MODE_COLORS_RANDOM;
-        unsigned int dir            = modes[selected_mode].direction;
+        ui->SpeedSlider->setMinimum(mode.speed_min);
+        ui->SpeedSlider->setMaximum(mode.speed_max);
 
-        if(supports_speed)
-        {
-            ui->SpeedSlider->blockSignals(true);
-            int  current_speed;
-            InvertedSpeed = modes[selected_mode].speed_min > modes[selected_mode].speed_max;
-
-            if(InvertedSpeed)
-            {
-                /*-----------------------------------------------------*\
-                | If Speed Slider is inverted, invert value             |
-                \*-----------------------------------------------------*/
-                ui->SpeedSlider->setMinimum(modes[selected_mode].speed_max);
-                ui->SpeedSlider->setMaximum(modes[selected_mode].speed_min);
-                current_speed = modes[selected_mode].speed_min - modes[selected_mode].speed + modes[selected_mode].speed_max;
-            }
-            else
-            {
-                ui->SpeedSlider->setMinimum(modes[selected_mode].speed_min);
-                ui->SpeedSlider->setMaximum(modes[selected_mode].speed_max);
-                current_speed = modes[selected_mode].speed;
-            }
-
-            ui->SpeedSlider->setValue(current_speed);
-            ui->SpeedSlider->setEnabled(true);
-            ui->SpeedSlider->blockSignals(false);
-        }
-        else
-        {
-            ui->SpeedSlider->blockSignals(true);
-            ui->SpeedSlider->setEnabled(false);
-            ui->SpeedSlider->blockSignals(false);
-        }
-
-        if(supports_brightness)
-        {
-            ui->BrightnessSlider->blockSignals(true);
-            int current_brightness;
-            InvertedBrightness = modes[selected_mode].brightness_min > modes[selected_mode].brightness_max;
-
-            if(InvertedBrightness)
-            {
-                /*-----------------------------------------------------*\
-                | If Brightness Slider is inverted, invert value        |
-                \*-----------------------------------------------------*/
-                ui->BrightnessSlider->setMinimum(modes[selected_mode].brightness_max);
-                ui->BrightnessSlider->setMaximum(modes[selected_mode].brightness_min);
-                current_brightness = modes[selected_mode].brightness_min - modes[selected_mode].brightness + modes[selected_mode].brightness_max;
-            }
-            else
-            {
-                ui->BrightnessSlider->setMinimum(modes[selected_mode].brightness_min);
-                ui->BrightnessSlider->setMaximum(modes[selected_mode].brightness_max);
-                current_brightness = modes[selected_mode].brightness;
-            }
-
-            ui->BrightnessSlider->setValue(current_brightness);
-            ui->BrightnessSlider->setEnabled(true);
-            ui->BrightnessSlider->blockSignals(false);
-        }
-        else
-        {
-            ui->BrightnessSlider->blockSignals(true);
-            ui->BrightnessSlider->setEnabled(false);
-            ui->BrightnessSlider->blockSignals(false);
-        }
-
-        ui->DirectionBox->blockSignals(true);
-        ui->DirectionBox->clear();
-
-        if(supports_dir_lr)
-        {
-            ui->DirectionBox->addItem(tr("Left"));
-            ui->DirectionBox->addItem(tr("Right"));
-        }
-
-        if(supports_dir_ud)
-        {
-            ui->DirectionBox->addItem(tr("Up"));
-            ui->DirectionBox->addItem(tr("Down"));
-        }
-
-        if(supports_dir_hv)
-        {
-            ui->DirectionBox->addItem(tr("Horizontal"));
-            ui->DirectionBox->addItem(tr("Vertical"));
-        }
-
-        if(supports_dir_lr || supports_dir_ud || supports_dir_hv)
-        {
-            if((supports_dir_lr)
-             &&((dir == LenovoLegionDaemon::MODE_DIRECTION_LEFT)
-              ||(dir == LenovoLegionDaemon::MODE_DIRECTION_RIGHT)))
-            {
-                ui->DirectionBox->setCurrentIndex(dir);
-            }
-
-            if((supports_dir_ud)
-             &&((dir == LenovoLegionDaemon::MODE_DIRECTION_UP)
-              ||(dir == LenovoLegionDaemon::MODE_DIRECTION_DOWN)))
-            {
-                if(supports_dir_lr)
-                {
-                    ui->DirectionBox->setCurrentIndex(dir);
-                }
-                else
-                {
-                    ui->DirectionBox->setCurrentIndex(dir - 2);
-                }
-            }
-
-            if((supports_dir_hv)
-             &&((dir == LenovoLegionDaemon::MODE_DIRECTION_HORIZONTAL)
-              ||(dir == LenovoLegionDaemon::MODE_DIRECTION_VERTICAL)))
-            {
-                if(supports_dir_lr && supports_dir_ud)
-                {
-                    ui->DirectionBox->setCurrentIndex(dir);
-                }
-                else if(supports_dir_lr || supports_dir_ud)
-                {
-                    ui->DirectionBox->setCurrentIndex(dir - 2);
-                }
-                else
-                {
-                    ui->DirectionBox->setCurrentIndex(dir - 4);
-                }
-            }
-
-            ui->DirectionBox->setEnabled(true);
-        }
-        else
-        {
-            ui->DirectionBox->setEnabled(false);
-        }
-
-        ui->DirectionBox->blockSignals(false);
-
-        if(supports_per_led)
-        {
-            ui->PerLEDCheck->setEnabled(true);
-            ui->PerLEDCheck->setChecked(per_led);
-            ui->pushButtonToggleLEDView->setEnabled(true);
-
-            if(DeviceViewShowing)
-            {
-                ui->DeviceViewBoxFrame->show();
-            }
-        }
-        else
-        {
-            ui->PerLEDCheck->setEnabled(false);
-            ui->PerLEDCheck->setAutoExclusive(false);
-            ui->PerLEDCheck->setChecked(false);
-            ui->pushButtonToggleLEDView->setEnabled(false);
-            ui->PerLEDCheck->setAutoExclusive(true);
-            ui->DeviceViewBoxFrame->hide();
-        }
-
-        if(supports_mode_specific)
-        {
-            ui->ModeSpecificCheck->setEnabled(true);
-            ui->ModeSpecificCheck->setChecked(mode_specific);
-        }
-        else
-        {
-            ui->ModeSpecificCheck->setEnabled(false);
-            ui->ModeSpecificCheck->setAutoExclusive(false);
-            ui->ModeSpecificCheck->setChecked(false);
-            ui->ModeSpecificCheck->setAutoExclusive(true);
-        }
-
-        if(supports_random)
-        {
-            ui->RandomCheck->setEnabled(true);
-            ui->RandomCheck->setChecked(random);
-        }
-        else
-        {
-            ui->RandomCheck->setEnabled(false);
-            ui->RandomCheck->setAutoExclusive(false);
-            ui->RandomCheck->setChecked(false);
-            ui->RandomCheck->setAutoExclusive(true);
-        }
-
-        /*-----------------------------------------------------*\
-        | Fill in the zone box based on color mode              |
-        \*-----------------------------------------------------*/
-
-        switch(modes[selected_mode].color_mode)
-        {
-            case LenovoLegionDaemon::MODE_COLORS_NONE:
-            case LenovoLegionDaemon::MODE_COLORS_RANDOM:
-                ui->ZoneBox->blockSignals(true);
-                ui->ZoneBox->clear();
-                ui->ZoneBox->blockSignals(false);
-
-                ui->LEDBox->blockSignals(true);
-                ui->LEDBox->clear();
-                ui->LEDBox->blockSignals(false);
-                ui->ApplyColorsButton->setEnabled(false);
-                //ui->AutoFillCheck->setEnabled(false);
-                break;
-
-            case LenovoLegionDaemon::MODE_COLORS_PER_LED:
-                ui->ZoneBox->blockSignals(true);
-                ui->ZoneBox->clear();
-
-                if(zones.size() > 1)
-                {
-                    ui->ZoneBox->setEnabled(1);
-                    ui->ZoneBox->addItem(tr("All Zones"));
-                }
-                else if(zones.size() == 1 && zones[0].segments.size() > 1)
-                {
-                    ui->ZoneBox->setEnabled(1);
-                }
-                else
-                {
-                    ui->ZoneBox->setDisabled(1);
-                }
-
-                for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-                {
-                    ui->ZoneBox->addItem(device->GetZoneName(zone_idx).c_str());
-
-                    for(std::size_t segment_idx = 0; segment_idx < zones[zone_idx].segments.size(); segment_idx++)
-                    {
-                        ui->ZoneBox->addItem(("    " + zones[zone_idx].segments[segment_idx].name).c_str());
-                    }
-                }
-
-                ui->ZoneBox->setCurrentIndex(0);
-                ui->ZoneBox->blockSignals(false);
-                ui->ApplyColorsButton->setEnabled(true);
-                //ui->AutoFillCheck->setEnabled(true);
-
-                /*-----------------------------------------------------*\
-                | Update LED box                                        |
-                \*-----------------------------------------------------*/
-                on_ZoneBox_currentIndexChanged(0);
-
-                /*-----------------------------------------------------*\
-                | Update color picker with color of first LED           |
-                \*-----------------------------------------------------*/
-                //on_LEDBox_currentIndexChanged(0);
-                break;
-
-            case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
-                ui->ZoneBox->blockSignals(true);
-                ui->ZoneBox->clear();
-                ui->ZoneBox->addItem(tr("Mode Specific"));
-                ui->ZoneBox->blockSignals(false);
-
-                ui->LEDBox->blockSignals(true);
-                ui->LEDBox->clear();
-
-                for(unsigned int i = 0; i < modes[selected_mode].colors.size(); i++)
-                {
-                    char id_buf[32];
-                    // TODO: translate
-                    snprintf(id_buf, 32, "Mode Color %u", i);
-                    ui->LEDBox->addItem(id_buf);
-                }
-
-                ui->LEDBox->setCurrentIndex(0);
-                on_LEDBox_currentIndexChanged(0);
-                ui->LEDBox->setEnabled(true);
-                ui->LEDBox->blockSignals(false);
-                ui->ApplyColorsButton->setEnabled(true);
-                //ui->AutoFillCheck->setEnabled(true);
-                break;
-        }
-    }
-}
-
-void OpenRGBDevicePage::UpdateMode()
-{
-    /*-----------------------------------------------------*\
-    | Read selected mode                                    |
-    \*-----------------------------------------------------*/
-    int current_mode = ui->ModeBox->currentIndex();
-
-    auto& modes = device->GetModes();
-    if(current_mode >= 0)
-    {
-        int  current_speed          = 0;
-        int  current_brightness     = 0;
-        bool current_per_led        = ui->PerLEDCheck->isChecked();
-        bool current_mode_specific  = ui->ModeSpecificCheck->isChecked();
-        bool current_random         = ui->RandomCheck->isChecked();
-        int  current_dir_idx        = ui->DirectionBox->currentIndex();
-        int  current_direction      = 0;
-        bool supports_dir_lr        = ( modes[(unsigned int)current_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_LR );
-        bool supports_dir_ud        = ( modes[(unsigned int)current_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_UD );
-        bool supports_dir_hv        = ( modes[(unsigned int)current_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_HV );
-
-        /*-----------------------------------------------------*\
-        | If DirectionBox is enabled, set the direction values  |
-        \*-----------------------------------------------------*/
-        if(ui->DirectionBox->isEnabled())
-        {
-            if(supports_dir_hv)
-            {
-                if(supports_dir_lr && supports_dir_ud)
-                {
-                    current_direction = current_dir_idx;
-                }
-                else if(supports_dir_lr || supports_dir_ud)
-                {
-                    current_direction = current_dir_idx + 2;
-                }
-                else
-                {
-                    current_direction = current_dir_idx + 4;
-                }
-            }
-
-            if(supports_dir_ud)
-            {
-                if(supports_dir_lr)
-                {
-                    current_direction = current_dir_idx;
-                }
-                else
-                {
-                    current_direction = current_dir_idx + 2;
-                }
-            }
-
-            if((supports_dir_lr)
-             &&(current_dir_idx < 2))
-            {
-                current_direction = current_dir_idx;
-            }
-
-            auto l_modes = modes;
-
-            l_modes[(unsigned int)current_mode].direction = current_direction;
-
-            device->SetModes(l_modes);
-        }
-
-        /*-----------------------------------------------------*\
-        | If Speed Slider is enabled, read the speed value      |
-        \*-----------------------------------------------------*/
-        if(ui->SpeedSlider->isEnabled())
-        {
-            /*-----------------------------------------------------*\
-            | If Speed Slider is inverted, invert value             |
-            \*-----------------------------------------------------*/
-            if(InvertedSpeed)
-            {
-                current_speed = modes[(unsigned int)current_mode].speed_min - ui->SpeedSlider->value() + modes[current_mode].speed_max;
-            }
-            else
-            {
-                current_speed = ui->SpeedSlider->value();
-            }
-        }
-
-        /*-----------------------------------------------------*\
-        | If Brightness Slider is enabled, read the value       |
-        \*-----------------------------------------------------*/
-        if(ui->BrightnessSlider->isEnabled())
-        {
-            /*-----------------------------------------------------*\
-            | If Brightness Slider is inverted, invert value        |
-            \*-----------------------------------------------------*/
-            if(InvertedBrightness)
-            {
-                current_brightness = modes[(unsigned int)current_mode].brightness_min - ui->BrightnessSlider->value() + modes[current_mode].brightness_max;
-            }
-            else
-            {
-                current_brightness = ui->BrightnessSlider->value();
-            }
-        }
-
-
-        /*-----------------------------------------------------*\
-        | Don't set the mode if the current mode is invalid     |
-        \*-----------------------------------------------------*/
-        auto l_modes = modes;
-        if((unsigned int)current_mode < modes.size() )
-        {
-            /*-----------------------------------------------------*\
-            | Update mode parameters                                |
-            \*-----------------------------------------------------*/
-            l_modes[(unsigned int)current_mode].speed         = current_speed;
-            l_modes[(unsigned int)current_mode].brightness    = current_brightness;
-
-            if(current_per_led)
-            {
-                l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_PER_LED;
-            }
-            else if(current_mode_specific)
-            {
-               l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
-            }
-            else if(current_random)
-            {
-                l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_RANDOM;
-            }
-            else
-            {
-                l_modes[(unsigned int)current_mode].color_mode = LenovoLegionDaemon::MODE_COLORS_NONE;
-            }
-
-            device->SetModes(l_modes);
-
-            /*-----------------------------------------------------*\
-            | Change device mode                                    |
-            \*-----------------------------------------------------*/
-            device->SetMode((unsigned int)current_mode);
-        }
+        ui->SpeedSlider->setValue(mode.speed);
+        ui->SpeedSlider->setEnabled(true);
+        ui->SpeedSlider->blockSignals(false);
     }
 
-    device->ApplyPendingChanges();
+    if(supports_dir_lr)
+    {
+        ui->DirectionBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::MODE_DIRECTION_LEFT));
+        ui->DirectionBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::MODE_DIRECTION_RIGHT));
+    }
+
+    if(supports_dir_ud)
+    {
+        ui->DirectionBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::MODE_DIRECTION_UP));
+        ui->DirectionBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::MODE_DIRECTION_DOWN));
+    }
+
+    if(supports_spin_lr)
+    {
+        ui->DirectionBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::MODE_DIRECTION_SPINLEFT));
+        ui->DirectionBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::MODE_DIRECTION_SPINRIGHT));
+    }
+
+    if(supports_dir_lr || supports_dir_ud || supports_spin_lr)
+    {
+        ui->DirectionBox->setEnabled(true);
+    }
+
+    if(supports_per_led)
+    {
+        ui->PerLEDCheck->setEnabled(true);
+        ui->PerLEDCheck->setChecked(per_led);
+        ui->PerLEDCheck->setAutoExclusive(true);
+        ui->PerLEDCheck->blockSignals(false);
+    }
+
+    if(supports_mode_specific)
+    {
+        ui->ModeSpecificCheck->setEnabled(true);
+        ui->ModeSpecificCheck->setChecked(mode_specific);
+        ui->ModeSpecificCheck->setAutoExclusive(true);
+        ui->ModeSpecificCheck->blockSignals(false);
+    }
+
+    if(supports_random)
+    {
+        ui->RandomCheck->setEnabled(true);
+        ui->RandomCheck->setChecked(random);
+        ui->RandomCheck->setAutoExclusive(true);
+        ui->RandomCheck->blockSignals(false);
+    }
+
+    /*-----------------------------------------------------*\
+    | Fill in the zone box based on color mode              |
+    \*-----------------------------------------------------*/
+    switch(effective_color_mode)
+    {
+        case LenovoLegionDaemon::MODE_COLORS_NONE:
+        case LenovoLegionDaemon::MODE_COLORS_RANDOM:
+            break;
+        case LenovoLegionDaemon::MODE_COLORS_PER_LED:
+            ui->ColorFrame->setVisible(true);
+            break;
+        case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
+        {
+            for(unsigned int i = 0; i < mode.colors.size();++i)
+            {
+                ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",i),QVariant(QColor(QRgb(mode.colors.at(i)))));
+            }
+
+            ui->comboBox_modeSpecificColor->setEnabled(true);
+            ui->comboBox_modeSpecificColor->setCurrentIndex(0);
+            on_comboBox_modeSpecificColor_currentIndexChanged(0);
+            ui->comboBox_modeSpecificColor->blockSignals(false);
+            ui->ColorFrame->setVisible(true);
+        }
+            break;
+    }
+
+
+    if(supports_per_led_selection)
+    {
+        const auto& zones = device->GetZones();
+
+        if (zones.size() > 1)
+        {
+            ui->ZoneBox->addItem(tr("All Zones"));
+        }
+
+
+        for(const auto& zone : zones)
+        {
+            ui->ZoneBox->addItem(zone.name.c_str());
+        }
+
+        ui->ZoneBox->setCurrentIndex(0);
+        ui->ZoneBox->setEnabled(true);
+        ui->ZoneBox->blockSignals(false);
+
+        ui->pushButtonToggleLEDView->setEnabled(true);
+        ShowDeviceView();
+    }
 }
 
 void OpenRGBDevicePage::SetDevice(unsigned char red, unsigned char green, unsigned char blue)
@@ -1233,15 +451,6 @@ void OpenRGBDevicePage::SetDevice(unsigned char red, unsigned char green, unsign
     | Update the color UI                                   |
     \*-----------------------------------------------------*/
     colorChanged();
-}
-
-void OpenRGBDevicePage::UpdateDevice()
-{
-    ui->ModeBox->blockSignals(true);
-    ui->ModeBox->setCurrentIndex(device->GetMode());
-    ui->ModeBox->blockSignals(false);
-    UpdateModeUi();
-    UpdateMode();
 }
 
 void OpenRGBDevicePage::on_SwatchBox_swatchChanged(const QColor color)
@@ -1268,11 +477,6 @@ void OpenRGBDevicePage::on_ColorWheelBox_colorChanged(const QColor color)
     | Update the color UI                                   |
     \*-----------------------------------------------------*/
     colorChanged();
-}
-
-bool OpenRGBDevicePage::autoUpdateEnabled()
-{
-    return !(device->GetModes()[device->GetMode()].flags & LenovoLegionDaemon::MODE_FLAG_AUTOMATIC_SAVE);
 }
 
 void OpenRGBDevicePage::on_RedSpinBox_valueChanged(int red)
@@ -1417,180 +621,248 @@ void OpenRGBDevicePage::on_HexLineEdit_textChanged(const QString &arg1)
 
 void OpenRGBDevicePage::on_DeviceViewBox_selectionChanged(QVector<int> indices)
 {
-    auto& modes = device->GetModes();
-    auto& leds  = device->GetLEDs();
-    if(modes[device->GetMode()].color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED)
+    ui->LEDBox->clear();
+    ui->LEDBox->blockSignals(true);
+    ui->LEDBox->setEnabled(false);
+
+    for (const auto& led : indices)
     {
-        ui->ZoneBox->blockSignals(true);
-        ui->LEDBox->blockSignals(true);
-        ui->ZoneBox->setCurrentIndex(0);
-        on_ZoneBox_currentIndexChanged(0);
-        //updateLeds(); // We want to update the LED box, but we don't want any of the side effects of that action
-        ui->ZoneBox->blockSignals(false);
-        if(indices.size() != 0 && size_t(indices.size()) != leds.size())
-        {
-            if(indices.size() == 1)
-            {
-                if(leds.size() == 1)
-                {
-                    ui->LEDBox->setCurrentIndex(0);
-                }
-                else
-                {
-                    ui->LEDBox->setCurrentIndex(indices[0] + 1);
-                    // Set everything to it's color
-                }
-                MultipleSelected = 0;
-            }
-            else
-            {
-                if(MultipleSelected)
-                {
-                    ui->LEDBox->removeItem((int)(leds.size() + 1));
-                }
-                // TODO: translate
-                ui->LEDBox->addItem("Multiple (" + QVariant(indices.size()).toString() + ")");
-                ui->LEDBox->setCurrentIndex((int)(leds.size() + 1));
-                MultipleSelected = 1;
-            }
-        }
-        else
-        {
-            ui->LEDBox->setCurrentIndex(0);
-        }
+        ui->LEDBox->addItem(device->GetLEDName(led).c_str(),QVariant::fromValue(device->GetLEDs().at(led)));
+    }
+
+    if(ui->LEDBox->count() > 0)
+    {
+        ui->LEDBox->setEnabled(true);
         ui->LEDBox->blockSignals(false);
+    }
+
+    if(ui->PerLEDCheck->isChecked())
+    {
+        ui->DeviceViewBox->setSelectionColor(ToRGBColor(current_color.red(), current_color.green(), current_color.blue()));
     }
 }
 
 void OpenRGBDevicePage::ShowDeviceView()
 {
     /*-----------------------------------------------------*\
-    | Read selected mode                                    |
-    \*-----------------------------------------------------*/
-    unsigned int selected_mode = (unsigned int)ui->ModeBox->currentIndex();
-
-    /*-----------------------------------------------------*\
-    | Set device view showing flag to True                  |
-    \*-----------------------------------------------------*/
-    DeviceViewShowing = true;
-
-    /*-----------------------------------------------------*\
-    | Only show device view if active mode is Per-LED and   |
-    | device contains at least one LED             mode         |
-    \*-----------------------------------------------------*/
-    if(device->GetModes()[selected_mode].flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_COLOR && device->GetLEDs().size() >= 1)
-    {
-        ui->DeviceViewBoxFrame->show();
-    }
+     * Show device view                                     *
+     * -----------------------------------------------------*/
+    ui->DeviceViewBoxFrame->show();
 }
 
 void OpenRGBDevicePage::HideDeviceView()
 {
-    /*-----------------------------------------------------*\
-    | Set device view showing flag to False                 |
-    \*-----------------------------------------------------*/
-    DeviceViewShowing = false;
-
     /*-----------------------------------------------------*\
     | Hide device view                                      |
     \*-----------------------------------------------------*/
     ui->DeviceViewBoxFrame->hide();
 }
 
-void OpenRGBDevicePage::on_ApplyColorsButton_clicked()
+void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned int selectModeColorIdx)
 {
-    /*-----------------------------------------------------*\
-    | Read selected mode                                    |
-    \*-----------------------------------------------------*/
-    unsigned int selected_mode = (unsigned int)ui->ModeBox->currentIndex();
+    ui->listWidgetEffects->blockSignals(true);
+    ui->SelectedEffectsBox->blockSignals(true);
+    ui->LEDEffectsBox->blockSignals(true);
+    ui->DirectionEffectsBox->blockSignals(true);
+    ui->ModeEffectsBox->blockSignals(true);
+    ui->SpeedEffectsComboBox->blockSignals(true);
+    ui->comboBox_EffectsColors->blockSignals(true);
+    ui->RandomEffectsCheck->blockSignals(true);
+    ui->ModeSpecificEffectsCheck->blockSignals(true);
+    ui->PerLEDEffectsCheck->blockSignals(true);
 
-    auto& modes = device->GetModes();
-    switch(modes[selected_mode].color_mode)
+
+
+    ui->listWidgetEffects->setEnabled(false);
+    ui->SelectedEffectsBox->setEnabled(false);
+    ui->LEDEffectsBox->setEnabled(false);
+    ui->DirectionEffectsBox->setEnabled(false);
+    ui->ModeEffectsBox->setEnabled(false);
+    ui->SpeedEffectsComboBox->setEnabled(false);
+    ui->comboBox_EffectsColors->setEnabled(false);
+    ui->RandomEffectsCheck->setEnabled(false);
+    ui->ModeSpecificEffectsCheck->setEnabled(false);
+    ui->PerLEDEffectsCheck->setEnabled(false);
+
+
+    ui->listWidgetEffects->clear();
+    ui->SelectedEffectsBox->clear();
+    ui->LEDEffectsBox->clear();
+    ui->DirectionEffectsBox->clear();
+    ui->ModeEffectsBox->clear();
+    ui->SpeedEffectsComboBox->clear();
+    ui->comboBox_EffectsColors->clear();
+    ui->RandomEffectsCheck->setAutoExclusive(false);
+    ui->ModeSpecificEffectsCheck->setAutoExclusive(false);
+    ui->PerLEDEffectsCheck->setAutoExclusive(false);
+    ui->RandomEffectsCheck->setChecked(false);
+    ui->ModeSpecificEffectsCheck->setChecked(false);
+    ui->PerLEDEffectsCheck->setChecked(false);
+
+
+    const auto& effects = device->GetEffects();
+
+
+    for (size_t i = 0; i < effects.size(); ++i)
     {
-        case LenovoLegionDaemon::MODE_COLORS_PER_LED:
-            {
-                LenovoLegionDaemon::RGBColor qrgb = ToRGBColor(
-                                    current_color.red(),
-                                    current_color.green(),
-                                    current_color.blue()
-                                );
-
-                ui->DeviceViewBox->setSelectionColor(qrgb);
-            }
-            break;
-
-        case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
-            {
-                unsigned int index = ui->LEDBox->currentIndex();
-
-                /*-----------------------------------------------------*\
-                | Set all device LEDs to the current color              |
-                \*-----------------------------------------------------*/
-                LenovoLegionDaemon::RGBColor color = ToRGBColor(
-                                    current_color.red(),
-                                    current_color.green(),
-                                    current_color.blue()
-                                );
-
-                auto l_mode = modes;
-                l_mode[selected_mode].colors[index] = color;
-                device->SetModes(l_mode);
-            }
-            break;
+        ui->listWidgetEffects->addItem(new QListWidgetItem(QString::number(i) + " - " + device->GetModeByModeValue(effects.at(i).m_mode).name.c_str()));
     }
 
-    device->ApplyPendingChanges();
+    if(selectEffectIndx < effects.size())
+    {
+        auto effect = device->GetEffect(selectEffectIndx);
+
+        if(effect.m_color_mode == LenovoLegionDaemon::MODE_COLORS_RANDOM)
+        {
+            ui->RandomEffectsCheck->setChecked(true);
+        }
+
+        if(effect.m_color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED)
+        {
+            ui->PerLEDEffectsCheck->setChecked(true);
+        }
+
+        if(effect.m_color_mode == LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC)
+        {
+            ui->ModeSpecificEffectsCheck->setChecked(true);
+        }
+
+        ui->SelectedEffectsBox->addItem(QString::number(selectEffectIndx) + " - " + device->GetModeByModeValue(effect.m_mode).name.c_str(),QVariant::fromValue(selectEffectIndx));
+
+        for (const auto& led_effect : effect.m_leds)
+        {
+            ui->LEDEffectsBox->addItem(QString(led_effect.name.c_str()));
+        }
+
+        ui->DirectionEffectsBox->addItem(LenovoLegionDaemon::modeDirectionToString(LenovoLegionDaemon::valueToModeDirection(effect.m_direction)));
+
+
+        ui->ModeEffectsBox->addItem(device->GetModeByModeValue(effect.m_mode).name.c_str());
+
+        ui->SpeedEffectsComboBox->addItem(QString::number(effect.m_speed));
+
+        for (const auto& color : effect.m_colors)
+        {
+            ui->comboBox_EffectsColors->addItem(QString().asprintf("R:%02X G:%02X B:%02X", RGBGetRValue(color),RGBGetGValue(color),RGBGetBValue(color)));
+        }
+
+        ui->DeviceViewBox->markLeds([&effect,this,selectModeColorIdx](){
+            QMap<int,QColor> indices;
+            for (const auto& led_effect : effect.m_leds)
+            {
+                auto ledsIdx = device->GetLedsIndexesByDeviceSpecificValue(led_effect.value);
+
+                for (auto idx : ledsIdx) {
+
+                    if(selectModeColorIdx < effect.m_colors.size())
+                    {
+                        indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[selectModeColorIdx]),RGBGetGValue(effect.m_colors[selectModeColorIdx]),RGBGetBValue(effect.m_colors[selectModeColorIdx]));
+                    }
+                    else
+                    {
+                        if(effect.m_colors.size() > 0)
+                        {
+                            indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[0]),RGBGetGValue(effect.m_colors[0]),RGBGetBValue(effect.m_colors[0]));
+                        }
+                        else
+                        {
+                            indices[idx] = QColor::fromRgb(0,0,0);
+                        }
+                    }
+                }
+            }
+            return indices;
+        }());
+
+    }
+    else
+    {
+        ui->DeviceViewBox->markLeds({});
+    }
+
+    /*
+     * Enable that have data
+     */
+    if(ui->comboBox_EffectsColors->count() > 0 )
+    {
+        ui->comboBox_EffectsColors->setCurrentIndex(selectModeColorIdx < static_cast<unsigned int>(ui->comboBox_EffectsColors->count()) ? selectModeColorIdx : 0);
+        ui->comboBox_EffectsColors->setEnabled(true);
+        ui->comboBox_EffectsColors->blockSignals(false);
+    }
+
+    if(ui->listWidgetEffects->count() > 0 )
+    {
+        ui->listWidgetEffects->setCurrentRow(selectEffectIndx < static_cast<unsigned int>(ui->listWidgetEffects->count()) ? selectEffectIndx : -1);
+        ui->listWidgetEffects->setEnabled(true);
+        ui->listWidgetEffects->blockSignals(false);
+    }
+
+    if(ui->LEDEffectsBox->count() > 0 )
+    {
+        ui->LEDEffectsBox->setEnabled(true);
+    }
 }
 
-void OpenRGBDevicePage::on_SelectAllLEDsButton_clicked()
+void OpenRGBDevicePage::on_pushButton_AddEffects_clicked()
 {
-    if(device->GetModes()[device->GetMode()].color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED)
-    {
-        ui->LEDBox->setCurrentIndex(0);
-        on_LEDBox_currentIndexChanged(0);
-        ui->DeviceViewBox->repaint();
-    }
+    device->AddEffect([this](){
+        LenovoLegionDaemon::led_group_effect effect;
+
+        effect.m_mode       = device->GetModeByIdx(ui->ModeBox->currentIndex()).value;
+        effect.m_speed      = ui->SpeedSlider->isEnabled() ? ui->SpeedSlider->value() : 0;
+        effect.m_direction  = LenovoLegionDaemon::stringToModeDirection(ui->DirectionBox->currentText());
+        effect.m_color_mode = LenovoLegionDaemon::MODE_COLORS_NONE;
+
+        if(ui->PerLEDCheck->isChecked())
+        {
+            effect.m_color_mode = LenovoLegionDaemon::MODE_COLORS_PER_LED;
+            effect.m_colors.push_back(ToRGBColor(current_color.red(), current_color.green(), current_color.blue()));
+        }
+
+        if(ui->ModeSpecificCheck->isChecked())
+        {
+            effect.m_color_mode = LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
+
+            for (int i = 0; i < ui->comboBox_modeSpecificColor->count(); ++i)
+            {
+                QColor color = ui->comboBox_modeSpecificColor->itemData(i).value<QColor>();
+                effect.m_colors.push_back(ToRGBColor(color.red(), color.green(), color.blue()));
+            }
+        }
+
+        if(ui->RandomCheck->isChecked())
+        {
+            effect.m_color_mode = LenovoLegionDaemon::MODE_COLORS_RANDOM;
+        }
+
+        for (int i = 0; i < ui->LEDBox->count(); ++i)
+        {
+            effect.m_leds.push_back(ui->LEDBox->itemData(i).value<LenovoLegionDaemon::led>());
+        }
+
+        return effect;
+    }());
+
+    UpdateEffectUi();
 }
 
 void OpenRGBDevicePage::colorChanged()
 {
     updateColorUi();
 
-    auto& modes  = device->GetModes();
-    unsigned int selected_mode   = (unsigned int)ui->ModeBox->currentIndex();
 
-
-    if(autoUpdateEnabled())
+    /*-----------------------------------------------------------------*\
+    | OpenRGB's RGBColor is stored differently than Qt's qrgb type,     |
+    | so casting between them doesn't work                              |
+    \*-----------------------------------------------------------------*/
+    if(ui->PerLEDCheck->isChecked())
     {
-        /*-----------------------------------------------------------------*\
-        | OpenRGB's RGBColor is stored differently than Qt's qrgb type,     |
-        | so casting between them doesn't work                              |
-        \*-----------------------------------------------------------------*/
-        LenovoLegionDaemon::RGBColor rgb_color = ToRGBColor(current_color.red(), current_color.green(), current_color.blue());
-        switch(modes[selected_mode].color_mode)
-        {
-            case LenovoLegionDaemon::MODE_COLORS_PER_LED:
-            {
-                ui->DeviceViewBox->setSelectionColor(rgb_color);
-                break;
-            }
-
-            case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
-            {
-                unsigned int index = ui->LEDBox->currentIndex();
-
-                auto l_modes = modes;
-                l_modes[selected_mode].colors[index] = rgb_color;
-                device->SetModes(l_modes);
-                break;
-            }
-        }
+        ui->DeviceViewBox->setSelectionColor(ToRGBColor(current_color.red(), current_color.green(), current_color.blue()));
     }
 
-
-    if(modes[selected_mode].flags & LenovoLegionDaemon::MODE_FLAGS_DIRECT)
+    if(ui->ModeSpecificCheck->isChecked())
     {
-        device->ApplyPendingChanges();
+        ui->comboBox_modeSpecificColor->setItemData(ui->comboBox_modeSpecificColor->currentIndex(), QVariant(current_color));
     }
 }
 
@@ -1662,7 +934,7 @@ void OpenRGBDevicePage::on_ProfileBox_currentIndexChanged(int index)
     /*-----------------------------------------------------*\
     | Change device profile                                    |
     \*-----------------------------------------------------*/
-    device->SetProfile(index);
+    device->SetProfile(ui->ProfileBox->itemData(index).toUInt());
 
     device->ApplyPendingChanges();
 
@@ -1671,7 +943,7 @@ void OpenRGBDevicePage::on_ProfileBox_currentIndexChanged(int index)
 
 void OpenRGBDevicePage::on_pushButtonToggleLEDView_clicked()
 {
-    if(DeviceViewShowing)
+    if(!ui->DeviceViewBoxFrame->isHidden())
     {
         HideDeviceView();
     }
@@ -1679,6 +951,80 @@ void OpenRGBDevicePage::on_pushButtonToggleLEDView_clicked()
     {
         ShowDeviceView();
     }
+}
+
+void OpenRGBDevicePage::on_listWidgetEffects_currentRowChanged(int currentRow)
+{
+    UpdateEffectUi(currentRow);
+}
+
+void OpenRGBDevicePage::on_pushButton_EffectsUnselect_clicked()
+{
+    ui->listWidgetEffects->clearSelection();
+
+    UpdateEffectUi();
+}
+
+void OpenRGBDevicePage::on_pushButton_EffectsClearAll_clicked()
+{
+    device->ClearEffects();
+
+    UpdateEffectUi();
+}
+
+void OpenRGBDevicePage::on_ModeBox_currentIndexChanged(int)
+{
+    ui->DeviceViewBox->clearSelection();
+    ui->DeviceViewBox->setSelectionColor(ToRGBColor(0,0,0));
+
+    UpdateModeUi();
+}
+
+void OpenRGBDevicePage::on_PerLEDCheck_clicked()
+{
+    UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_PER_LED);
+}
+
+void OpenRGBDevicePage::on_ModeSpecificCheck_clicked()
+{
+    UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC);
+}
+
+void OpenRGBDevicePage::on_RandomCheck_clicked()
+{
+    UpdateModeUi(LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR);
+}
+
+void OpenRGBDevicePage::on_comboBox_modeSpecificColor_currentIndexChanged(int index)
+{
+    current_color = ui->comboBox_modeSpecificColor->itemData(index).value<QColor>();
+    updateColorUi();
+}
+
+void OpenRGBDevicePage::on_pushButton_EffectDelete_clicked()
+{
+    if(ui->SelectedEffectsBox->count() > 0)
+    {
+        device->RemoveEffect(ui->SelectedEffectsBox->itemData(0).value<int>());
+        UpdateEffectUi();
+    }
+}
+
+void OpenRGBDevicePage::on_pushButton_EffectsApply_clicked()
+{
+    device->ApplyPendingChanges();
+}
+
+void OpenRGBDevicePage::on_comboBox_EffectsColors_currentIndexChanged(int index)
+{
+    UpdateEffectUi(ui->listWidgetEffects->currentRow(), index);
+}
+
+void OpenRGBDevicePage::on_pushButton_EffectsDefault_clicked()
+{
+    device->ResetEffectsToDefault();
+    device->ApplyPendingChanges();
+    UpdateEffectUi();
 }
 
 

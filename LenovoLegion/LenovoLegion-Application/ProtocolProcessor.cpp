@@ -26,24 +26,24 @@ ProtocolProcessor::ProtocolProcessor(QObject *parent)
 ProtocolProcessor::~ProtocolProcessor()
 {}
 
-QByteArray ProtocolProcessor::getDataRequest(quint8 dataType)
+QByteArray ProtocolProcessor::getDataRequest(quint8 dataType, const QByteArray& data)
 {
-    QByteArray data;
+    QByteArray response;
 
     sendMessage(LenovoLegionDaemon::MessageHeader {
                     .m_type     = LenovoLegionDaemon::MessageHeader::GET_DATA_REQUEST,
                     .m_dataType = dataType,
-                    .m_dataLength = 0
-                },QByteArray {});
+                    .m_dataLength = data.length()
+                },data);
 
-    auto msg = receiveMessage(data);
+    auto msg = receiveMessage(response);
 
     if(msg.m_type != LenovoLegionDaemon::MessageHeader::GET_DATA_RESPONSE)
     {
         THROW_EXCEPTION(exception_T,ERROR_CODES::INVALID_MESSAGE,"Invalid get data request response message");
     }
 
-    return data;
+    return response;
 }
 
 QByteArray ProtocolProcessor::setDataRequest(quint8 dataType, const QByteArray &data)

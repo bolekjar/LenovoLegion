@@ -70,7 +70,9 @@ void ProtocolProcessor::readyReadHandler()
 
         switch (header.m_type) {
         case MessageHeader::GET_DATA_REQUEST: {
-            QByteArray reponse = m_dataProviderManager->getDataProvider(header.m_dataType).serializeAndGetData();
+            if(data.size() > 0)
+            {
+                QByteArray reponse = m_dataProviderManager->getDataProvider(header.m_dataType).serializeAndGetData(data);
                 m_clientSocket->write(
                     ProtocolParser::parseMessage(
                         MessageHeader {
@@ -79,8 +81,23 @@ void ProtocolProcessor::readyReadHandler()
                             .m_dataLength   = reponse.length()
                         },
                         reponse
-                    )
-                );
+                        )
+                    );
+            }
+            else
+            {
+                QByteArray reponse = m_dataProviderManager->getDataProvider(header.m_dataType).serializeAndGetData();
+                m_clientSocket->write(
+                    ProtocolParser::parseMessage(
+                        MessageHeader {
+                            .m_type         =  MessageHeader::GET_DATA_RESPONSE,
+                            .m_dataType     =  header.m_dataType,
+                            .m_dataLength   = reponse.length()
+                        },
+                        reponse
+                        )
+                    );
+            }
         }
             break;
         case MessageHeader::SET_DATA_REQUEST: {

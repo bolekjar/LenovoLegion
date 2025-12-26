@@ -9,23 +9,18 @@
 
 #pragma once
 
-#include "LenovoGen9USBController.h"
+#include "LenovoUSBController.h"
 
 #include "RGBController.h"
 
 #include <QtTypes>
 
-#include <vector>
-#include <map>
 #include <memory>
 
 namespace LenovoLegionDaemon {
 
-class RGBController_LenovoGen9 : public RGBController
+class LenovoRGBController : public RGBController
 {
-
-public:
-
     enum SupportedModes : quint8
     {
         MODE_SCREW_RAINBOW                  = 0x01,
@@ -36,11 +31,11 @@ public:
         MODE_SMOOTH                         = 0x06,
         MODE_RAIN                           = 0x07,
         MODE_RIPPLE                         = 0x08,
-        MODE_AUDIO_BOUNCE                   = 0x09,
-        MODE_AUDIO_RIPPLE                   = 0x0A,
-        MODE_STATIC                         = 0x0B,
-        MODE_TYPE                           = 0x0C,
-        MODE_DIRECT                         = 0x0D
+        MODE_AUDIO_BOUNCE_LIGHTING          = 0x09,
+        MODE_AUDIO_RIPPLE_LIGHTING          = 0x0A,
+        MODE_ALWAYS                         = 0x0B,
+        MODE_TYPE_LIGHTING                  = 0x0C,
+        MODE_LEGION_AURASYNC                = 0x0D
     };
 
     enum
@@ -51,37 +46,37 @@ public:
         SPEED_MAX                     = 0x03
     };
 
-public:
-
-    struct Zone
+    enum KeyBoardLayouts : quint8
     {
-        const std::string     name;
-        const zone_type       type;
-
-        const unsigned int    height;
-        const unsigned int    width;
-
-        std::vector<unsigned int> matrix_map;
-        std::vector<led>          leds;
+        ISO_LAYOUT                     = 0x00,
+        ANSI_LAYOUT                    = 0x01
     };
 
-private:
+public:
 
-    std::vector<Zone>                            m_lenovoZones;
+    DEFINE_EXCEPTION(LenovoLegionDaemon);
+
+    enum ERROR_CODES : int
+    {
+        DIRECT_CONTROL_NOT_SUPPORTED = 1
+    };
 
 public:
 
-    RGBController_LenovoGen9(LenovoGen9USBController* controller_ptr);
-    ~RGBController_LenovoGen9();
+    LenovoRGBController(LenovoUSBController* controller_ptr);
+    ~LenovoRGBController();
 
-    void        SetupZones()                           override;
+    void        DeviceUpdateDirect()                   override;
 
-    void        DeviceUpdateLEDs()                     override;
-    void        DeviceUpdateMode()                     override;
+    void        DeviceUpdateEfects()                   override;
+    void        DeviceResetEffectsToDefault()          override;
 
     void        DeviceUpdateProfile()                  override;
+    void        DeviceUpdateBrightness()               override;
 
-    void        Refresh()                              override;
+    void        DeviceRefresh()                        override;
+
+    std::vector<RGBColor> DeviceGetState()     const   override;
 
 private:
 
@@ -94,11 +89,6 @@ private:
      */
     unsigned int             fromControlerColorMode(const unsigned int  modeFlags,
                                                     const uint8_t color_mode)                               const;
-    void                     fromControlerColours  (std::vector<RGBColor>&       colors,
-                                                    std::vector<RGBColor>&       modeSpecificColors,
-                                                    const unsigned int           colorMode,
-                                                    const std::vector<RGBColor>& controlerColors,
-                                                    const std::vector<uint16_t>& controlerLeds)             const;
     unsigned int             fromControlerDirection(const uint8_t direction)                                const;
     unsigned int             fromControlerSpin(const uint8_t spin)                                          const;
     size_t                   fromControlerProfile(uint8_t profile)                                          const;
@@ -107,16 +97,14 @@ private:
     /*
      * Serialization to controler model
      */
-    std::vector<LenovoGen9USBController::led_group>     toControlerLedGroups()                              const;
     uint8_t                                             toControlerDirection(unsigned int direction)        const;
     uint8_t                                             toControlerSpin(unsigned int spin)                  const;
     uint8_t                                             toControlerColorMode(unsigned int color_mode)       const;
-    std::map<RGBColor,std::vector<uint16_t>>            toControlerColorsLedsMap(unsigned int color_mode)   const;
     uint8_t                                             toControlerProfile(size_t profile)                  const;
 
 private:
 
-    std::unique_ptr<LenovoGen9USBController>  controller;
+    std::unique_ptr<LenovoUSBController>  controller;
 };
 
 }

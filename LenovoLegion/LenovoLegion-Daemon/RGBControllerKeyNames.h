@@ -8,8 +8,12 @@
 
 #pragma once
 
+#include <map>
+#include <string>
 
 namespace LenovoLegionDaemon {
+
+#define NA 0xFFFFFFFF
 
 constexpr const char* KEY_EN_UNUSED             = "";
 constexpr const char* ZONE_EN_KEYBOARD          = "Keyboard";
@@ -189,5 +193,125 @@ constexpr const char* KEY_FR_EXCLAIMATION       = "Key: !";
 constexpr const char* KEY_ES_OPEN_QUESTION_MARK = "Key: ¿/¡";
 constexpr const char* KEY_ES_TILDE              = "Key: ´/¨";
 constexpr const char* KEY_ES_ENIE               = "Key: Ñ";
+
+
+inline const std::map<int,std::string> KeyCodesToName =
+{
+    // Row 1 - Function keys and special keys
+    {0x01, KEY_EN_ESCAPE},
+    {0x02, KEY_EN_F1},
+    {0x03, KEY_EN_F2},
+    {0x04, KEY_EN_F3},
+    {0x05, KEY_EN_F4},
+    {0x06, KEY_EN_F5},
+    {0x07, KEY_EN_F6},
+    {0x08, KEY_EN_F7},
+    {0x09, KEY_EN_F8},
+    {0x0A, KEY_EN_F9},
+    {0x0B, KEY_EN_F10},
+    {0x0C, KEY_EN_F11},
+    {0x0D, KEY_EN_F12},
+    {0x0E, KEY_EN_INSERT},
+    {0x0F, KEY_EN_PRINT_SCREEN},
+    {0x10, KEY_EN_DELETE},
+    {0x11, KEY_EN_HOME},
+    {0x12, KEY_EN_END},
+    {0x13, KEY_EN_PAGE_UP},
+    {0x14, KEY_EN_PAGE_DOWN},
+
+    // Row 2 - Number row
+    {0x16, KEY_EN_BACK_TICK},
+    {0x17, KEY_EN_1},
+    {0x18, KEY_EN_2},
+    {0x19, KEY_EN_3},
+    {0x1A, KEY_EN_4},
+    {0x1B, KEY_EN_5},
+    {0x1C, KEY_EN_6},
+    {0x1D, KEY_EN_7},
+    {0x1E, KEY_EN_8},
+    {0x1F, KEY_EN_9},
+    {0x20, KEY_EN_0},
+    {0x21, KEY_EN_MINUS},
+    {0x22, KEY_EN_EQUALS},
+    {0x38, KEY_EN_BACKSPACE},
+    {0x26, KEY_EN_NUMPAD_LOCK},
+    {0x27, KEY_EN_NUMPAD_DIVIDE},
+    {0x28, KEY_EN_NUMPAD_TIMES},
+    {0x29, KEY_EN_NUMPAD_MINUS},
+
+    // Row 3 - QWERTY row
+    {0x40, KEY_EN_TAB},
+    {0x42, KEY_EN_Q},
+    {0x43, KEY_EN_W},
+    {0x44, KEY_EN_E},
+    {0x45, KEY_EN_R},
+    {0x46, KEY_EN_T},
+    {0x47, KEY_EN_Y},
+    {0x48, KEY_EN_U},
+    {0x49, KEY_EN_I},
+    {0x4A, KEY_EN_O},
+    {0x4B, KEY_EN_P},
+    {0x4C, KEY_EN_LEFT_BRACKET},
+    {0x4D, KEY_EN_RIGHT_BRACKET},
+    {0x4E, KEY_EN_ISO_BACK_SLASH},
+    {0x4F, KEY_EN_NUMPAD_7},
+    {0x50, KEY_EN_NUMPAD_8},
+    {0x51, KEY_EN_NUMPAD_9},
+
+    // Row 4 - ASDF row
+    {0x55, KEY_EN_CAPS_LOCK},
+    {0x6D, KEY_EN_A},
+    {0x6E, KEY_EN_S},
+    {0x58, KEY_EN_D},
+    {0x59, KEY_EN_F},
+    {0x5A, KEY_EN_G},
+    {0x71, KEY_EN_H},
+    {0x72, KEY_EN_J},
+    {0x5B, KEY_EN_K},
+    {0x5C, KEY_EN_L},
+    {0x5D, KEY_EN_SEMICOLON},
+    {0x5F, KEY_EN_QUOTE},
+    {0xA8, KEY_EN_ISO_BACK_SLASH},
+    {0x77, KEY_EN_ISO_ENTER},
+    {0x79, KEY_EN_NUMPAD_4},
+    {0x7B, KEY_EN_NUMPAD_5},
+    {0x7C, KEY_EN_NUMPAD_6},
+    {0x68, KEY_EN_NUMPAD_PLUS},
+
+    // Row 5 - ZXCV row
+    {0x6A, KEY_EN_LEFT_SHIFT},
+    {0x82, KEY_EN_Z},
+    {0x83, KEY_EN_X},
+    {0x6F, KEY_EN_C},
+    {0x70, KEY_EN_V},
+    {0x87, KEY_EN_B},
+    {0x88, KEY_EN_N},
+    {0x73, KEY_EN_M},
+    {0x74, KEY_EN_COMMA},
+    {0x75, KEY_EN_PERIOD},
+    {0x76, KEY_EN_FORWARD_SLASH},
+    {0x8D, KEY_EN_RIGHT_SHIFT},
+    {0x8E, KEY_EN_NUMPAD_1},
+    {0x90, KEY_EN_NUMPAD_2},
+    {0x92, KEY_EN_NUMPAD_3},
+
+    // Row 6 - Bottom row
+    {0x7F, KEY_EN_LEFT_CONTROL},
+    {0x80, KEY_EN_LEFT_FUNCTION},
+    {0x96, KEY_EN_LEFT_WINDOWS},
+    {0x97, KEY_EN_LEFT_ALT},
+    {0x98, KEY_EN_SPACE},
+    {0x9A, KEY_EN_RIGHT_ALT},
+    {0x9B, KEY_EN_RIGHT_CONTROL},
+    {0x9D, KEY_EN_UP_ARROW},
+    {0xA3, KEY_EN_NUMPAD_0},
+    {0xA5, KEY_EN_NUMPAD_PERIOD},
+    {0xA7, KEY_EN_NUMPAD_ENTER},
+
+    // Row 7 - Arrow keys
+    {0x9C, KEY_EN_LEFT_ARROW},
+    {0x9F, KEY_EN_DOWN_ARROW},
+    {0xA1, KEY_EN_RIGHT_ARROW},
+};
 
 }

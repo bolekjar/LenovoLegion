@@ -18,7 +18,18 @@ public:
     /*---------------------------------------------------------*\
     | RGBController base class constructor                      |
     \*---------------------------------------------------------*/
-    RGBController();
+    RGBController(const Profiles&                profiles,
+                  const Brightnesses&            britnesses,
+                  const std::string&             name,
+                  const std::string&             vendor,
+                  const std::string&             description,
+                  const std::string&             serial,
+                  const std::string&             location,
+                  device_type                    type,
+                  const std::vector<mode>&       modes,
+                  const std::vector<zone> &zones
+                  );
+
     virtual ~RGBController();
 
     /*---------------------------------------------------------*\
@@ -27,80 +38,119 @@ public:
     std::string             GetName()           const;
     std::string             GetVendor()         const;
     std::string             GetDescription()    const;
-    std::string             GetVersion()        const;
     std::string             GetSerial()         const;
     std::string             GetLocation()       const;
     std::string             GetControllerName() const;
-    int                     GetActiveMode()     const;
-
-protected:
-    void                    SetupColors();
 
 public:
 
     /*---------------------------------------------------------*\
     | Functions From RGBControllerInterface      |
     \*---------------------------------------------------------*/
+
+    /*
+     * Device Type
+     */
+    virtual device_type                     GetDeviceType()  const                    override;
+
+    /*
+     * Profiles Information
+     */
+    virtual const Profiles&                 GetProfiles()         const               override;
+    virtual void                            SetProfile(unsigned int profileIdx)       override;
+
+
+    /*
+     * Zone Information
+     */
+    virtual const std::vector<zone>&        GetZones()                       const   override;
+    virtual std::string                     GetZoneName(unsigned int zone)   const   override;
     virtual unsigned int                    GetLEDsInZone(unsigned int zone) const   override;
-    virtual std::string                     GetModeName(unsigned int mode) const     override;
-    virtual std::string                     GetZoneName(unsigned int zone) const     override;
-    virtual const std::vector<zone>&        GetZones() const                         override;
-    virtual std::string                     GetLEDName(unsigned int led)     const   override;
-    virtual const std::vector<RGBColor>&    GetColors() const                        override;
-    virtual device_type                     GetDeviceType() const                    override;
-    virtual unsigned int                    GetProfiles() const                      override;
-    virtual size_t                          GetActiveProfile() const                 override;
 
-    virtual RGBColor                GetLED(unsigned int led)        const    override;
-    virtual void                    SetLED(unsigned int led, RGBColor color) override;
-    virtual void                    SetAllLEDs(RGBColor color)               override;
 
-    virtual int                     GetMode()                          const override;
-    virtual void                    SetMode(int mode)                        override;
+    /*
+     * Britness Information
+     */
+    virtual const Brightnesses&             GetBrightness()       const               override;
+    virtual void                            SetBrightness(unsigned int brightness)    override;
 
-    virtual const std::vector<led>& GetLEDs() const                          override;
-    virtual void                    SetLEDs(const std::vector<led>& new_leds)override;
 
-    virtual const std::vector<mode>& GetModes() const                               override;
-    virtual void                     SetModes(const std::vector<mode>& new_modes)   override;
-    virtual void                     SetProfile(size_t profileIdx)                  override;
+    /*
+     * Effects Information
+     */
+    virtual const
+        std::vector<led_group_effect>&    GetEffects()       const                                override;
+    virtual const led_group_effect&       GetEffect(unsigned int effectIdx)  const                override;
+    virtual void                          SetEfects(const std::vector<led_group_effect>& effects) override;
+    virtual void                          AddEffect(const led_group_effect& effect)               override;
+    virtual void                          RemoveEffect(unsigned int effectIdx)                    override;
+    virtual void                          ClearEffects()                                          override;
+    virtual void                          ResetEffectsToDefault()                                 override;
+
+
+    /*
+     * Modes
+     */
+    virtual const std::vector<LenovoLegionDaemon::mode>&      GetModes()           const          override;
+    virtual std::string     GetModeNameByIdx(unsigned int mode)                    const          override;
+    virtual LenovoLegionDaemon::mode   GetModeByIdx(unsigned int mode)             const          override;
+    virtual mode                          GetModeByModeValue(int mode)             const          override;
+
+
+    /*
+     * Led Maping information
+     */
+    virtual const std::vector<led>&       GetLEDs()                                               const  override;
+    virtual std::string                   GetLEDName(unsigned int led)                            const  override;
+    virtual std::set<int>                 GetLedsIndexesByDeviceSpecificValue(unsigned int value) const  override;
+
+    /*
+     * Get current colors for all LEDs
+     */
+    virtual std::vector<RGBColor>         GetStateForAllLeds()                                    const override;
 public:
 
     /*---------------------------------------------------------*\
     | Functions to be implemented in device implementation      |
     \*---------------------------------------------------------*/
-    virtual void        SetupZones()                            =   0;
+    virtual void        DeviceUpdateDirect()                    =   0;
 
-    virtual void        DeviceUpdateLEDs()                      =   0;
-    virtual void        DeviceUpdateMode()                      =   0;
+    virtual void        DeviceUpdateEfects()                    =   0;
+    virtual void        DeviceResetEffectsToDefault()           =   0;
 
     virtual void        DeviceUpdateProfile()                   =   0;
-    virtual void        Refresh()                               =   0;
+    virtual void        DeviceUpdateBrightness()                =   0;
 
-private:
+    virtual void        DeviceRefresh()                         =   0;
 
-    void                    SetAllZoneLEDs(int zone, RGBColor color);
+    virtual std::vector<RGBColor>        DeviceGetState() const =   0;
 
 protected:
 
-    std::vector<led>        leds;               /* LEDs                     */
-    std::vector<zone>       zones;              /* Zones                    */
-    std::string             name;               /* controller name          */
-    int                     active_mode = 0;    /* active mode              */
-    std::vector<mode>       modes;              /* Modes                    */
-    std::vector<RGBColor>   colors;             /* Color buffer             */
-    device_type             type;               /* device type              */
-    unsigned int            profiles = 0;       /* Supported Device Profiles*/
-    size_t                  active_profile = 0; /* active profile           */
+    Profiles             m_profiles         = {0,0,0};              /* Supported Device Profiles*/
+    Brightnesses         m_britnesses       = {0,0,0};              /* Supported Brightness Levels*/
+    const device_type    m_type             = DEVICE_TYPE_UNKNOWN;  /* device type              */
+    const std::string    m_name;                                    /* controller name          */
+    const std::string    m_vendor;                                  /* controller vendor        */
+    const std::string    m_description;                             /* controller description   */
+    const std::string    m_serial;                                  /* controller serial number */
+    const std::string    m_location;                                /* controller location      */
+
+    /*
+     * Device Model Information
+     */
+    const std::vector<mode>       m_modes;            /* Supported Modes          */
+    const std::vector<zone>       m_zones;            /* Supported Zones          */
 
 
-    std::string             vendor;             /* controller vendor        */
-    std::string             description;        /* controller description   */
-    std::string             version;            /* controller version       */
-    std::string             serial;             /* controller serial number */
-    std::string             location;           /* controller location      */
-    std::vector<std::string>
-        led_alt_names;                          /* alternate LED names      */
+    /*
+     * Direct Leds control
+     */
+    const std::vector<led>         m_leds;           /* LEDs                     */
+    /*
+     * Profile effects
+     */
+    std::vector<led_group_effect>   m_effects;       /* Current effects          */
 };
 
 }

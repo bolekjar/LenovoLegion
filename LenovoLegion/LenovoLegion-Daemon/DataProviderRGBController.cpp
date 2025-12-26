@@ -11,18 +11,18 @@
 #include "Core/LoggerHolder.h"
 #include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
 
+#include <hidapi.h>
 
 namespace LenovoLegionDaemon {
 
     DataProviderRGBController::DataProviderRGBController(QObject* parent)  :DataProvider(parent,dataType) {}
 
     DataProviderRGBController::~DataProviderRGBController()
-    {
-    }
+    {}
 
-    QByteArray DataProviderRGBController::serializeAndGetData() const
+    QByteArray DataProviderRGBController::serializeAndGetData(const QByteArray& data) const
     {
-        legion::messages::RGBController rgbController;
+        legion::messages::RGBControllerResponse rgbController;
         QByteArray byteArray;
 
         LOG_D(__PRETTY_FUNCTION__);
@@ -34,103 +34,153 @@ namespace LenovoLegionDaemon {
         }
         else
         {
-            // Refresh controller state
-            m_rgbController->Refresh();
+            legion::messages::RGBControllerRequest request;
+
+            if(!request.ParseFromArray(data.data(), data.size()))
+            {
+                THROW_EXCEPTION(exception_T, DataProvider::ERROR_CODES::INVALID_DATA, "Parse of data message error !");
+            }
+
+            const legion::messages::RGBControllerRequest::RequestFlags requestFlags = static_cast<legion::messages::RGBControllerRequest::RequestFlags>(request.request_flags());
+
+
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_BRITNESS          ||
+               requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_PROFILE           ||
+               requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS
+              )
+            {
+                m_rgbController->DeviceRefresh();
+            }
+
 
             // Set device type
-            rgbController.set_device_type(static_cast<legion::messages::RGBController::DeviceType>(m_rgbController->GetDeviceType()));
-
-            // Set active mode
-            rgbController.set_active_mode(m_rgbController->GetMode());
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_DEVICE_TYPE)
+            {
+                rgbController.set_device_type(static_cast<legion::messages::RGBController::DeviceType>(m_rgbController->GetDeviceType()));
+            }
 
             // Set profiles
-            rgbController.set_profiles(m_rgbController->GetProfiles());
-            rgbController.set_active_profile(m_rgbController->GetActiveProfile());
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_PROFILE)
+            {
+                rgbController.mutable_profile()->set_current(m_rgbController->GetProfiles().active);
+                rgbController.mutable_profile()->set_min(m_rgbController->GetProfiles().min);
+                rgbController.mutable_profile()->set_max(m_rgbController->GetProfiles().max);
+            }
 
+            // Set brightness
+            if(requestFlags &  legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_BRITNESS)
+            {
+                rgbController.mutable_britness()->set_current(m_rgbController->GetBrightness().active);
+                rgbController.mutable_britness()->set_min(m_rgbController->GetBrightness().min);
+                rgbController.mutable_britness()->set_max(m_rgbController->GetBrightness().max);
+            }
+
+
+            // Serialize Effects
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS)
+            {
+                const auto& effects = m_rgbController->GetEffects();
+                for(const auto& effect : effects)
+                {
+                    auto* pbEffect = rgbController.add_led_group_effects();
+
+                    pbEffect->set_mode(effect.m_mode);
+                    pbEffect->set_direction(effect.m_direction);
+                    pbEffect->set_speed(effect.m_speed);
+                    pbEffect->set_color_mode(effect.m_color_mode);
+
+                    for (const auto& color : effect.m_colors)
+                    {
+                        pbEffect->add_colors(color);
+                    }
+
+                    for (const auto& led : effect.m_leds)
+                    {
+                        auto* ledToAdd = pbEffect->add_leds();
+
+                        ledToAdd->set_value(led.value);
+                        ledToAdd->set_name(led.name);
+                    }
+                }
+            }
 
             // Serialize LEDs
-            const auto& leds = m_rgbController->GetLEDs();
-            for(const auto& led : leds)
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LEDS)
             {
-                auto* pbLed = rgbController.add_leds();
+                const auto& leds = m_rgbController->GetLEDs();
+                for(const auto& led : leds)
+                {
+                    auto* pbLed = rgbController.add_leds();
 
-                pbLed->set_name(led.name);
-                pbLed->set_value(led.value);
+                    pbLed->set_name(led.name);
+                    pbLed->set_value(led.value);
+                }
             }
 
             // Serialize Zones
-            const auto& zones = m_rgbController->GetZones();
-            for(const auto& zone : zones)
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_ZONES)
             {
-                auto* pbZone = rgbController.add_zones();
-
-                pbZone->set_name(zone.name);
-                pbZone->set_type(static_cast<legion::messages::RGBController::ZoneType>(zone.type));
-                pbZone->set_start_idx(zone.start_idx);
-                pbZone->set_leds_count(zone.leds_count);
-                pbZone->set_leds_min(zone.leds_min);
-                pbZone->set_leds_max(zone.leds_max);
-                pbZone->set_flags(zone.flags);
-
-                // Serialize matrix map if present
-                if(zone.matrix_map != nullptr)
+                const auto& zones = m_rgbController->GetZones();
+                for(const auto& zone : zones)
                 {
-                    auto* pbMatrixMap = pbZone->mutable_matrix_map();
+                    auto* pbZone = rgbController.add_zones();
 
-                    pbMatrixMap->set_height(zone.matrix_map->height);
-                    pbMatrixMap->set_width(zone.matrix_map->width);
+                    pbZone->set_name(zone.name);
+                    pbZone->set_type(static_cast<legion::messages::RGBController::ZoneType>(zone.type));
+                    pbZone->set_leds_count(zone.leds_count);
+                    pbZone->set_leds_min(zone.leds_min);
+                    pbZone->set_leds_max(zone.leds_max);
+                    pbZone->set_flags(zone.flags);
 
-                    for(unsigned int i = 0; i < zone.matrix_map->height * zone.matrix_map->width; i++)
+                    if(zone.matrix_map.map.size() > 0)
                     {
-                        pbMatrixMap->add_map(zone.matrix_map->map[i]);
+                        auto* pbMatrixMap = pbZone->mutable_matrix_map();
+                        pbMatrixMap->set_height(zone.matrix_map.height);
+                        pbMatrixMap->set_width(zone.matrix_map.width);
+
+                        for(const auto& val : zone.matrix_map.map)
+                        {
+                            pbMatrixMap->add_map(val);
+                        }
                     }
                 }
-
-                // Serialize segments
-                for(const auto& segment : zone.segments)
-                {
-                    auto* pbSegment = pbZone->add_segments();
-
-                    pbSegment->set_name(segment.name);
-                    pbSegment->set_type(static_cast<legion::messages::RGBController::ZoneType>(segment.type));
-                    pbSegment->set_start_idx(segment.start_idx);
-                    pbSegment->set_leds_count(segment.leds_count);
-                }
-
             }
 
             // Serialize Modes
-            const auto& modes = m_rgbController->GetModes();
-            for(const auto& mode : modes)
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_MODES)
             {
-                auto* pbMode = rgbController.add_modes();
-
-                pbMode->set_name(mode.name);
-                pbMode->set_value(mode.value);
-                pbMode->set_flags(mode.flags);
-                pbMode->set_speed_min(mode.speed_min);
-                pbMode->set_speed_max(mode.speed_max);
-                pbMode->set_brightness_min(mode.brightness_min);
-                pbMode->set_brightness_max(mode.brightness_max);
-                pbMode->set_colors_min(mode.colors_min);
-                pbMode->set_colors_max(mode.colors_max);
-                pbMode->set_speed(mode.speed);
-                pbMode->set_brightness(mode.brightness);
-                pbMode->set_direction(mode.direction);
-                pbMode->set_color_mode(mode.color_mode);
-
-                // Serialize mode colors
-                for(const auto& color : mode.colors)
+                const auto& modes = m_rgbController->GetModes();
+                for(const auto& mode : modes)
                 {
-                    pbMode->add_colors(color);
+                    auto* pbMode = rgbController.add_modes();
+
+                    pbMode->set_name(mode.name);
+                    pbMode->set_value(mode.value);
+                    pbMode->set_flags(mode.flags);
+                    pbMode->set_speed_min(mode.speed_min);
+                    pbMode->set_speed_max(mode.speed_max);
+                    pbMode->set_colors_min(mode.colors_min);
+                    pbMode->set_colors_max(mode.colors_max);
+                    pbMode->set_speed(mode.speed);
+                    pbMode->set_direction(mode.direction);
+                    pbMode->set_color_mode(mode.color_mode);
+
+                    // Serialize mode colors
+                    for(const auto& color : mode.colors)
+                    {
+                        pbMode->add_colors(color);
+                    }
                 }
             }
 
-            // Serialize Colors
-            const auto& colors = m_rgbController->GetColors();
-            for(const auto& color : colors)
+            // Serialize Colors For All leds States
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_STATE_FOR_ALL_LEDS)
             {
-                rgbController.add_colors(color);
+                auto colors = m_rgbController->DeviceGetState();
+                for(const auto& color : colors)
+                {
+                    rgbController.add_colors(color);
+                }
             }
         }
 
@@ -145,7 +195,7 @@ namespace LenovoLegionDaemon {
 
     QByteArray DataProviderRGBController::deserializeAndSetData(const QByteArray& data)
     {
-        legion::messages::RGBController rgbController;
+        legion::messages::RGBControllerSetRequest rgbController;
 
         LOG_D(__PRETTY_FUNCTION__);
 
@@ -160,100 +210,75 @@ namespace LenovoLegionDaemon {
             return {};
         }
 
-        // Apply mode if changed
-        if(rgbController.has_active_mode())
-        {
-            int currentMode = m_rgbController->GetMode();
-            if(currentMode != rgbController.active_mode())
-            {
-                LOG_D(QString("Changing mode from %1 to %2").arg(currentMode).arg(rgbController.active_mode()));
-
-                m_rgbController->SetMode(rgbController.active_mode());
-                m_rgbController->DeviceUpdateMode();
-            }
-        }
-
         // Apply profile if changed
-        if(rgbController.has_active_profile())
+        if(rgbController.has_profile())
         {
-            size_t currentProfile = m_rgbController->GetActiveProfile();
-            if(currentProfile != rgbController.active_profile())
+            auto currentProfile = m_rgbController->GetProfiles().active;
+            if(currentProfile != rgbController.profile().current())
             {
-                LOG_D(QString("Changing profile from %1 to %2").arg(currentProfile).arg(rgbController.active_profile()));
+                LOG_D(QString("Changing profile from %1 to %2").arg(currentProfile).arg(rgbController.profile().current()));
 
-                m_rgbController->SetProfile(rgbController.active_profile());
+                m_rgbController->SetProfile(rgbController.profile().current());
                 m_rgbController->DeviceUpdateProfile();
             }
         }
 
-        // Apply modes settings if provided
-        if(rgbController.modes_size() > 0)
+        // Apply brightness if changed
+        if(rgbController.has_britness())
         {
-            LOG_D(QString("Applying %1 modes").arg(rgbController.modes_size()));
-
-            std::vector<mode> modes;
-            for(int i = 0; i < rgbController.modes_size(); i++)
+            auto currentBrightness = m_rgbController->GetBrightness().active;
+            if(currentBrightness != rgbController.britness().current())
             {
-                const auto& pbMode = rgbController.modes(i);
-                mode m;
-                m.name = pbMode.name();
-                m.value = pbMode.value();
-                m.flags = pbMode.flags();
-                m.speed_min = pbMode.speed_min();
-                m.speed_max = pbMode.speed_max();
-                m.brightness_min = pbMode.brightness_min();
-                m.brightness_max = pbMode.brightness_max();
-                m.colors_min = pbMode.colors_min();
-                m.colors_max = pbMode.colors_max();
-                m.speed = pbMode.speed();
-                m.brightness = pbMode.brightness();
-                m.direction = pbMode.direction();
-                m.color_mode = pbMode.color_mode();
+                LOG_D(QString("Changing brightness from %1 to %2").arg(currentBrightness).arg(rgbController.britness().current()));
 
-                // Copy mode colors
-                for(int j = 0; j < pbMode.colors_size(); j++)
+                m_rgbController->SetBrightness(rgbController.britness().current());
+                m_rgbController->DeviceUpdateBrightness();
+            }
+        }
+
+        /*
+         * Apply effects if provided
+         */
+        if(rgbController.led_group_effects_size() > 0)
+        {
+            m_rgbController->ClearEffects();
+            for(int i = 0; i < rgbController.led_group_effects_size(); i++)
+            {
+                LenovoLegionDaemon::led_group_effect effect;
+
+                const auto& pbEffect = rgbController.led_group_effects(i);
+
+                effect.m_mode        = pbEffect.mode();
+                effect.m_direction   = pbEffect.direction();
+                effect.m_speed       = pbEffect.speed();
+                effect.m_color_mode  = pbEffect.color_mode();
+
+                for (int j = 0; j < pbEffect.colors_size(); j++)
                 {
-                    m.colors.push_back(pbMode.colors(j));
+                    effect.m_colors.push_back(pbEffect.colors(j));
                 }
 
-                modes.push_back(m);
-            }
-            m_rgbController->SetModes(modes);
+                for (int j = 0; j < pbEffect.leds_size(); j++)
+                {
+                    const auto& pbLed = pbEffect.leds(j);
+                    LenovoLegionDaemon::led led;
+                    led.name  = pbLed.name();
+                    led.value = pbLed.value();
+                    effect.m_leds.push_back(led);
+                }
 
-            m_rgbController->DeviceUpdateMode();
+                m_rgbController->AddEffect(effect);
+            }
+
+            m_rgbController->DeviceUpdateEfects();
         }
 
-        // Apply LEDs settings if provided
-        if(rgbController.leds_size() > 0)
+        /*
+         * Apply reset effects to default if requested
+         */
+        if(rgbController.reset_effects_to_def())
         {
-            LOG_D(QString("Applying %1 LEDs").arg(rgbController.leds_size()));
-
-            std::vector<led> leds;
-            for(int i = 0; i < rgbController.leds_size(); i++)
-            {
-                const auto& pbLed = rgbController.leds(i);
-                led l;
-                l.name = pbLed.name();
-                l.value = pbLed.value();
-                leds.push_back(l);
-            }
-            m_rgbController->SetLEDs(leds);
-
-            m_rgbController->DeviceUpdateLEDs();
-        }
-
-        // Apply individual LED colors if provided
-        if(rgbController.colors_size() > 0)
-        {
-            LOG_D(QString("Applying %1 individual LED colors").arg(rgbController.colors_size()));
-
-            const auto& colors = m_rgbController->GetColors();
-            for(int i = 0; i < rgbController.colors_size() && i < static_cast<int>(colors.size()); i++)
-            {
-                m_rgbController->SetLED(i, rgbController.colors(i));
-            }
-
-            m_rgbController->DeviceUpdateLEDs();
+            m_rgbController->DeviceResetEffectsToDefault();
         }
 
         return {};
@@ -265,39 +290,51 @@ namespace LenovoLegionDaemon {
 
         clean();
 
-        hid_device_info * hid_devices = hid_enumerate(0, 0);;
-        hid_device_info *current_hid_device = hid_devices;
-        while (current_hid_device) {
-            /*-----------------------------------------------------------------------------*\
+        /*-----------------------------------------------------------------------------*\
+        | Loop through all available detectors.  If all required information matches,   |
+        | run the detector                                                              |
+        \*-----------------------------------------------------------------------------*/
+        for (auto &detector : hidDeviceDetectorsBlocks)
+        {
+            hid_device_info * hid_devices = hid_enumerate(detector.m_vid, 0);
 
-            | Loop through all available detectors.  If all required information matches,   |
-            | run the detector                                                              |
-            \*-----------------------------------------------------------------------------*/
-            for (auto &detector : hidDeviceDetectorsBlocks)
+            auto cleanup = qScopeGuard([hid_devices] { if(hid_devices != nullptr) hid_free_enumeration(hid_devices); });
+
+            for (hid_device_info * current_hid_device = hid_devices; current_hid_device != nullptr; current_hid_device = current_hid_device->next)
             {
+                LOG_D(QString::asprintf("Checking HID Device: VID=%X, PID=%X, Interface=%d, Usage_Page=%X, Path=%s",
+                                        current_hid_device->vendor_id,
+                                        current_hid_device->product_id,
+                                        current_hid_device->interface_number,
+                                        current_hid_device->usage_page,
+                                        current_hid_device->path));
 
-                if (detector.compare(current_hid_device)) {
-                    m_rgbController.reset(detector.function(current_hid_device,detector.name));
+                try {
+                    if (detector.compare(*current_hid_device)) {
 
-                    if(m_rgbController != nullptr)
-                    {
-                        LOG_D(QString("RGB Controller Detected: ").append(detector.name.c_str()));
-                        break;
+                        if(m_rgbController != nullptr)
+                        {
+                            LOG_W("RGB Controller already detected, skipping further detection attempts.");
+                            break;
+                        }
+
+                        m_rgbController.reset(detector.m_function(*current_hid_device,detector.m_name));
+
+                        LOG_D(QString("RGB Controller Detected: ").append(detector.m_name.c_str()));
                     }
+                } catch (bj::framework::exception::Exception& ex)
+                {
+                    /*
+                     * Problem is that hid_enumerate itself is returning the same device twice in its linked list. This is a known issue with hidapi on Linux when:
+                     *   1. A device has been unplugged/replugged
+                     *   2. There's a kernel/udev issue creating duplicate entries
+                     *   3. The hidapi library has a bug
+                     */
+                    LOG_E(QString("Error during RGB Controller detection (").append(detector.m_name.c_str()).append("): ").append(ex.what()));
+                    break;
                 }
             }
-
-            if(m_rgbController != nullptr)
-            {
-                break;
-            }
-
-            current_hid_device = current_hid_device->next;
-
-
         }
-
-        hid_free_enumeration(hid_devices);
     }
 
     void DataProviderRGBController::clean()
@@ -305,35 +342,23 @@ namespace LenovoLegionDaemon {
         m_rgbController.reset();
     }
 
-    void DataProviderRGBController::registerControler(std::string name, HIDDeviceDetectorFunction det, uint16_t vid, uint16_t pid, int interface, int usage_page, int usage)
+    void DataProviderRGBController::registerControler(std::string name, HIDDeviceDetectorFunction det, uint16_t vid, uint16_t pid, uint16_t pidMask)
     {
-        HIDDeviceDetectorBlock block;
-
-        block.name         = name;
-        block.vid          = vid;
-        block.pid          = pid;
-        block.interface    = interface;
-        block.usage_page   = usage_page;
-        block.usage        = usage;
-        block.function     = det;
-
-        hidDeviceDetectorsBlocks.push_back(block);
+        hidDeviceDetectorsBlocks.push_back({
+            .m_name         = name,
+            .m_vid          = vid,
+            .m_pid          = pid,
+            .m_pidMask      = pidMask,
+            .m_function     = det
+        });
     }
 
     std::vector<DataProviderRGBController::HIDDeviceDetectorBlock> DataProviderRGBController::hidDeviceDetectorsBlocks{};
 
 
-    bool DataProviderRGBController::BasicHIDBlock::compare(hid_device_info *info)
+    bool DataProviderRGBController::HIDDeviceDetectorBlock::compare(const hid_device_info& info)
     {
-        return ((vid == info->vendor_id) && (pid == info->product_id)
-#ifdef USE_HID_USAGE
-                && ((usage_page == HID_USAGE_PAGE_ANY) || (usage_page == info->usage_page))
-                && ((usage == HID_USAGE_ANY) || (usage == info->usage))
-                && ((interface == HID_INTERFACE_ANY) || (interface == info->interface_number))
-#else
-                && ((interface == HID_INTERFACE_ANY) || (interface == info->interface_number))
-#endif
-                );
+        return ((m_vid == info.vendor_id) && (m_pid == (info.product_id & m_pidMask)));
     }
 
 }

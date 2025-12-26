@@ -121,21 +121,16 @@ HEADERS += \
     RGBController.h \
     RGBControllerKeyNames.h \
     StringUtils.h \
-    RGBControllerDetector.h \
-    RGBControllerDeviceDetector.h \
-    HidApiWrapper.h
+    RGBControllerDetector.h
 
 
 HEADERS += \
-        RGBControlers/LenovoDevices.h            \
-        RGBControlers/LenovoUSBController.h      \
-        RGBControlers/LenovoGen9USBController.h  \
-        RGBControlers/RGBController_LenovoGen9.h
+        RGBControlers/LenovoRGBController.h \
+        RGBControlers/LenovoUSBController.h
 
 SOURCES += \
-        RGBControlers/LenovoUSBController.cpp      \
-        RGBControlers/LenovoGen9USBController.cpp  \
-        RGBControlers/RGBController_LenovoGen9.cpp \
+        RGBControlers/LenovoRGBController.cpp \
+        RGBControlers/LenovoUSBController.cpp \
         RGBControlers/LenovoUSBControllerDetect.cpp
 
 

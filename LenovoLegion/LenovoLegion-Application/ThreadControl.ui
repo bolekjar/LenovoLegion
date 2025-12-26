@@ -22,6 +22,10 @@
   <property name="styleSheet">
    <string notr="true">QRadioButton {
 	color: rgb(255, 255, 255);
+}
+
+QLabel {
+	color: rgb(255, 255, 255);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">

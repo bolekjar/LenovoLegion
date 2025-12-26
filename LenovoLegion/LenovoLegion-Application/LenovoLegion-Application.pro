@@ -4,7 +4,7 @@ TARGET = $${APPLICATION_NAME}
 QT       += core gui widgets network charts
 
 CONFIG += c++20 link_pkgconfig
-PKGCONFIG += protobuf hidapi-hidraw
+PKGCONFIG += protobuf
 
 DESTDIR = $${DESTINATION_BIN_PATH}
 

@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include "HidApiWrapper.h"
 #include "DataProvider.h"
 
 #include <vector>
 #include <memory>
 
+
+struct hid_device_info;
 
 namespace LenovoLegionDaemon {
 
@@ -26,35 +27,23 @@ class DataProviderRGBController : public DataProvider
 
 public:
 
-    typedef std::function<RGBController* (hid_device_info *, const std::string &)> HIDDeviceDetectorFunction;
-    typedef std::function<RGBController* (hidapi_wrapper wrapper, hid_device_info *, const std::string &)> HIDWrappedDeviceDetectorFunction;
+    typedef std::function<RGBController* (const hid_device_info &, const std::string &)> HIDDeviceDetectorFunction;
+
 
 private:
 
-    class BasicHIDBlock
+    struct HIDDeviceDetectorBlock
     {
-    public:
-        std::string name;
-        uint16_t vid;
-        uint16_t pid;
-        int interface;
-        int usage_page;
-        int usage;
+        const std::string m_name;
+        const uint16_t    m_vid;
+        const uint16_t    m_pid;
+        const uint16_t    m_pidMask;
 
-        bool compare(hid_device_info *info);
+        const HIDDeviceDetectorFunction m_function;
+
+        bool compare(const hid_device_info& info);
     };
 
-    class HIDDeviceDetectorBlock : public BasicHIDBlock
-    {
-    public:
-        HIDDeviceDetectorFunction function;
-    };
-
-    class HIDWrappedDeviceDetectorBlock : public BasicHIDBlock
-    {
-    public:
-        HIDWrappedDeviceDetectorFunction function;
-    };
 
 public:
 
@@ -69,7 +58,7 @@ public:
 
     virtual ~DataProviderRGBController() override;
 
-    virtual QByteArray serializeAndGetData()                      const override;
+    virtual QByteArray serializeAndGetData(const QByteArray&)           const override;
     virtual QByteArray deserializeAndSetData(const QByteArray&)         override;
 
 
@@ -78,13 +67,11 @@ public:
 
 public:
 
-    static void registerControler(std::string name,
+    static void registerControler(std::string               name,
                                   HIDDeviceDetectorFunction det,
-                                  uint16_t vid,
-                                  uint16_t pid,
-                                  int interface,
-                                  int usage_page,
-                                  int usage);
+                                  uint16_t                  vid,
+                                  uint16_t                  pid,
+                                  uint16_t                  pidMask);
 
 private:
 
