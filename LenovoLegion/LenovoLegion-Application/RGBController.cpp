@@ -397,7 +397,32 @@ void RGBController::SetEfects(const std::vector<LenovoLegionDaemon::led_group_ef
 
 void RGBController::AddEffect(const LenovoLegionDaemon::led_group_effect &effect)
 {
-    m_effects.push_back(effect);
+    auto oldEffects = m_effects;
+
+    m_effects.clear();
+
+
+    if(effect.m_leds.size() == 0)
+    {
+        m_effects.push_back(effect);
+    }
+    else
+    {
+        /*
+         * Remove colisions with old effects
+         */
+        for (const auto& oldEffect : oldEffects)
+        {
+            std::find_if(oldEffect.m_leds.begin(),oldEffect.m_leds.end(),[&effect](const LenovoLegionDaemon::led& led){
+                return std::find_if(effect.m_leds.begin(),effect.m_leds.end(),[&led](const LenovoLegionDaemon::led& newLed){
+                    return newLed.value == led.value;
+                }) != effect.m_leds.end();
+            }) == oldEffect.m_leds.end() ? m_effects.push_back(oldEffect) : void();
+        }
+
+        m_effects.push_back(effect);
+    }
+
     m_pendingChanges.set(CHANGE_EFFECTS);
 }
 

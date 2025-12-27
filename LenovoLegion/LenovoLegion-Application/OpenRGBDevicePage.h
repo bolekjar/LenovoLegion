@@ -1,11 +1,10 @@
-/*---------------------------------------------------------*\
-| OpenRGBDevicePage.h                                       |
-|                                                           |
-|   User interface for OpenRGB device page                  |
-|                                                           |
-|   This file is part of the OpenRGB project                |
-|   SPDX-License-Identifier: GPL-2.0-only                   |
-\*---------------------------------------------------------*/
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright Jaroslav Bolek 2025
+ *
+ * Author(s):
+ *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
+ */
 
 #pragma once
 

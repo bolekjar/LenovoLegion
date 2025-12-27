@@ -1,13 +1,13 @@
-/*---------------------------------------------------------*\
-| OpenRGBDevicePage.cpp                                     |
-|                                                           |
-|   User interface for OpenRGB device page                  |
-|                                                           |
-|   This file is part of the OpenRGB project                |
-|   SPDX-License-Identifier: GPL-2.0-only                   |
-\*---------------------------------------------------------*/
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright Jaroslav Bolek 2025
+ *
+ * Author(s):
+ *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
+ */
 
 #include "OpenRGBDevicePage.h"
+#include "RGBControllerKeyNames.h"
 #include "ui_OpenRGBDevicePage.h"
 
 
@@ -190,10 +190,6 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     current_color.setRgb(0, 0, 0);
     updateColorUi();
 
-    ui->pushButton_AddEffects->setEnabled(true);
-    ui->pushButton_AddEffects->setVisible(true);
-    ui->pushButton_AddEffects->blockSignals(false);
-
     startTimer(100);
 }
 
@@ -278,6 +274,9 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     ui->comboBox_modeSpecificColor->blockSignals(true);
 
 
+    ui->pushButton_AddEffects->blockSignals(true);
+
+
 
     /*
      * Clear all controls initially
@@ -307,11 +306,14 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     ui->SpeedSlider->setEnabled(false);
     ui->DirectionBox->setEnabled(false);
     ui->comboBox_modeSpecificColor->setEnabled(false);
+    ui->pushButton_AddEffects->setEnabled(false);
+
 
 
 
     ui->ColorFrame->setVisible(false);
     ui->pushButtonToggleLEDView->setEnabled(false);
+
     HideDeviceView();
 
 
@@ -321,7 +323,6 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     auto mode = device->GetModeByIdx(ui->ModeBox->currentIndex());
 
     unsigned int  effective_color_mode      = (selectColorMode < LenovoLegionDaemon::MODE_COLORS_MAX) ? selectColorMode : mode.color_mode;
-    bool supports_per_led_selection         = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_SELECTION;
     bool supports_per_led                   = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_COLOR;
     bool supports_mode_specific             = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_MODE_SPECIFIC_COLOR;
     bool supports_random                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR;
@@ -419,28 +420,71 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     }
 
 
-    if(supports_per_led_selection)
+
+    /*
+     * Fill in the zone selection box
+     */
+    const auto& zones = device->GetZones();
+
+    if (zones.size() > 1)
     {
-        const auto& zones = device->GetZones();
-
-        if (zones.size() > 1)
-        {
-            ui->ZoneBox->addItem(tr("All Zones"));
-        }
-
-
-        for(const auto& zone : zones)
-        {
-            ui->ZoneBox->addItem(zone.name.c_str());
-        }
-
-        ui->ZoneBox->setCurrentIndex(0);
-        ui->ZoneBox->setEnabled(true);
-        ui->ZoneBox->blockSignals(false);
-
-        ui->pushButtonToggleLEDView->setEnabled(true);
-        ShowDeviceView();
+        ui->ZoneBox->addItem(tr("All Zones"));
     }
+
+    for(const auto& zone : zones)
+    {
+        ui->ZoneBox->addItem(zone.name.c_str());
+    }
+
+    ui->ZoneBox->setCurrentIndex(0);
+    ui->ZoneBox->setEnabled(true);
+    ui->ZoneBox->blockSignals(false);
+
+
+    /*
+     * Device View
+     */
+    if(mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_SELECTION)
+    {
+         ui->DeviceViewBox->setPerLED(true);
+    }
+    else if(mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_ALL_LED_SELECTION)
+    {
+        ui->DeviceViewBox->selectLeds([this](){
+            QVector<int> indices;
+
+            for(size_t i = 0; i < device->GetLEDs().size(); ++i)
+            {
+                indices.push_back((int)i);
+            }
+
+            return indices;
+        }());
+    }
+    else if(mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_ALL_KB_LED_SELECTION)
+    {
+        ui->DeviceViewBox->selectLeds([this](){
+            QVector<int> indices;
+
+            for(size_t i = 0; i < device->GetLEDs().size(); ++i)
+            {
+                if(LenovoLegionDaemon::KeyCodesToName.contains(device->GetLEDs().at(i).value))
+                {
+                    indices.push_back((int)i);
+                }
+            }
+
+            return indices;
+        }());
+    }
+    else
+    {
+        ui->pushButton_AddEffects->setEnabled(true);
+        ui->pushButton_AddEffects->blockSignals(false);
+    }
+
+    ui->pushButtonToggleLEDView->setEnabled(true);
+    ShowDeviceView();
 }
 
 void OpenRGBDevicePage::SetDevice(unsigned char red, unsigned char green, unsigned char blue)
@@ -621,9 +665,13 @@ void OpenRGBDevicePage::on_HexLineEdit_textChanged(const QString &arg1)
 
 void OpenRGBDevicePage::on_DeviceViewBox_selectionChanged(QVector<int> indices)
 {
-    ui->LEDBox->clear();
     ui->LEDBox->blockSignals(true);
+    ui->pushButton_AddEffects->blockSignals(true);
+
     ui->LEDBox->setEnabled(false);
+    ui->pushButton_AddEffects->setEnabled(false);
+
+    ui->LEDBox->clear();
 
     for (const auto& led : indices)
     {
@@ -634,6 +682,8 @@ void OpenRGBDevicePage::on_DeviceViewBox_selectionChanged(QVector<int> indices)
     {
         ui->LEDBox->setEnabled(true);
         ui->LEDBox->blockSignals(false);
+        ui->pushButton_AddEffects->setEnabled(true);
+        ui->pushButton_AddEffects->blockSignals(false);
     }
 
     if(ui->PerLEDCheck->isChecked())

@@ -32,7 +32,7 @@ DeviceView::DeviceView(QWidget *parent) :
 {
     controller = NULL;
     numerical_labels = false;
-    per_led = true;
+    per_led = false;
     setMouseTracking(1);
 
     size = width();
@@ -702,7 +702,7 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
     /*-----------------------------------------------------*\
     | If Device View is hidden, don't paint                 |
     \*-----------------------------------------------------*/
-    if(isHidden() || !per_led)
+    if(isHidden())
     {
         return;
     }
@@ -839,7 +839,7 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         QColor color = palette().highlight().color();
         color.setAlpha(63);
         painter.fillRect(rect, color);
-        color.setAlpha(127);
+        color.setAlpha(175);
         painter.setBrush(color);
         painter.drawRect(rect);
     }

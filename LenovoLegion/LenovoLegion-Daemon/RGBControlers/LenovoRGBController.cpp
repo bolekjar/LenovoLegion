@@ -120,7 +120,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
                         {
                             "Ripple",
                             MODE_RIPPLE,
-                            MODE_FLAG_HAS_SPEED | MODE_FLAG_HAS_MODE_SPECIFIC_COLOR | MODE_FLAG_HAS_RANDOM_COLOR |  MODE_FLAG_HAS_AUTOMATIC_SAVE | MODE_FLAG_HAS_PER_LED_SELECTION,
+                            MODE_FLAG_HAS_SPEED | MODE_FLAG_HAS_MODE_SPECIFIC_COLOR | MODE_FLAG_HAS_RANDOM_COLOR |  MODE_FLAG_HAS_AUTOMATIC_SAVE | MODE_FLAG_HAS_ALL_KB_LED_SELECTION,
                             SPEED_MIN,
                             SPEED_MAX,
                             1,
@@ -133,7 +133,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
                         {
                             "Audio Bounce Lighting",
                             MODE_AUDIO_BOUNCE_LIGHTING,
-                            0,
+                            MODE_FLAG_HAS_ALL_LED_SELECTION,
                             0,
                             0,
                             0,
@@ -172,7 +172,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
                         {
                             "Type Lighting",
                             MODE_TYPE_LIGHTING,
-                            MODE_FLAG_HAS_SPEED | MODE_FLAG_HAS_MODE_SPECIFIC_COLOR | MODE_FLAG_HAS_RANDOM_COLOR | MODE_FLAG_HAS_AUTOMATIC_SAVE,
+                            MODE_FLAG_HAS_SPEED | MODE_FLAG_HAS_MODE_SPECIFIC_COLOR | MODE_FLAG_HAS_RANDOM_COLOR | MODE_FLAG_HAS_AUTOMATIC_SAVE | MODE_FLAG_HAS_ALL_KB_LED_SELECTION,
                             SPEED_MIN,
                             SPEED_MAX,
                             1,
@@ -185,7 +185,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
                         {
                             "Aura",
                             MODE_LEGION_AURASYNC,
-                            MODE_FLAG_HAS_DIRECT_CONTROL,
+                            MODE_FLAG_HAS_DIRECT_CONTROL | MODE_FLAG_HAS_ALL_LED_SELECTION,
                             0,
                             0,
                             0,

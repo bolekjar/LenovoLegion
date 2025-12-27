@@ -43,7 +43,9 @@ enum ModeFlags : unsigned int
     MODE_FLAG_HAS_RANDOM_COLOR          = (1 << 6), /* Mode has random color option     */
     MODE_FLAG_HAS_AUTOMATIC_SAVE        = (1 << 7), /* Mode automatically saves         */
     MODE_FLAG_HAS_DIRECT_CONTROL        = (1 << 8), /* Mode supports Direct Control         */
-    MODE_FLAG_HAS_PER_LED_SELECTION     = (1 << 9)  /* Mode has per led selection option    */
+    MODE_FLAG_HAS_PER_LED_SELECTION     = (1 << 9), /* Mode has per led selection option    */
+    MODE_FLAG_HAS_ALL_LED_SELECTION     = (1 << 10),/* Mode has all led selection option    */
+    MODE_FLAG_HAS_ALL_KB_LED_SELECTION  = (1 << 11),/* Mode has all keyboard led selection option */
 };
 
 
