@@ -282,7 +282,6 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
      * Clear all controls initially
      */
     ui->ZoneBox->clear();
-    ui->LEDBox->clear();
     ui->PerLEDCheck->setAutoExclusive(false);
     ui->ModeSpecificCheck->setAutoExclusive(false);
     ui->RandomCheck->setAutoExclusive(false);
@@ -299,7 +298,6 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
      *
      * -----------------------------------------------------*/
     ui->ZoneBox->setEnabled(false);
-    ui->LEDBox->setEnabled(false);
     ui->PerLEDCheck->setEnabled(false);
     ui->ModeSpecificCheck->setEnabled(false);
     ui->RandomCheck->setEnabled(false);
@@ -312,10 +310,8 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
 
 
     ui->ColorFrame->setVisible(false);
+    ui->DeviceViewBox->setPerLED(false);
     ui->pushButtonToggleLEDView->setEnabled(false);
-
-    HideDeviceView();
-
 
     /*-----------------------------------------------------*\
     | Read selected mode                                    |
@@ -446,10 +442,32 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
      */
     if(mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_SELECTION)
     {
-         ui->DeviceViewBox->setPerLED(true);
+        ui->LEDBox->setEnabled(true);
+
+        ui->DeviceViewBox->selectLeds([this](){
+            QVector<int> indices;
+            for (int i = 0; i < ui->LEDBox->count(); ++i) {
+
+                auto led = ui->LEDBox->itemData(i).value<LenovoLegionDaemon::led>();
+
+                for(size_t j = 0; j < device->GetLEDs().size(); ++j)
+                {
+                    if(device->GetLEDs().at(j).value == led.value)
+                    {
+                        indices.push_back((int)j);
+                    }
+                }
+            }
+
+            return indices;
+        }());
+        ui->DeviceViewBox->setPerLED(true);
     }
     else if(mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_ALL_LED_SELECTION)
     {
+        ui->LEDBox->clear();
+        ui->LEDBox->setEnabled(true);
+
         ui->DeviceViewBox->selectLeds([this](){
             QVector<int> indices;
 
@@ -463,6 +481,9 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     }
     else if(mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_ALL_KB_LED_SELECTION)
     {
+        ui->LEDBox->clear();
+        ui->LEDBox->setEnabled(true);
+
         ui->DeviceViewBox->selectLeds([this](){
             QVector<int> indices;
 
@@ -479,6 +500,10 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     }
     else
     {
+        ui->LEDBox->clear();
+        ui->LEDBox->setEnabled(false);
+
+
         ui->pushButton_AddEffects->setEnabled(true);
         ui->pushButton_AddEffects->blockSignals(false);
     }
@@ -720,6 +745,8 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->RandomEffectsCheck->blockSignals(true);
     ui->ModeSpecificEffectsCheck->blockSignals(true);
     ui->PerLEDEffectsCheck->blockSignals(true);
+    ui->pushButton_EffectDelete->blockSignals(true);
+    ui->pushButton_EffectsUnselect->blockSignals(true);
 
 
 
@@ -733,6 +760,8 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->RandomEffectsCheck->setEnabled(false);
     ui->ModeSpecificEffectsCheck->setEnabled(false);
     ui->PerLEDEffectsCheck->setEnabled(false);
+    ui->pushButton_EffectDelete->setEnabled(false);
+    ui->pushButton_EffectsUnselect->setEnabled(false);
 
 
     ui->listWidgetEffects->clear();
@@ -824,6 +853,10 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
             return indices;
         }());
 
+        ui->pushButton_EffectDelete->setEnabled(true);
+        ui->pushButton_EffectsUnselect->setEnabled(true);
+        ui->pushButton_EffectDelete->blockSignals(false);
+        ui->pushButton_EffectsUnselect->blockSignals(false);
     }
     else
     {
@@ -893,6 +926,7 @@ void OpenRGBDevicePage::on_pushButton_AddEffects_clicked()
         return effect;
     }());
 
+    device->ApplyPendingChanges();
     UpdateEffectUi();
 }
 
@@ -1018,7 +1052,7 @@ void OpenRGBDevicePage::on_pushButton_EffectsUnselect_clicked()
 void OpenRGBDevicePage::on_pushButton_EffectsClearAll_clicked()
 {
     device->ClearEffects();
-
+    device->ApplyPendingChanges();
     UpdateEffectUi();
 }
 
@@ -1056,13 +1090,9 @@ void OpenRGBDevicePage::on_pushButton_EffectDelete_clicked()
     if(ui->SelectedEffectsBox->count() > 0)
     {
         device->RemoveEffect(ui->SelectedEffectsBox->itemData(0).value<int>());
+        device->ApplyPendingChanges();
         UpdateEffectUi();
     }
-}
-
-void OpenRGBDevicePage::on_pushButton_EffectsApply_clicked()
-{
-    device->ApplyPendingChanges();
 }
 
 void OpenRGBDevicePage::on_comboBox_EffectsColors_currentIndexChanged(int index)

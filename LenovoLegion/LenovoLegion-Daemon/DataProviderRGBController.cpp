@@ -211,7 +211,7 @@ namespace LenovoLegionDaemon {
         }
 
         // Apply profile if changed
-        if(rgbController.has_profile())
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_PROFILE)
         {
             auto currentProfile = m_rgbController->GetProfiles().active;
             if(currentProfile != rgbController.profile().current())
@@ -224,7 +224,7 @@ namespace LenovoLegionDaemon {
         }
 
         // Apply brightness if changed
-        if(rgbController.has_britness())
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_BRITNESS)
         {
             auto currentBrightness = m_rgbController->GetBrightness().active;
             if(currentBrightness != rgbController.britness().current())
@@ -239,9 +239,12 @@ namespace LenovoLegionDaemon {
         /*
          * Apply effects if provided
          */
-        if(rgbController.led_group_effects_size() > 0)
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_LED_GROUP_EFFECTS)
         {
+            LOG_D("Applying LED Group Effects");
+
             m_rgbController->ClearEffects();
+
             for(int i = 0; i < rgbController.led_group_effects_size(); i++)
             {
                 LenovoLegionDaemon::led_group_effect effect;
@@ -276,7 +279,7 @@ namespace LenovoLegionDaemon {
         /*
          * Apply reset effects to default if requested
          */
-        if(rgbController.reset_effects_to_def())
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_RESET_EFECTS_TTO_DEF)
         {
             m_rgbController->DeviceResetEffectsToDefault();
         }

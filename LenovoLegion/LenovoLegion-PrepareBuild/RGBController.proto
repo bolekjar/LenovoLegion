@@ -124,8 +124,17 @@ message RGBControllerResponse
 
 message RGBControllerSetRequest
 {
+             enum SetRequestFlags {
+                SET_REQUEST_NONE                 = 0x000;
+                SET_REQUEST_PROFILE              = 0x001;
+                SET_REQUEST_BRITNESS             = 0x002;
+                SET_REQUEST_LED_GROUP_EFFECTS    = 0x004;
+                SET_REQUEST_RESET_EFECTS_TTO_DEF = 0x010;
+                REQUEST_ALL                      = 0xFFF;
+             }
+
              RGBController.Profile            profile               = 1;
              RGBController.Britness           britness              = 2;
     repeated RGBController.LedGroupEffect     led_group_effects     = 3;
-             bool                             reset_effects_to_def  = 4;
+             uint32                           set_request_flags     = 4;
 }

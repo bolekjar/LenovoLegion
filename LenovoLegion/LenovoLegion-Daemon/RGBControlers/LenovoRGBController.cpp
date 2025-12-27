@@ -17,7 +17,7 @@ namespace LenovoLegionDaemon {
 
 
 LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
-    RGBController(  {0,5,0},                            /* profiles */
+    RGBController(  {1,6,1},                            /* profiles */
                     {0,9,0},                            /* brightness levels */
                     "Lenovo RGB Controller",            /* name */
                     "Lenovo",                           /* vendor */
@@ -308,14 +308,9 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
     controller(controller_ptr)
 {
     /*
-     * Read active profile
-     */
-    m_profiles.active =  fromControlerProfile(controller->getCurrentProfileId());
-
-    /*
      * Read active profile settings
      */
-    readActiveProfileSettings();
+    DeviceRefresh();
 }
 
 LenovoRGBController::~LenovoRGBController()
@@ -541,9 +536,26 @@ unsigned int LenovoRGBController::fromControlerSpin(const uint8_t spin) const
     return MODE_DIRECTION_NA;
 }
 
-size_t LenovoRGBController::fromControlerProfile(uint8_t profile) const
+unsigned int LenovoRGBController::fromControlerBrightness(uint8_t brightness) const
 {
-    return static_cast<uint8_t>(profile - 1);
+    if(brightness < m_britnesses.min || brightness > m_britnesses.max)
+    {
+        LOG_E("Received brightness level from controller is out of range");
+        return m_britnesses.min;
+    }
+
+    return static_cast<uint8_t>(brightness);
+}
+
+unsigned int LenovoRGBController::fromControlerProfile(uint8_t profile) const
+{
+    if(profile < m_profiles.min || profile > m_profiles.max)
+    {
+        LOG_E("Received profile id from controller is out of range");
+        return m_profiles.min;
+    }
+
+    return static_cast<uint8_t>(profile);
 }
 
 uint8_t LenovoRGBController::toControlerDirection(unsigned int  direction) const
@@ -608,9 +620,26 @@ uint8_t LenovoRGBController::toControlerColorMode(unsigned int color_mode) const
     }
 }
 
-uint8_t LenovoRGBController::toControlerProfile(size_t profile) const
+uint8_t LenovoRGBController::toControlerBrightness(unsigned int brightness) const
 {
-    return static_cast<uint8_t>(profile + 1);
+    if(brightness < m_britnesses.min || brightness > m_britnesses.max)
+    {
+        LOG_E("Trying to set brightness level to controller which is out of range");
+        return static_cast<uint8_t>(m_britnesses.min);
+    }
+
+    return static_cast<uint8_t>(brightness);
+}
+
+uint8_t LenovoRGBController::toControlerProfile(unsigned int profile) const
+{
+    if(profile < m_profiles.min || profile > m_profiles.max)
+    {
+        LOG_E("Trying to set profile id to controller which is out of range");
+        return static_cast<uint8_t>(m_profiles.min);
+    }
+
+    return static_cast<uint8_t>(profile);
 }
 
 }

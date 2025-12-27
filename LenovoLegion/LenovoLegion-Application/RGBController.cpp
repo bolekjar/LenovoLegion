@@ -190,16 +190,19 @@ void RGBController::sendRGBControllerData()
 
     if(m_pendingChanges.test(CHANGE_PROFILES))
     {
+        rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_PROFILE);
         rgbControllerData.mutable_profile()->set_current(m_profiles.active);
     }
 
     if(m_pendingChanges.test(CHANGE_BRIGHTNESS))
     {
+        rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_BRITNESS);
         rgbControllerData.mutable_britness()->set_current(m_brightness.active);
     }
 
     if(m_pendingChanges.test(CHANGE_EFFECTS))
     {
+        rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_LED_GROUP_EFFECTS);
         for(const auto& effect : m_effects)
         {
             auto* pbEffect = rgbControllerData.add_led_group_effects();
@@ -225,7 +228,7 @@ void RGBController::sendRGBControllerData()
 
     if(m_pendingChanges.test(CHANGE_RESET_EFFECTS))
     {
-        rgbControllerData.set_reset_effects_to_def(true);
+        rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_RESET_EFECTS_TTO_DEF);
     }
 
     if(m_pendingChanges.any())
@@ -411,15 +414,28 @@ void RGBController::AddEffect(const LenovoLegionDaemon::led_group_effect &effect
         /*
          * Remove colisions with old effects
          */
-        for (const auto& oldEffect : oldEffects)
+        for (auto& oldEffect : oldEffects)
         {
-            std::find_if(oldEffect.m_leds.begin(),oldEffect.m_leds.end(),[&effect](const LenovoLegionDaemon::led& led){
-                return std::find_if(effect.m_leds.begin(),effect.m_leds.end(),[&led](const LenovoLegionDaemon::led& newLed){
-                    return newLed.value == led.value;
-                }) != effect.m_leds.end();
-            }) == oldEffect.m_leds.end() ? m_effects.push_back(oldEffect) : void();
+            for (const auto& led : effect.m_leds)
+            {
+                auto end  = std::remove_if(oldEffect.m_leds.begin(),oldEffect.m_leds.end(), [&led](const LenovoLegionDaemon::led& l){
+                    return l.value == led.value;
+                });
+
+                oldEffect.m_leds.erase(end,oldEffect.m_leds.end());
+            }
         }
 
+        /*
+         * Remove empty effects
+         */
+        auto end  = std::remove_if(oldEffects.begin(),oldEffects.end(), [](const LenovoLegionDaemon::led_group_effect& e){
+            return e.m_leds.size() == 0;
+        });
+        oldEffects.erase(end,oldEffects.end());
+
+
+        m_effects = oldEffects;
         m_effects.push_back(effect);
     }
 

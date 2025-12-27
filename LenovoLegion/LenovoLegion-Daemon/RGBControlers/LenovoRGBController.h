@@ -91,7 +91,8 @@ private:
                                                     const uint8_t color_mode)                               const;
     unsigned int             fromControlerDirection(const uint8_t direction)                                const;
     unsigned int             fromControlerSpin(const uint8_t spin)                                          const;
-    size_t                   fromControlerProfile(uint8_t profile)                                          const;
+    unsigned int             fromControlerProfile(uint8_t profile)                                          const;
+    unsigned int             fromControlerBrightness(uint8_t brightness)                                    const;
 
 
     /*
@@ -100,7 +101,8 @@ private:
     uint8_t                                             toControlerDirection(unsigned int direction)        const;
     uint8_t                                             toControlerSpin(unsigned int spin)                  const;
     uint8_t                                             toControlerColorMode(unsigned int color_mode)       const;
-    uint8_t                                             toControlerProfile(size_t profile)                  const;
+    uint8_t                                             toControlerProfile(unsigned int profile)            const;
+    uint8_t                                             toControlerBrightness(unsigned int brightness)      const;
 
 private:
 

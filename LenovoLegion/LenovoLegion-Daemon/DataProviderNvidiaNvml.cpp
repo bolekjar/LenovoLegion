@@ -34,9 +34,7 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
     if(m_device != nullptr)
     {
         nvmlReturn_t result;
-        unsigned int graphicsClock, smClock, memClock, temp;
-        int gpuOffset, memOffset;
-
+        unsigned int graphicsClock, smClock, memClock;
 
         /*
          * Name
@@ -85,17 +83,17 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
 
 
         // Get current clock speeds
-        result = nvmlDeviceGetClockInfo(m_device, NVML_CLOCK_GRAPHICS, &graphicsClock);
+        result = nvmlDeviceGetClock(m_device, NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_CURRENT, &graphicsClock);
         if (NVML_SUCCESS == result) {
             gpuData.mutable_hardware_monitor()->mutable_gpu_clock()->set_value(graphicsClock);
         }
 
-        result = nvmlDeviceGetClockInfo(m_device, NVML_CLOCK_SM, &smClock);
+        result = nvmlDeviceGetClock(m_device, NVML_CLOCK_SM, NVML_CLOCK_ID_CURRENT, &smClock);
         if (NVML_SUCCESS == result) {
             gpuData.mutable_hardware_monitor()->mutable_sm_clock()->set_value(smClock);
         }
 
-        result = nvmlDeviceGetClockInfo(m_device, NVML_CLOCK_MEM, &memClock);
+        result = nvmlDeviceGetClock(m_device, NVML_CLOCK_MEM, NVML_CLOCK_ID_CURRENT, &memClock);
         if (NVML_SUCCESS == result) {
             gpuData.mutable_hardware_monitor()->mutable_memory_clock()->set_value(memClock);
         }
@@ -111,15 +109,18 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
 
 
         // Get temperature
-        result = nvmlDeviceGetTemperature(m_device, NVML_TEMPERATURE_GPU, &temp);
+        nvmlTemperature_t tempInfo;
+        tempInfo.version = nvmlTemperature_v1;
+        tempInfo.sensorType = NVML_TEMPERATURE_GPU;
+        result = nvmlDeviceGetTemperatureV(m_device, &tempInfo);
         if (NVML_SUCCESS == result) {
-            gpuData.mutable_hardware_monitor()->mutable_temperature()->set_value(temp);
+            gpuData.mutable_hardware_monitor()->mutable_temperature()->set_value(tempInfo.temperature);
         }
 
 
         // Get memory info
-        nvmlMemory_t memory;
-        result = nvmlDeviceGetMemoryInfo(m_device, &memory);
+        nvmlMemory_v2_t memory;
+        result = nvmlDeviceGetMemoryInfo_v2(m_device, &memory);
         if (NVML_SUCCESS == result) {
             gpuData.mutable_hardware_monitor()->mutable_memory_use()->set_used(memory.used);
             gpuData.mutable_hardware_monitor()->mutable_memory_use()->set_free(memory.free);
@@ -178,15 +179,23 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
         }
 
         // Get GPU clock offset
-        result = nvmlDeviceGetGpcClkVfOffset(m_device, &gpuOffset);
+        nvmlClockOffset_t gpuClkOffset;
+        gpuClkOffset.version = nvmlClockOffset_v1;
+        gpuClkOffset.type = NVML_CLOCK_GRAPHICS;
+        gpuClkOffset.pstate = NVML_PSTATE_0;
+        result = nvmlDeviceGetClockOffsets(m_device, &gpuClkOffset);
         if (NVML_SUCCESS == result) {
-            gpuData.mutable_gpu_offset()->set_value(gpuOffset);
+            gpuData.mutable_gpu_offset()->set_value(gpuClkOffset.clockOffsetMHz);
         }
 
         // Get Memory clock offset
-        result = nvmlDeviceGetMemClkVfOffset(m_device, &memOffset);
+        nvmlClockOffset_t memClkOffset;
+        memClkOffset.version = nvmlClockOffset_v1;
+        memClkOffset.type = NVML_CLOCK_MEM;
+        memClkOffset.pstate = NVML_PSTATE_0;
+        result = nvmlDeviceGetClockOffsets(m_device, &memClkOffset);
         if (NVML_SUCCESS == result) {
-            gpuData.mutable_memory_offset()->set_value(memOffset);
+            gpuData.mutable_memory_offset()->set_value(memClkOffset.clockOffsetMHz);
         }
     }
     else
@@ -222,8 +231,13 @@ QByteArray DataProviderNvidiaNvml::deserializeAndSetData(const QByteArray &data)
      if(nvmlData.has_gpu_offset())
      {
          nvmlReturn_t result;
+         nvmlClockOffset_t gpuClkOffset;
+         gpuClkOffset.version = nvmlClockOffset_v1;
+         gpuClkOffset.type = NVML_CLOCK_GRAPHICS;
+         gpuClkOffset.pstate = NVML_PSTATE_0;
+         gpuClkOffset.clockOffsetMHz = nvmlData.gpu_offset().value();
 
-         result = nvmlDeviceSetGpcClkVfOffset(m_device, nvmlData.gpu_offset().value());
+         result = nvmlDeviceSetClockOffsets(m_device, &gpuClkOffset);
          if (NVML_SUCCESS != result) {
             LOG_D(QString("Failed to set GPU clock offset: %1").arg(nvmlErrorString(result)));
          }
@@ -235,7 +249,13 @@ QByteArray DataProviderNvidiaNvml::deserializeAndSetData(const QByteArray &data)
      if(nvmlData.has_memory_offset())
      {
          nvmlReturn_t result;
-         result = nvmlDeviceSetMemClkVfOffset(m_device, nvmlData.memory_offset().value());
+         nvmlClockOffset_t memClkOffset;
+         memClkOffset.version = nvmlClockOffset_v1;
+         memClkOffset.type = NVML_CLOCK_MEM;
+         memClkOffset.pstate = NVML_PSTATE_0;
+         memClkOffset.clockOffsetMHz = nvmlData.memory_offset().value();
+
+         result = nvmlDeviceSetClockOffsets(m_device, &memClkOffset);
          if (NVML_SUCCESS != result) {
              LOG_D(QString("Failed to set Memory clock offset: %1").arg(nvmlErrorString(result)));
          }
@@ -290,17 +310,17 @@ void DataProviderNvidiaNvml::init()
         }
 
         // Get max clocks
-        result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_GRAPHICS, &m_maxGraphicsClock);
+        result = nvmlDeviceGetMaxCustomerBoostClock(m_device, NVML_CLOCK_GRAPHICS, &m_maxGraphicsClock);
         if (NVML_SUCCESS != result) {
             LOG_W(QString("Failed to get max graphics clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
         }
 
-        result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_SM, &m_maxSmClock);
+        result = nvmlDeviceGetMaxCustomerBoostClock(m_device, NVML_CLOCK_SM, &m_maxSmClock);
         if (NVML_SUCCESS != result) {
             LOG_W(QString("Failed to get max SM clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
         }
 
-        result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_MEM, &m_maxMemClock);
+        result = nvmlDeviceGetMaxCustomerBoostClock(m_device, NVML_CLOCK_MEM, &m_maxMemClock);
         if (NVML_SUCCESS != result) {
             LOG_W(QString("Failed to get max memory clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
         }

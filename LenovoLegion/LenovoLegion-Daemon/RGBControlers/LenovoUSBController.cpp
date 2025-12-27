@@ -174,22 +174,6 @@ void LenovoUSBController::setLedsDirect(const std::vector<led> &leds, const std:
     }()));
 }
 
-void LenovoUSBController::setLedsAllOff(uint8_t profile_id)
-{
-    LOG_D(QString::asprintf("LenovoUSBController::setLedsAllOff: Setting all LEDs off for profile %d", profile_id));
-
-    sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::EffectChange, {.value1 = profile_id,
-                                                                                       .value2 = {}
-                                                                                      },[](){
-        ByteArray payload(2,0);
-
-        payload[0] = 0x01; // one group
-        payload[1] = 0x00; // no settings
-
-        return payload;
-    }()));
-}
-
 uint8_t LenovoUSBController::getCurrentProfileId() const
 {
     LOG_D("LenovoUSBController::getCurrentProfileId: Getting current profile ID");
@@ -352,7 +336,7 @@ LenovoUSBController::ByteArray LenovoUSBController::serializeToBuffer(LENOVO_SPE
 
     if(size == 0x00)
     {
-        packet[2] = static_cast<uint8_t>(packet.size() % 255);
+        packet[2] = static_cast<uint8_t>((i + payload.size()) % 255);
     }
 
     return packet;
@@ -418,8 +402,8 @@ std::vector<LenovoUSBController::led_group> LenovoUSBController::getProfileDescr
     /*
      * Set Header
      */
-    Header header( response[5]      // profile
-                  ,response[1]      // opration
+    Header header( response[4]      // profile
+                  ,response[1]      // operation
                   ,response[2]);    // size
 
 

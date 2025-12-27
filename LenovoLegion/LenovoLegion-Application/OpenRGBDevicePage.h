@@ -83,8 +83,8 @@ private slots:
     void on_pushButton_EffectsUnselect_clicked();
     void on_pushButton_EffectsClearAll_clicked();
     void on_pushButton_EffectDelete_clicked();
-    void on_pushButton_EffectsApply_clicked();
     void on_pushButton_AddEffects_clicked();
+    void on_pushButton_EffectsDefault_clicked();
 
     /*
      * Mode change event handlers
@@ -96,7 +96,6 @@ private slots:
     void on_comboBox_modeSpecificColor_currentIndexChanged(int index);
     void on_PerLEDCheck_clicked();
     void on_RandomCheck_clicked();
-    void on_pushButton_EffectsDefault_clicked();
 
 private:
     Ui::OpenRGBDevicePage *ui;

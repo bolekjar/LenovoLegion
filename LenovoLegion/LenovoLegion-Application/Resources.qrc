@@ -15,4 +15,7 @@
         <file>cross.png</file>
         <file>keyboard.png</file>
     </qresource>
+    <qresource prefix="/images">
+        <file>keyboard-background.png</file>
+    </qresource>
 </RCC>

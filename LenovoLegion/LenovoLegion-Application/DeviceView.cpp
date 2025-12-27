@@ -307,7 +307,6 @@ void DeviceView::InitDeviceView()
 
     float current_y = 0;                    // We will be descending, placing each zone one unit below the previous one
     matrix_h        = totalHeight;
-    segment_count   = 0;
 
     for(std::size_t zone_idx = 0; zone_idx < controller->GetZones().size(); zone_idx++)
     {
@@ -324,13 +323,26 @@ void DeviceView::InitDeviceView()
         \*-----------------------------------------------------*/
         if((controller->GetZones()[zone_idx].type == LenovoLegionDaemon::ZONE_TYPE_MATRIX) && (controller->GetZones()[zone_idx].matrix_map.map.size()))
         {
-            const LenovoLegionDaemon::matrix_map_type * map = &controller->GetZones()[zone_idx].matrix_map;
+            LenovoLegionDaemon::matrix_map_type  localMap = controller->GetZones()[zone_idx].matrix_map;
+            LenovoLegionDaemon::matrix_map_type* map      = &localMap;
+
 
             for(unsigned int led_x = 0; led_x < map->width; led_x++)
             {
                 for(unsigned int led_y = 0; led_y < map->height; led_y++)
                 {
                     unsigned int map_idx    = led_y * map->width + led_x;
+
+                    if((map_idx + 1) < map->map.size()  && controller->GetLEDName(map->map[map_idx + 1]) == LenovoLegionDaemon::KEY_EN_RIGHT_ARROW && map->map[map_idx] == 0xFFFFFFFF)
+                    {
+                        std::swap(map->map[map_idx], map->map[map_idx + 1]);
+                    }
+
+                    if((map_idx + 2) < map->map.size() && controller->GetLEDName(map->map[map_idx])  == LenovoLegionDaemon::KEY_EN_TAB &&  map->map[map_idx + 2] == 0xFFFFFFFF && (map_idx + 1))
+                    {
+                        std::swap(map->map[map_idx + 1], map->map[map_idx + 2]);
+                    }
+
                     unsigned int color_idx  = map->map[map_idx] + controller->GetZones()[zone_idx].start_idx;
 
                     if(map->map[map_idx] != 0xFFFFFFFF && color_idx < led_pos.size())
@@ -379,7 +391,7 @@ void DeviceView::InitDeviceView()
                                 {
                                     led_pos[color_idx].matrix_x -= 1.0f;
                                     led_pos[color_idx].matrix_w += 1.0f;
-                                } else if(led_x < map->width - 1 && controller->GetLEDName(map->map[map_idx + 1] + controller->GetZones()[zone_idx].start_idx)  == controller->GetLEDName(color_idx))
+                                } else if(led_x < map->width - 1 && (controller->GetLEDName(map->map[map_idx + 1] + controller->GetZones()[zone_idx].start_idx)  == controller->GetLEDName(color_idx) || map->map[map_idx + 1] == 0xFFFFFFFF))
                                 {
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
@@ -424,6 +436,19 @@ void DeviceView::InitDeviceView()
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
                             }
+
+                             if(!LenovoLegionDaemon::KeyCodesToName.contains(controller->GetLEDs().at(color_idx).value))
+                            {
+                                for(unsigned int map_idx2 = map_idx - 1; map_idx2 >= led_y * map->width && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2--)
+                                {
+                                    led_pos[color_idx].matrix_x -= 1.0f;
+                                    led_pos[color_idx].matrix_w += 1.0f;
+                                }
+                                for(unsigned int map_idx2 = map_idx + 1; map_idx2 < (led_y + 1) * map->width && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2++)
+                                {
+                                    led_pos[color_idx].matrix_w += 1.0f;
+                                }
+                            }
                         }
 
                     }
@@ -452,31 +477,34 @@ void DeviceView::InitDeviceView()
                 led_pos[led_pos_idx].matrix_w = (1.0f - (2.0f * PAD_LED));
                 led_pos[led_pos_idx].matrix_h = (1.0f - (2.0f * PAD_LED));
 
-                /*-----------------------------------------------------*\
-                 | Merge same named LEDs into larger rectangles         |
-                 *-----------------------------------------------------*/
-                for (unsigned int led_i = 1; (led_idx + led_i) < leds_count ; ++led_i)
+                if(!disable_expansion)
                 {
-                    if(controller->GetLEDName(led_pos_idx) == controller->GetLEDName(led_pos_idx + led_i))
+                    /*-----------------------------------------------------*\
+                     | Merge same named LEDs into larger rectangles         |
+                     *-----------------------------------------------------*/
+                    for (unsigned int led_i = 1; (led_idx + led_i) < leds_count ; ++led_i)
                     {
-                        led_pos[led_pos_idx].matrix_w += 1.0f;
+                        if(controller->GetLEDName(led_pos_idx) == controller->GetLEDName(led_pos_idx + led_i))
+                        {
+                            led_pos[led_pos_idx].matrix_w += 1.0f;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else
-                    {
-                        break;
-                    }
-                }
 
-                for (int led_i = 1; (static_cast<int>(led_idx) - led_i) >= 0 ; ++led_i)
-                {
-                    if(controller->GetLEDName(led_pos_idx) == controller->GetLEDName(led_pos_idx - led_i))
+                    for (int led_i = 1; (static_cast<int>(led_idx) - led_i) >= 0 ; ++led_i)
                     {
-                        led_pos[led_pos_idx].matrix_x -= 1.0f;
-                        led_pos[led_pos_idx].matrix_w += 1.0f;
-                    }
-                    else
-                    {
-                        break;
+                        if(controller->GetLEDName(led_pos_idx) == controller->GetLEDName(led_pos_idx - led_i))
+                        {
+                            led_pos[led_pos_idx].matrix_x -= 1.0f;
+                            led_pos[led_pos_idx].matrix_w += 1.0f;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -717,6 +745,12 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
 
 
     /*-----------------------------------------------------*\
+     * Draw background image                                *
+     * -----------------------------------------------------*/
+    QPixmap backgroundPixmap = QPixmap(":/images/keyboard-background.png").scaled(size + 50,height() - 10 , Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    painter.drawPixmap((width() - backgroundPixmap.width()) / 2, (height() - backgroundPixmap.height()) / 2, backgroundPixmap);
+
+    /*-----------------------------------------------------*\
     | LED rectangles                                        |
     \*-----------------------------------------------------*/
     for(unsigned int led_idx = 0; led_idx < controller->GetLEDs().size(); led_idx++)
@@ -755,7 +789,7 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         {
             QRect rect = { posx , posy, posw , posh };
 
-            QPen pen1(QColor(marketLeds[led_idx]), 4);
+            QPen pen1(QColor(marketLeds[led_idx]), 9);
 
             QPen currentPen = painter.pen();
 
@@ -772,13 +806,13 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         if(selectionFlags[led_idx])
         {
             QPen innerPen(Qt::white);
-            innerPen.setWidth(3);
+            innerPen.setWidth(4);
             painter.setPen(innerPen);
         }
         else
         {
-            QPen defaultPen(palette().dark().color());
-            defaultPen.setWidth(1);
+            QPen defaultPen(QColor(49, 49 , 49, 160));
+            defaultPen.setWidth(3);
             painter.setPen(defaultPen);
         }
 
