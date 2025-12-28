@@ -1107,5 +1107,4 @@ void OpenRGBDevicePage::on_pushButton_EffectsDefault_clicked()
     UpdateEffectUi();
 }
 
-
 }

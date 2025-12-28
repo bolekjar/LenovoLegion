@@ -12,8 +12,10 @@
 
 namespace LenovoLegionDaemon {
 
-class RGBController : public RGBControllerInterface
+class RGBController : public QObject,
+                      public RGBControllerInterface
 {
+    Q_OBJECT
 public:
     /*---------------------------------------------------------*\
     | RGBController base class constructor                      |
@@ -113,8 +115,6 @@ public:
     /*---------------------------------------------------------*\
     | Functions to be implemented in device implementation      |
     \*---------------------------------------------------------*/
-    virtual void        DeviceUpdateDirect()                    =   0;
-
     virtual void        DeviceUpdateEfects()                    =   0;
     virtual void        DeviceResetEffectsToDefault()           =   0;
 

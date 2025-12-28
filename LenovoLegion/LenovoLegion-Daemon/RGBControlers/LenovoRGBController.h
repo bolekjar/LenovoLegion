@@ -61,12 +61,14 @@ public:
         DIRECT_CONTROL_NOT_SUPPORTED = 1
     };
 
+protected:
+
+    void timerEvent(QTimerEvent* event) override;
+
 public:
 
     LenovoRGBController(LenovoUSBController* controller_ptr);
     ~LenovoRGBController();
-
-    void        DeviceUpdateDirect()                   override;
 
     void        DeviceUpdateEfects()                   override;
     void        DeviceResetEffectsToDefault()          override;
@@ -80,7 +82,7 @@ public:
 
 private:
 
-
+    void DeviceUpdateDirect();
     void readActiveProfileSettings();
 
 
@@ -107,6 +109,9 @@ private:
 private:
 
     std::unique_ptr<LenovoUSBController>  controller;
+    int                                   m_timerId;
+
+    std::vector<RGBColor>                 m_captureData;
 };
 
 }

@@ -11,14 +11,16 @@
 
 #include <Core/LoggerHolder.h>
 
+#include <QRandomGenerator>
+
 #include <thread>
 
 namespace LenovoLegionDaemon {
 
 
 LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
-    RGBController(  {1,6,1},                            /* profiles */
-                    {0,9,0},                            /* brightness levels */
+    RGBController(  {.min = 1,.max = 6,.active = 1},                            /* profiles */
+                    {.min = 0,.max = 9,.active = 0},                            /* brightness levels */
                     "Lenovo RGB Controller",            /* name */
                     "Lenovo",                           /* vendor */
                     "Lenovo RGB Controller",            /* description */
@@ -305,12 +307,27 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
                         }
                     }
                     ),
-    controller(controller_ptr)
+    controller(controller_ptr),
+    m_timerId(-1)
 {
     /*
      * Read active profile settings
      */
     DeviceRefresh();
+
+
+    /*
+     * Start timer for captureData rendering if needed
+     */
+    if(std::find_if(m_effects.begin(),m_effects.end(),[](const led_group_effect& effect){
+           return effect.m_mode == MODE_LEGION_AURASYNC;
+       }) != m_effects.end())
+    {
+        LOG_D("Starting timer for direct control mode");
+
+        controller->setLedsDirectOn(toControlerProfile(m_profiles.active));
+        m_timerId = startTimer(100);
+    }
 }
 
 LenovoRGBController::~LenovoRGBController()
@@ -386,9 +403,15 @@ void LenovoRGBController::DeviceRefresh()
 void LenovoRGBController::DeviceUpdateEfects()
 {
     std::vector<LenovoUSBController::led_group> groups;
+    bool auraModePresent = false;
 
     for (auto & effect : m_effects)
     {
+        if(effect.m_mode == MODE_LEGION_AURASYNC)
+        {
+            auraModePresent = true;
+        }
+
         groups.push_back({
             .m_mode         = static_cast<uint8_t>(effect.m_mode),
             .m_speed        = static_cast<uint8_t>(effect.m_speed),
@@ -407,7 +430,45 @@ void LenovoRGBController::DeviceUpdateEfects()
         });
     }
 
-    controller->setProfileDescription(toControlerProfile(m_profiles.active), groups);
+    if(auraModePresent)
+    {
+        if(m_timerId == -1)
+        {
+            LOG_D("Starting timer for direct control mode");
+
+            controller->setProfileDescription(toControlerProfile(m_profiles.active), groups);
+            controller->setLedsDirectOn(toControlerProfile(m_profiles.active));
+            m_timerId = startTimer(100);
+        }
+    }
+    else
+    {
+        if(m_timerId != -1)
+        {
+            LOG_D("Stopping timer for direct control mode");
+            killTimer(m_timerId);
+            m_timerId = -1;
+            controller->setLedsDirectOff(toControlerProfile(m_profiles.active));
+        }
+
+        controller->setProfileDescription(toControlerProfile(m_profiles.active), groups);
+    }
+}
+
+void LenovoRGBController::timerEvent(QTimerEvent *)
+{
+    LOG_D("LenovoRGBController::timerEvent: Updating direct LED colors");
+
+    m_captureData = [this](){
+        std::vector<RGBColor> colors;
+
+        colors.resize(controller->getKeyMap().m_width * controller->getKeyMap().m_height,QRandomGenerator::global()->bounded(0xFFFFFF));
+
+        return colors;
+    }();
+
+
+    controller->setLedsDirect(m_leds,m_captureData);
 }
 
 void LenovoRGBController::DeviceResetEffectsToDefault()

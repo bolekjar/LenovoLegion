@@ -16,6 +16,7 @@
 #include <sstream>
 
 #include <string.h>
+#include <thread>
 
 
 namespace LenovoLegionDaemon {
@@ -178,8 +179,29 @@ uint8_t LenovoUSBController::getCurrentProfileId() const
 {
     LOG_D("LenovoUSBController::getCurrentProfileId: Getting current profile ID");
 
-    ByteArray result = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::Profile));
-    return result.size() >= 5 ? result[4] : 0;
+    // Retry up to 10 times if we get profile 0 (device may be in reset state)
+    for(int attempt = 0; attempt < 10; ++attempt)
+    {
+        ByteArray result = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::Profile));
+        
+        if(result.size() >= 5 && result[4] != 0x00)
+        {
+            if(attempt > 0)
+            {
+                LOG_D(QString::asprintf("getCurrentProfileId: Got valid profile after %d retries", attempt));
+            }
+            return result[4];
+        }
+        
+        if(attempt < 9)
+        {
+            LOG_D("getCurrentProfileId: Got profile 0 (device may be in reset state), retrying...");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+    
+    LOG_W("getCurrentProfileId: Device returned profile 0 after all retries");
+    return 0;
 }
 
 uint8_t LenovoUSBController::getCurrentBrightness() const
@@ -390,117 +412,134 @@ void LenovoUSBController::setProfileDefault(uint8_t profile_id)
 
 std::vector<LenovoUSBController::led_group> LenovoUSBController::getProfileDescription(uint8_t profile_id) const
 {
-    ByteArray response = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::Effect, {.value1 = profile_id,
-                                                                                                             .value2 = {}
-                                                                                                             }));
-
-     /*
-     * Parse response
-     */
-    std::vector<led_group> groups;
-
-    /*
-     * Set Header
-     */
-    Header header( response[4]      // profile
-                  ,response[1]      // operation
-                  ,response[2]);    // size
-
-
-    LOG_D(QString::asprintf("LenovoUSBController::getProfileDescription: Received profile settings for profile %d, operation: %X, size: %X", header.m_profile, header.m_operation, header.m_size));
-
-    /*
-     * Parse Data
-     */
-    size_t i =  Header::m_dataIndx;
-    qsizetype lastEffectNo = 1;
-    while(i < response.size())
+    // Retry up to 10 times if we get invalid profile data (device may be in reset state)
+    for(int attempt = 0; attempt < 10; ++attempt)
     {
-        int effectNo = response[i++];
+        ByteArray response = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::Effect, {.value1 = profile_id,
+                                                                                                                 .value2 = {}
+                                                                                                                 }));
 
-        if (effectNo < lastEffectNo)
-            break;
-
-        lastEffectNo = effectNo;
-
-        led_group group {0,0,0,0,0,{},{}};
-
-        /*-----------------*\
-        |read group settings|
-        \*-----------------*/
-        if(i >= response.size())
+        // Check if response is valid and profile ID matches
+        if(response.size() < 5 || response[4] == 0x00)
         {
-            LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Incomplete group settings, packet: %s",convertBytesArrayToHex(response).c_str()));
-            break;
-        }
-
-        size_t cnt = response[i++];
-        if(cnt != 6)
-        {
-            LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Invalid group settings count = %ld, packet: %s", cnt,convertBytesArrayToHex(response).c_str()));
-            break;
-        }
-        for(size_t j = 0; j < cnt && (i + 1) < response.size(); j++, i+=2)
-        {
-            switch(response[i])
+            if(attempt < 9)
             {
-            case 0x01:
-            group.m_mode  = response[i+1];
-            break;
-            case 0x02:
-            group.m_speed = response[i+1];
-            break;
-            case 0x03:
-            group.m_spin = response[i+1];
-            break;
-            case 0x04:
-            group.m_direction = response[i+1];
-            break;
-            case 0x05:
-            group.m_color_mode = response[i+1];
-            break;
-            case 0x06:
-            //group.mode = response[i+1];
-            break;
+                LOG_D(QString::asprintf("getProfileDescription: Got invalid profile data (profile=%d), retrying... (attempt %d/10)", response.size() >= 5 ? response[4] : -1, attempt + 1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
+            continue;
         }
 
-        /*-----------------*\
-        |read group colors  |
-        \*-----------------*/
-        if(i >= response.size())
+        /*
+         * Parse response
+         */
+        std::vector<led_group> groups;
+
+        /*
+         * Set Header
+         */
+        Header header( response[4]      // profile
+                      ,response[1]      // operation
+                      ,response[2]);    // size
+
+
+        LOG_D(QString::asprintf("LenovoUSBController::getProfileDescription: Received profile settings for profile %d, operation: %X, size: %X", header.m_profile, header.m_operation, header.m_size));
+
+        /*
+         * Parse Data
+         */
+        size_t i =  Header::m_dataIndx;
+        qsizetype lastEffectNo = 1;
+        while(i < response.size())
         {
-            LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Incomplete group colors, packet: %s",convertBytesArrayToHex(response).c_str()));
-            break;
+            int effectNo = response[i++];
+
+            if (effectNo < lastEffectNo)
+                break;
+
+            lastEffectNo = effectNo;
+
+            led_group group {0,0,0,0,0,{},{}};
+
+            /*-----------------*\
+            |read group settings|
+            \*-----------------*/
+            if(i >= response.size())
+            {
+                LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Incomplete group settings, packet: %s",convertBytesArrayToHex(response).c_str()));
+                break;
+            }
+
+            size_t cnt = response[i++];
+            if(cnt != 6)
+            {
+                LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Invalid group settings count = %ld, packet: %s", cnt,convertBytesArrayToHex(response).c_str()));
+                break;
+            }
+            for(size_t j = 0; j < cnt && (i + 1) < response.size(); j++, i+=2)
+            {
+                switch(response[i])
+                {
+                case 0x01:
+                group.m_mode  = response[i+1];
+                break;
+                case 0x02:
+                group.m_speed = response[i+1];
+                break;
+                case 0x03:
+                group.m_spin = response[i+1];
+                break;
+                case 0x04:
+                group.m_direction = response[i+1];
+                break;
+                case 0x05:
+                group.m_color_mode = response[i+1];
+                break;
+                case 0x06:
+                //group.mode = response[i+1];
+                break;
+                }
+            }
+
+            /*-----------------*\
+            |read group colors  |
+            \*-----------------*/
+            if(i >= response.size())
+            {
+                LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Incomplete group colors, packet: %s",convertBytesArrayToHex(response).c_str()));
+                break;
+            }
+
+            cnt = response[i++];
+            for(size_t j = 0; j < cnt && (i + 2) < response.size(); j++, i+=3)
+            {
+                group.m_colors.push_back(ToRGBColor(response[i],response[i+1],response[i+2]));
+            }
+
+            /*-----------------*\
+            |read group LEDs    |
+            \*-----------------*/
+            if(i >= response.size())
+            {
+                LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Incomplete group LEDs, packet: %s",convertBytesArrayToHex(response).c_str()));
+                break;
+            }
+
+            cnt = response[i++];
+            for(size_t j = 0; j < cnt && (i + 1) < response.size(); j++, i+=2)
+            {
+                group.m_leds.push_back(response[i] | response[i+1] << 8);
+            }
+
+            groups.push_back(group);
         }
 
-        cnt = response[i++];
-        for(size_t j = 0; j < cnt && (i + 2) < response.size(); j++, i+=3)
-        {
-            group.m_colors.push_back(ToRGBColor(response[i],response[i+1],response[i+2]));
-        }
-
-        /*-----------------*\
-        |read group LEDs    |
-        \*-----------------*/
-        if(i >= response.size())
-        {
-            LOG_E(QString::asprintf("LenovoUSBController::getProfileSettings: Incomplete group LEDs, packet: %s",convertBytesArrayToHex(response).c_str()));
-            break;
-        }
-
-        cnt = response[i++];
-        for(size_t j = 0; j < cnt && (i + 1) < response.size(); j++, i+=2)
-        {
-            group.m_leds.push_back(response[i] | response[i+1] << 8);
-        }
-
-        groups.push_back(group);
+        return groups;
     }
 
+    LOG_W("getProfileDescription: Device returned invalid data after all retries");
 
-   return groups;
-
+    return std::vector<LenovoUSBController::led_group>();
 }
 
 void LenovoUSBController::sendFeatureReport(const ByteArray& packet) const
