@@ -13,6 +13,7 @@
 #include <QObject>
 
 #include <map>
+#include <vector>
 
 namespace  LenovoLegionDaemon {
 
@@ -49,6 +50,9 @@ private:
 
     void registerDataProviders();
 
+signals:
+
+    void dataProviderDataRequested(const quint8 dataType,const std::vector<std::string>& data);
 
 private:
 
