@@ -44,8 +44,17 @@ message Notification
         CPU_X_LIST_RELOADED                     = 5;
         KEYLOCK_STATUS_CHANGE                   = 6;
         SPECIAL_KEY_PRESSED                     = 7;
+        UPDATE_RGB_CONTROLER_SCREENSHOT_DATA    = 8;
     }
 
-    Action          action = 1;
-    SpecialKey special_key = 2;
+
+    message RGBControlerScreenShotDataParams
+    {
+        uint32          width       = 1;
+        uint32          height      = 2;
+    }
+
+    Action                               action                                  = 1;
+    SpecialKey                           special_key                             = 2;
+    RGBControlerScreenShotDataParams     rgb_controler_screen_shot_data_params   = 3;
 }

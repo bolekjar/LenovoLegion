@@ -199,6 +199,11 @@ std::vector<RGBColor> RGBController::GetStateForAllLeds() const
     return DeviceGetState();
 }
 
+void RGBController::setCaptureData(const std::vector<RGBColor> &data)
+{
+    m_captureData = data;
+}
+
 const Profiles &RGBController::GetProfiles() const
 {
     return m_profiles;

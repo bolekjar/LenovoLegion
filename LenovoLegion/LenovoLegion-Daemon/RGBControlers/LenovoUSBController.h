@@ -128,7 +128,7 @@ public:
     |Setters         |
     \*--------------*/
     void setProfileDescription(uint8_t profile_id,const  std::vector<led_group>& led_groups);
-    void setLedsDirect(const std::vector<led> &leds,const std::vector<RGBColor> &colors);
+    void setLedsDirect(const std::vector<RGBColor> &colors);
 
     void setLedsDirectOn(uint8_t profile_id);
     void setLedsDirectOff(uint8_t profile_id);

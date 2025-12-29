@@ -80,6 +80,8 @@ public:
 
     std::vector<RGBColor> DeviceGetState()     const   override;
 
+    virtual CaptureDataRequestParams DeviceGetCaptureDataRequestParams() const  override;
+
 private:
 
     void DeviceUpdateDirect();
@@ -110,8 +112,6 @@ private:
 
     std::unique_ptr<LenovoUSBController>  controller;
     int                                   m_timerId;
-
-    std::vector<RGBColor>                 m_captureData;
 };
 
 }

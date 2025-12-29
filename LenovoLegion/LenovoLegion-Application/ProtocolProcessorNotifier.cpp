@@ -20,7 +20,7 @@ namespace LenovoLegionGui {
 ProtocolProcessorNotifier::ProtocolProcessorNotifier(QObject *parent)
     : ProtocolProcessorBase(LenovoLegionDaemon::Application::SOCKET_NAME_NOTIFICATION,parent)
 {
-     m_timerId = startTimer(50);
+     m_timerId = startTimer(10);
 }
 
 ProtocolProcessorNotifier::~ProtocolProcessorNotifier()

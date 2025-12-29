@@ -16,6 +16,15 @@ class RGBController : public QObject,
                       public RGBControllerInterface
 {
     Q_OBJECT
+
+public:
+
+    struct CaptureDataRequestParams
+    {
+        const u_int32_t m_height;
+        const u_int32_t m_width;
+    };
+
 public:
     /*---------------------------------------------------------*\
     | RGBController base class constructor                      |
@@ -110,6 +119,11 @@ public:
      * Get current colors for all LEDs
      */
     virtual std::vector<RGBColor>         GetStateForAllLeds()                                    const override;
+
+signals:
+
+    void dataRequested(const std::vector<std::string>& params);
+
 public:
 
     /*---------------------------------------------------------*\
@@ -124,6 +138,17 @@ public:
     virtual void        DeviceRefresh()                         =   0;
 
     virtual std::vector<RGBColor>        DeviceGetState() const =   0;
+
+    virtual CaptureDataRequestParams DeviceGetCaptureDataRequestParams() const = 0;
+
+public:
+
+    /*---------------------------------------------------------*\
+    | This set data is for rendering in  Direct mode,           |
+    | is automatical RENDERED when  Direct mode is enabled      |
+    | and implementation supports it.                           |
+    \*---------------------------------------------------------*/
+    void setCaptureData(const std::vector<RGBColor>& data);
 
 protected:
 
@@ -147,10 +172,21 @@ protected:
      * Direct Leds control
      */
     const std::vector<led>         m_leds;           /* LEDs                     */
+
     /*
      * Profile effects
      */
     std::vector<led_group_effect>   m_effects;       /* Current effects          */
+
+
+    /*
+     * Data for direct control mode
+     */
+    std::vector<RGBColor>          m_captureData;
+
+public:
+
+    static constexpr std::string_view NotifyGetScreenShotRequestParamName = "GetScreenShotRequest";
 };
 
 }

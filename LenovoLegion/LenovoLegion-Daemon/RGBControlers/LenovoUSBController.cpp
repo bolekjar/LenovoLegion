@@ -156,20 +156,26 @@ void LenovoUSBController::setLedsDirectOff(uint8_t profile_id)
                                                                                          }));
 }
 
-void LenovoUSBController::setLedsDirect(const std::vector<led> &leds, const std::vector<RGBColor> &colors)
+void LenovoUSBController::setLedsDirect(const std::vector<RGBColor> &colors)
 {
     LOG_D("LenovoUSBController::setLedsDirect: Setting direct LED colors");
 
-    sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraSendBitmap,{},[&leds,&colors](){
+    sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraSendBitmap,{},[this,&colors](){
         ByteArray payload;
 
-        for(size_t index = 0; index < leds.size(); index++)
+
+
+        for(size_t height = 0; height < getKeyMap().m_height; height++)
         {
-            payload.push_back(leds[index].value      & 0xFF);
-            payload.push_back(leds[index].value >> 8 & 0xFF);
-            payload.push_back(RGBGetRValue(colors[index]));
-            payload.push_back(RGBGetGValue(colors[index]));
-            payload.push_back(RGBGetBValue(colors[index]));
+            for (int width = 0; width < getKeyMap().m_width; ++width) {
+
+                payload.push_back(getKeyMap().m_keyCodes[width][height] & 0xFF);
+                payload.push_back(getKeyMap().m_keyCodes[width][height] >> 8 & 0xFF);
+                payload.push_back(RGBGetRValue(colors[width + (height * getKeyMap().m_width)]));
+                payload.push_back(RGBGetGValue(colors[width + (height * getKeyMap().m_width)]));
+                payload.push_back(RGBGetBValue(colors[width + (height * getKeyMap().m_width)]));
+
+            }
         }
         return payload;
     }()));

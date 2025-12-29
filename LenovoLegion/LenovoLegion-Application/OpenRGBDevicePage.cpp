@@ -189,8 +189,6 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     \*-----------------------------------------------------*/
     current_color.setRgb(0, 0, 0);
     updateColorUi();
-
-    startTimer(100);
 }
 
 OpenRGBDevicePage::~OpenRGBDevicePage()

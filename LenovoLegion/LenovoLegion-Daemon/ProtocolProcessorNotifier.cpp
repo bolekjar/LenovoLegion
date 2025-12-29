@@ -18,16 +18,16 @@
 #include "SysFsDriverLegion.h"
 #include "SysFsDriverLegionEvents.h"
 
-
 #include "../LenovoLegion-PrepareBuild/Notification.pb.h"
 
 #include <QCoreApplication>
 
 namespace LenovoLegionDaemon {
 
-ProtocolProcessorNotifier::ProtocolProcessorNotifier(SysFsDriverManager* sysFsDriverManager,QLocalSocket* clientSocket, QObject* parent) :
+ProtocolProcessorNotifier::ProtocolProcessorNotifier(SysFsDriverManager* sysFsDriverManager, DataProviderManager* dataProviderManger, QLocalSocket* clientSocket, QObject* parent) :
     ProtocolProcessorBase(clientSocket,parent),
-    m_sysfsDriverManager(sysFsDriverManager)
+    m_sysfsDriverManager(sysFsDriverManager),
+    m_dataProviderManger(dataProviderManger)
 {}
 
 ProtocolProcessorNotifier::~ProtocolProcessorNotifier()
@@ -192,6 +192,32 @@ void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon:
                                                                .m_dataLength   = data.length()
                                                            },data));
     }
+}
+
+void ProtocolProcessorNotifier::dataRequestedHandler(const quint8 forDataTypeProvider, const std::vector<std::string> &params)
+{
+    LOG_D("ProtocolProcessorNotifier: dataRequestedHandler forDataTypeProvider=" + QString::number(forDataTypeProvider) + ", params size=" + QString::number(params.size()));
+
+    if(!isRunning())
+    {
+        LOG_D("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
+        return;
+    }
+
+    m_dataProviderManger->forEachDataProviderDo([&forDataTypeProvider,&params,this](const DataProvider& dataProvider){
+        QByteArray data = dataProvider.serializeNotification(forDataTypeProvider,params);
+
+        if(data.size() > 0)
+        {
+            LOG_D("ProtocolProcessorNotifier: dataRequestedHandler sending data for data type provider=" + QString::number(forDataTypeProvider));
+
+            m_clientSocket->write(ProtocolParser::parseMessage(MessageHeader{
+                                                                   .m_type         = MessageHeader::NOTIFICATION,
+                                                                   .m_dataType     = m_dataType,
+                                                                   .m_dataLength   = data.length()
+                                                               },data));
+        }
+    });
 }
 
 }

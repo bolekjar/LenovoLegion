@@ -9,7 +9,9 @@
 #include "RGBController.h"
 
 #include "Core/LoggerHolder.h"
+
 #include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
+#include "../LenovoLegion-PrepareBuild/Notification.pb.h"
 
 #include <hidapi.h>
 
@@ -284,7 +286,49 @@ namespace LenovoLegionDaemon {
             m_rgbController->DeviceResetEffectsToDefault();
         }
 
+        /*
+         * Appply capture data request if provided
+         */
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_CAPTURE_DATA)
+        {
+            std::vector<RGBColor> captureData;
+
+            for(int i = 0; i < rgbController.capture_data_colors_size(); i++)
+            {
+                captureData.push_back(static_cast<RGBColor>(rgbController.capture_data_colors(i)));
+            }
+
+            m_rgbController->setCaptureData(captureData);
+        }
+
         return {};
+    }
+
+    QByteArray DataProviderRGBController::serializeNotification(const quint8 forProvider, const std::vector<std::string> &params) const
+    {
+        QByteArray data;
+
+        LOG_D("DataProviderRGBController::serializeNotification forProvider=" + QString::number(forProvider) + ", params size=" + QString::number(params.size()));
+
+
+
+        if(forProvider == m_dataType && params.size() > 0 && params[0] == RGBController::NotifyGetScreenShotRequestParamName)
+        {
+            legion::messages::Notification msg;
+
+            msg.set_action(legion::messages::Notification::UPDATE_RGB_CONTROLER_SCREENSHOT_DATA);
+            msg.mutable_rgb_controler_screen_shot_data_params()->set_width(m_rgbController->DeviceGetCaptureDataRequestParams().m_width);
+            msg.mutable_rgb_controler_screen_shot_data_params()->set_height(m_rgbController->DeviceGetCaptureDataRequestParams().m_height);
+
+            data.resize(msg.ByteSizeLong());
+
+            if(!msg.SerializeToArray(data.data(),data.size()))
+            {
+                THROW_EXCEPTION(exception_T,ERROR_CODES::SERIALIZE_ERROR,"Serialize of data message error !");
+            }
+        }
+
+        return data;
     }
 
     void DataProviderRGBController::init()
@@ -323,6 +367,11 @@ namespace LenovoLegionDaemon {
 
                         m_rgbController.reset(detector.m_function(*current_hid_device,detector.m_name));
 
+                        if(m_rgbController != nullptr)
+                        {
+                            connect(m_rgbController.get(),&RGBController::dataRequested,this,&DataProviderRGBController::onDataRequested);
+                        }
+
                         LOG_D(QString("RGB Controller Detected: ").append(detector.m_name.c_str()));
                     }
                 } catch (bj::framework::exception::Exception& ex)
@@ -342,6 +391,10 @@ namespace LenovoLegionDaemon {
 
     void DataProviderRGBController::clean()
     {
+        if(m_rgbController != nullptr)
+        {
+            disconnect(m_rgbController.get(),&RGBController::dataRequested,this,&DataProviderRGBController::onDataRequested);
+        }
         m_rgbController.reset();
     }
 
@@ -354,6 +407,11 @@ namespace LenovoLegionDaemon {
             .m_pidMask      = pidMask,
             .m_function     = det
         });
+    }
+
+    void DataProviderRGBController::onDataRequested(const std::vector<std::string> &params)
+    {
+        emit dataRequested(m_dataType,params);
     }
 
     std::vector<DataProviderRGBController::HIDDeviceDetectorBlock> DataProviderRGBController::hidDeviceDetectorsBlocks{};

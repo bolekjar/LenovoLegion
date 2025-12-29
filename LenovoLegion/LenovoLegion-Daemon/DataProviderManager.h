@@ -46,13 +46,19 @@ public:
 
     DataProvider& getDataProvider(const quint8 dataType);
 
+    void forEachDataProviderDo(const std::function<void(const DataProvider&)>& func) const;
+
 private:
 
     void registerDataProviders();
 
 signals:
 
-    void dataProviderDataRequested(const quint8 dataType,const std::vector<std::string>& data);
+    void dataRequested(const quint8 forDataTypeProvider,const std::vector<std::string>& params);
+
+public slots:
+
+    void onDataRequested(const quint8 forDataTypeProvider,const std::vector<std::string>& params);
 
 private:
 

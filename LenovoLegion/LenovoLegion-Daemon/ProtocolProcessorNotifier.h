@@ -9,6 +9,7 @@
 
 #include "SysFsDriver.h"
 #include "SysFsDriverManager.h"
+#include "DataProviderManager.h"
 
 #include "ProtocolProcessorBase.h"
 
@@ -33,7 +34,7 @@ public:
 
 public:
 
-    ProtocolProcessorNotifier(SysFsDriverManager* sysfsDriverManager,QLocalSocket* clientSocket,QObject* parent);
+    ProtocolProcessorNotifier(SysFsDriverManager* sysfsDriverManager,DataProviderManager* dataProviderManger,QLocalSocket* clientSocket,QObject* parent);
     ~ProtocolProcessorNotifier();
 
     virtual void stop()  override;
@@ -52,6 +53,7 @@ public slots:
 
     void kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent& event);
     void moduleSubsystemHandler(const LenovoLegionDaemon::SysFsDriverManager::ModuleSubsystemEvent& event);
+    void dataRequestedHandler(const quint8 forDataTypeProvider,const std::vector<std::string>& params);
 
 public:
 
@@ -59,7 +61,8 @@ public:
 
 private:
 
-    SysFsDriverManager* m_sysfsDriverManager;
+    SysFsDriverManager*     m_sysfsDriverManager;
+    DataProviderManager*    m_dataProviderManger;
 };
 
 }

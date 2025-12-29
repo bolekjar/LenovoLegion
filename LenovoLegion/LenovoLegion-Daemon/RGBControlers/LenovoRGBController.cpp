@@ -15,8 +15,11 @@
 
 #include <thread>
 
+
+
 namespace LenovoLegionDaemon {
 
+#define TIMER_INTERVAL_DIRECT_MODE_UPDATE_MS   25
 
 LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
     RGBController(  {.min = 1,.max = 6,.active = 1},                            /* profiles */
@@ -319,6 +322,8 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
     /*
      * Start timer for captureData rendering if needed
      */
+    m_captureData.resize(controller_ptr->getKeyMap().m_width * controller_ptr->getKeyMap().m_height,RGBColor(0x000000)); // Initialize with black
+
     if(std::find_if(m_effects.begin(),m_effects.end(),[](const led_group_effect& effect){
            return effect.m_mode == MODE_LEGION_AURASYNC;
        }) != m_effects.end())
@@ -326,7 +331,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
         LOG_D("Starting timer for direct control mode");
 
         controller->setLedsDirectOn(toControlerProfile(m_profiles.active));
-        m_timerId = startTimer(100);
+        m_timerId = startTimer(TIMER_INTERVAL_DIRECT_MODE_UPDATE_MS);
     }
 }
 
@@ -380,6 +385,12 @@ std::vector<RGBColor> LenovoRGBController::DeviceGetState() const
     }
 
     return colors;
+}
+
+RGBController::CaptureDataRequestParams LenovoRGBController::DeviceGetCaptureDataRequestParams() const
+{
+    return CaptureDataRequestParams {.m_height = controller->getKeyMap().m_height,
+                                     .m_width = controller->getKeyMap().m_width};
 }
 
 void LenovoRGBController::DeviceRefresh()
@@ -438,7 +449,7 @@ void LenovoRGBController::DeviceUpdateEfects()
 
             controller->setProfileDescription(toControlerProfile(m_profiles.active), groups);
             controller->setLedsDirectOn(toControlerProfile(m_profiles.active));
-            m_timerId = startTimer(100);
+            m_timerId = startTimer(TIMER_INTERVAL_DIRECT_MODE_UPDATE_MS);
         }
     }
     else
@@ -459,16 +470,9 @@ void LenovoRGBController::timerEvent(QTimerEvent *)
 {
     LOG_D("LenovoRGBController::timerEvent: Updating direct LED colors");
 
-    m_captureData = [this](){
-        std::vector<RGBColor> colors;
+    controller->setLedsDirect(m_captureData);
 
-        colors.resize(controller->getKeyMap().m_width * controller->getKeyMap().m_height,QRandomGenerator::global()->bounded(0xFFFFFF));
-
-        return colors;
-    }();
-
-
-    controller->setLedsDirect(m_leds,m_captureData);
+    emit dataRequested({NotifyGetScreenShotRequestParamName.data()});
 }
 
 void LenovoRGBController::DeviceResetEffectsToDefault()

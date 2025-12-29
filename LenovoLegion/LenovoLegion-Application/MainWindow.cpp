@@ -17,6 +17,8 @@
 #include "ToolBarProfilesWidget.h"
 #include "ToolBarSettingsWidget.h"
 #include "ToolBarKeyboardWidget.h"
+#include "RGBControllerInterface.h"
+
 
 #include "DataProviderManager.h"
 
@@ -26,6 +28,10 @@
 #include <QCloseEvent>
 
 #include <functional>
+
+
+#include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
+#include "DataProviderRGBController.h"
 
 namespace  LenovoLegionGui {
 
@@ -208,6 +214,54 @@ void MainWindow::daemonNotification(const legion::messages::Notification &msg)
         {
             dynamic_cast<BateryStatus*>(ui->horizontalLayout_BateryStatus->itemAt(0)->widget())->refresh();
         }
+    }
+    break;
+    case legion::messages::Notification::Action::Notification_Action_UPDATE_RGB_CONTROLER_SCREENSHOT_DATA:
+    {
+            QScreen *screen = QGuiApplication::primaryScreen();
+
+            if (screen) {
+
+                // Adjust contrast
+                float contrast = 1.5;  //1.0 = no change, >1.0 = more contrast, <1.0 = less contrast
+
+                QPixmap screenshot = screen->grabWindow(0).scaled(msg.rgb_controler_screen_shot_data_params().width(),msg.rgb_controler_screen_shot_data_params().height(), Qt::IgnoreAspectRatio);
+
+
+                std::vector<LenovoLegionDaemon::RGBColor> colors;
+
+
+                colors.resize(msg.rgb_controler_screen_shot_data_params().width() * msg.rgb_controler_screen_shot_data_params().height());
+
+
+                for(uint32_t y = 0; y < msg.rgb_controler_screen_shot_data_params().height(); y++)
+                {
+                    for (uint32_t x = 0; x < msg.rgb_controler_screen_shot_data_params().width(); ++x) {
+
+                        QColor color = screenshot.toImage().pixelColor(x,y);
+
+                        colors[x + (y * msg.rgb_controler_screen_shot_data_params().width())] = ToRGBColor(
+                            qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
+                            qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
+                            qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
+                            );
+
+                    }
+                }
+
+                legion::messages::RGBControllerSetRequest response;
+
+                response.set_set_request_flags( legion::messages::RGBControllerSetRequest::SET_REQUEST_CAPTURE_DATA);
+
+                for(const auto& color : colors)
+                {
+                    response.add_capture_data_colors(color);
+                }
+
+                m_dataProviderManager->dataProvider()->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,response);
+
+        }
+        return;
     }
     break;
     default:
