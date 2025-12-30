@@ -29,20 +29,17 @@ class OpenRGBDevicePage : public QFrame
 public:
     explicit OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface *dev, QWidget *parent = nullptr);
     ~OpenRGBDevicePage();
-
-private:
-
-    void timerEvent(QTimerEvent *event) override;
-
 private:
     void SetDevice(unsigned char red, unsigned char green, unsigned char blue);
 
     void UpdateModeUi(unsigned int selectColorMode = std::numeric_limits<unsigned int>::max());
-    void UpdateEffectUi(unsigned int selectEffectIndx = std::numeric_limits<unsigned int>::max(), unsigned int selectModeColorIdx = std::numeric_limits<unsigned int>::max());
+    void UpdateEffectUi(unsigned int selectEffectIndx = 0, unsigned int selectModeColorIdx = 0);
 
     void ShowDeviceView();
     void HideDeviceView();
 private slots:
+
+    bool eventFilter(QObject* watched, QEvent* event);
 
     /*
      * Update the entire user interface
@@ -79,8 +76,8 @@ private slots:
      * Add/Remove effects event handlers
      */
     void on_listWidgetEffects_currentRowChanged(int currentRow);
+    void on_listWidgetEffects_itemEntered(QListWidgetItem *item);
     void on_comboBox_EffectsColors_currentIndexChanged(int index);
-    void on_pushButton_EffectsUnselect_clicked();
     void on_pushButton_EffectsClearAll_clicked();
     void on_pushButton_EffectDelete_clicked();
     void on_pushButton_AddEffects_clicked();
@@ -96,6 +93,7 @@ private slots:
     void on_comboBox_modeSpecificColor_currentIndexChanged(int index);
     void on_PerLEDCheck_clicked();
     void on_RandomCheck_clicked();
+
 
 private:
     Ui::OpenRGBDevicePage *ui;

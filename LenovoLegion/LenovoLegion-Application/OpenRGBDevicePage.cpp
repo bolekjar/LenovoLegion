@@ -14,6 +14,8 @@
 #include <Core/LoggerHolder.h>
 
 
+#include <QEvent>
+#include <QMouseEvent>
 #include <QAbstractItemView>
 #include <QScreen>
 
@@ -85,6 +87,13 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     ui->SpeedEffectsComboBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
     ui->SpeedEffectsComboBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
 
+
+    /*
+     * Detect mouse tracking for QListWidget (effects list)
+     */
+    ui->listWidgetEffects->setMouseTracking(true);
+    ui->listWidgetEffects->viewport()->setMouseTracking(true);
+    ui->listWidgetEffects->viewport()->installEventFilter(this);
 
 
     /*-----------------------------------------------------*\
@@ -194,38 +203,6 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
 OpenRGBDevicePage::~OpenRGBDevicePage()
 {
     delete ui;
-}
-
-void OpenRGBDevicePage::timerEvent(QTimerEvent *)
-{
-    // Adjust contrast
-    /*float contrast = 1.5;  // 1.0 = no change, >1.0 = more contrast, <1.0 = less contrast
-
-    auto& modes = device->GetModes();
-    auto& leds  = device->GetLEDs();
-    if(modes[device->GetMode()].flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECT_CONTROL)
-    {
-        QScreen *screen = QGuiApplication::primaryScreen();
-
-        if (screen) {
-
-            QPixmap screenshot = screen->grabWindow(0).scaled(20,8, Qt::IgnoreAspectRatio); //TODO
-
-            for(size_t i = 0; i < leds.size(); i++)
-            {
-                QColor color = screenshot.toImage().pixelColor(i % 20, i / 20);
-
-                device->SetLED(i, ToRGBColor(
-                                       qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
-                                       qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
-                                       qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
-                                       ));
-            }
-
-            device->ApplyPendingChanges();
-        }
-
-    }*/
 }
 
 void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int value)
@@ -731,6 +708,23 @@ void OpenRGBDevicePage::HideDeviceView()
     ui->DeviceViewBoxFrame->hide();
 }
 
+bool OpenRGBDevicePage::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->listWidgetEffects->viewport()) {
+        if (event->type() == QEvent::MouseMove) {
+            QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(event);
+
+            if (mouseEvent && !ui->listWidgetEffects->itemAt(mouseEvent->pos())) {
+                ui->DeviceViewBox->markLeds({});
+            }
+        }
+        else if (event->type() == QEvent::Leave) {
+            ui->DeviceViewBox->markLeds({});
+        }
+    }
+    return QObject::eventFilter(watched, event);
+}
+
 void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned int selectModeColorIdx)
 {
     ui->listWidgetEffects->blockSignals(true);
@@ -744,7 +738,6 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->ModeSpecificEffectsCheck->blockSignals(true);
     ui->PerLEDEffectsCheck->blockSignals(true);
     ui->pushButton_EffectDelete->blockSignals(true);
-    ui->pushButton_EffectsUnselect->blockSignals(true);
 
 
 
@@ -759,7 +752,6 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->ModeSpecificEffectsCheck->setEnabled(false);
     ui->PerLEDEffectsCheck->setEnabled(false);
     ui->pushButton_EffectDelete->setEnabled(false);
-    ui->pushButton_EffectsUnselect->setEnabled(false);
 
 
     ui->listWidgetEffects->clear();
@@ -778,11 +770,9 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
 
 
     const auto& effects = device->GetEffects();
-
-
     for (size_t i = 0; i < effects.size(); ++i)
     {
-        ui->listWidgetEffects->addItem(new QListWidgetItem(QString::number(i) + " - " + device->GetModeByModeValue(effects.at(i).m_mode).name.c_str()));
+        ui->listWidgetEffects->addItem(QString::number(i) + " - " + device->GetModeByModeValue(effects.at(i).m_mode).name.c_str());
     }
 
     if(selectEffectIndx < effects.size())
@@ -823,42 +813,8 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
             ui->comboBox_EffectsColors->addItem(QString().asprintf("R:%02X G:%02X B:%02X", RGBGetRValue(color),RGBGetGValue(color),RGBGetBValue(color)));
         }
 
-        ui->DeviceViewBox->markLeds([&effect,this,selectModeColorIdx](){
-            QMap<int,QColor> indices;
-            for (const auto& led_effect : effect.m_leds)
-            {
-                auto ledsIdx = device->GetLedsIndexesByDeviceSpecificValue(led_effect.value);
-
-                for (auto idx : ledsIdx) {
-
-                    if(selectModeColorIdx < effect.m_colors.size())
-                    {
-                        indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[selectModeColorIdx]),RGBGetGValue(effect.m_colors[selectModeColorIdx]),RGBGetBValue(effect.m_colors[selectModeColorIdx]));
-                    }
-                    else
-                    {
-                        if(effect.m_colors.size() > 0)
-                        {
-                            indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[0]),RGBGetGValue(effect.m_colors[0]),RGBGetBValue(effect.m_colors[0]));
-                        }
-                        else
-                        {
-                            indices[idx] = QColor::fromRgb(0,0,0);
-                        }
-                    }
-                }
-            }
-            return indices;
-        }());
-
         ui->pushButton_EffectDelete->setEnabled(true);
-        ui->pushButton_EffectsUnselect->setEnabled(true);
         ui->pushButton_EffectDelete->blockSignals(false);
-        ui->pushButton_EffectsUnselect->blockSignals(false);
-    }
-    else
-    {
-        ui->DeviceViewBox->markLeds({});
     }
 
     /*
@@ -873,7 +829,6 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
 
     if(ui->listWidgetEffects->count() > 0 )
     {
-        ui->listWidgetEffects->setCurrentRow(selectEffectIndx < static_cast<unsigned int>(ui->listWidgetEffects->count()) ? selectEffectIndx : -1);
         ui->listWidgetEffects->setEnabled(true);
         ui->listWidgetEffects->blockSignals(false);
     }
@@ -1040,13 +995,6 @@ void OpenRGBDevicePage::on_listWidgetEffects_currentRowChanged(int currentRow)
     UpdateEffectUi(currentRow);
 }
 
-void OpenRGBDevicePage::on_pushButton_EffectsUnselect_clicked()
-{
-    ui->listWidgetEffects->clearSelection();
-
-    UpdateEffectUi();
-}
-
 void OpenRGBDevicePage::on_pushButton_EffectsClearAll_clicked()
 {
     device->ClearEffects();
@@ -1104,5 +1052,40 @@ void OpenRGBDevicePage::on_pushButton_EffectsDefault_clicked()
     device->ApplyPendingChanges();
     UpdateEffectUi();
 }
+
+void OpenRGBDevicePage::on_listWidgetEffects_itemEntered(QListWidgetItem *item)
+{
+    auto effect = device->GetEffect(ui->listWidgetEffects->row(item));
+
+    ui->DeviceViewBox->markLeds([&effect,this](){
+        QMap<int,QColor> indices;
+        for (const auto& led_effect : effect.m_leds)
+        {
+            auto ledsIdx = device->GetLedsIndexesByDeviceSpecificValue(led_effect.value);
+
+            for (auto idx : ledsIdx) {
+                int colorIdx = ui->comboBox_modeSpecificColor->currentIndex();
+
+                if(colorIdx > 0 && static_cast<size_t>(colorIdx) < effect.m_colors.size())
+                {
+                    indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[colorIdx]),RGBGetGValue(effect.m_colors[colorIdx]),RGBGetBValue(effect.m_colors[colorIdx]));
+                }
+                else
+                {
+                    if(effect.m_colors.size() > 0)
+                    {
+                        indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[0]),RGBGetGValue(effect.m_colors[0]),RGBGetBValue(effect.m_colors[0]));
+                    }
+                    else
+                    {
+                        indices[idx] = QColor::fromRgb(0,0,0);
+                    }
+                }
+            }
+        }
+        return indices;
+    }());
+}
+
 
 }

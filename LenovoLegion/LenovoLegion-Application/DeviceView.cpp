@@ -805,7 +805,7 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
         \*-----------------------------------------------------*/
         if(selectionFlags[led_idx])
         {
-            QPen innerPen(Qt::white);
+            QPen innerPen(Qt::gray);
             innerPen.setWidth(4);
             painter.setPen(innerPen);
         }
