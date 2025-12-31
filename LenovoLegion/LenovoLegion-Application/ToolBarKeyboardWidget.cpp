@@ -52,28 +52,14 @@ void ToolBarKeyboardWidget::timerEvent(QTimerEvent *event)
 
 void ToolBarKeyboardWidget::dataProviderEvent(const legion::messages::Notification &notification)
 {
-    if(notification.has_action())
-    {
-        if(notification.action() == legion::messages::Notification::SPECIAL_KEY_PRESSED && notification.has_special_key())
+    Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_ToolBarKeyboard,[&notification](QLayoutItem &item){
+        OpenRGBDevicePage* rgbDevice = dynamic_cast<OpenRGBDevicePage *>(item.widget());
+
+        if(rgbDevice)
         {
-            switch (notification.special_key()) {
-                case legion::messages::Notification::SPECTRUMBACKLIGHTOFF:
-                case legion::messages::Notification::SPECTRUMBACKLIGHT1:
-                case legion::messages::Notification::SPECTRUMBACKLIGHT2:
-                case legion::messages::Notification::SPECTRUMBACKLIGHT3:
-                case legion::messages::Notification::SPECTRUMPRESET1:
-                case legion::messages::Notification::SPECTRUMPRESET2:
-                case legion::messages::Notification::SPECTRUMPRESET3:
-                case legion::messages::Notification::SPECTRUMPRESET4:
-                case legion::messages::Notification::SPECTRUMPRESET5:
-                case legion::messages::Notification::SPECTRUMPRESET6:
-                    Utils::Task::executeTasks(m_defaultActionsMap["refresh"]);
-                    break;
-                default:
-                    break;
-            }
+            rgbDevice->dataProviderEvent(notification);
         }
-    }
+    });
 }
 
 void ToolBarKeyboardWidget::cleanup()

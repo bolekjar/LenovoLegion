@@ -269,6 +269,7 @@ public:
      */
     virtual const Profiles&               GetProfiles()        const                                            = 0;
     virtual void                          SetProfile(unsigned int profileIdx)                                   = 0;
+    virtual void                          RefreshProfile()                                                      = 0;
 
 
     /*
@@ -283,6 +284,7 @@ public:
      */
     virtual const Brightnesses&           GetBrightness()    const                                               = 0;
     virtual void                          SetBrightness(unsigned int brightness)                                 = 0;
+    virtual void                          RefreshBrightness()                                                    = 0;
 
 
     /*

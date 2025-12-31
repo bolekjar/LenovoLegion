@@ -376,6 +376,19 @@ QWidget {
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
              <widget class="QPushButton" name="pushButton_AddEffects">
               <property name="text">
                <string>Add</string>
@@ -403,8 +416,19 @@ QWidget {
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <layout class="QGridLayout" name="gridLayout_4">
-              <item row="4" column="1" colspan="3">
-               <widget class="QComboBox" name="comboBox_EffectsColors"/>
+              <item row="3" column="0">
+               <widget class="QLabel" name="ColorEffectsLabel">
+                <property name="text">
+                 <string>Colors Mode:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QRadioButton" name="ModeSpecificEffectsCheck">
+                <property name="text">
+                 <string>Mode-Specific</string>
+                </property>
+               </widget>
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="ModeEffectsLabel">
@@ -413,28 +437,8 @@ QWidget {
                 </property>
                </widget>
               </item>
-              <item row="2" column="1" colspan="3">
-               <widget class="QComboBox" name="ModeEffectsBox"/>
-              </item>
-              <item row="3" column="3">
-               <widget class="QRadioButton" name="RandomEffectsCheck">
-                <property name="text">
-                 <string>Random</string>
-                </property>
-               </widget>
-              </item>
               <item row="8" column="1" colspan="3">
                <widget class="QComboBox" name="DirectionEffectsBox"/>
-              </item>
-              <item row="8" column="0">
-               <widget class="QLabel" name="DirectionEffectsLabel">
-                <property name="text">
-                 <string>Dir:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1" colspan="3">
-               <widget class="QComboBox" name="SpeedEffectsComboBox"/>
               </item>
               <item row="4" column="0">
                <widget class="QLabel" name="label">
@@ -443,17 +447,29 @@ QWidget {
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QRadioButton" name="PerLEDEffectsCheck">
+              <item row="4" column="1" colspan="3">
+               <widget class="QComboBox" name="comboBox_EffectsColors"/>
+              </item>
+              <item row="0" column="1" colspan="3">
+               <widget class="QComboBox" name="SelectedEffectsBox"/>
+              </item>
+              <item row="2" column="1" colspan="3">
+               <widget class="QComboBox" name="ModeEffectsBox"/>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="SpeedEffectsLabel">
                 <property name="text">
-                 <string>Per-LED</string>
+                 <string>Speed:</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="ColorEffectsLabel">
+              <item row="1" column="1" colspan="3">
+               <widget class="QComboBox" name="LEDEffectsBox"/>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="DirectionEffectsLabel">
                 <property name="text">
-                 <string>Colors Mode:</string>
+                 <string>Dir:</string>
                 </property>
                </widget>
               </item>
@@ -464,9 +480,6 @@ QWidget {
                 </property>
                </widget>
               </item>
-              <item row="1" column="1" colspan="3">
-               <widget class="QComboBox" name="LEDEffectsBox"/>
-              </item>
               <item row="0" column="0">
                <widget class="QLabel" name="SelectedEffectsLabel">
                 <property name="text">
@@ -474,27 +487,20 @@ QWidget {
                 </property>
                </widget>
               </item>
-              <item row="0" column="1" colspan="3">
-               <widget class="QComboBox" name="SelectedEffectsBox"/>
-              </item>
-              <item row="3" column="2">
-               <widget class="QRadioButton" name="ModeSpecificEffectsCheck">
+              <item row="3" column="1">
+               <widget class="QRadioButton" name="PerLEDEffectsCheck">
                 <property name="text">
-                 <string>Mode-Specific</string>
+                 <string>Per-LED</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="SpeedEffectsLabel">
-                <property name="text">
-                 <string>Speed:</string>
-                </property>
-               </widget>
+              <item row="5" column="1" colspan="3">
+               <widget class="QComboBox" name="SpeedEffectsComboBox"/>
               </item>
-              <item row="9" column="0" colspan="4">
-               <widget class="QPushButton" name="pushButton_EffectDelete">
+              <item row="3" column="3">
+               <widget class="QRadioButton" name="RandomEffectsCheck">
                 <property name="text">
-                 <string>Delete </string>
+                 <string>Random</string>
                 </property>
                </widget>
               </item>
@@ -503,7 +509,7 @@ QWidget {
             <item>
              <widget class="QListWidget" name="listWidgetEffects">
               <property name="mouseTracking">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="editTriggers">
                <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -517,6 +523,19 @@ QWidget {
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
             <item>
              <widget class="QPushButton" name="pushButton_EffectsClearAll">
               <property name="text">

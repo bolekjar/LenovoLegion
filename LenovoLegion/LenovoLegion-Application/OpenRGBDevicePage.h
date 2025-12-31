@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../LenovoLegion-Daemon/RGBControllerInterface.h"
+#include "../LenovoLegion-PrepareBuild/Notification.pb.h"
 
 #include <QFrame>
 
@@ -29,9 +30,18 @@ class OpenRGBDevicePage : public QFrame
 public:
     explicit OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface *dev, QWidget *parent = nullptr);
     ~OpenRGBDevicePage();
+
+    void dataProviderEvent(const legion::messages::Notification &notification);
+
 private:
     void SetDevice(unsigned char red, unsigned char green, unsigned char blue);
 
+
+    /*
+     * UI update methods
+     */
+    void UpdateProfileUi();
+    void UpdateBrightnessUi();
     void UpdateModeUi(unsigned int selectColorMode = std::numeric_limits<unsigned int>::max());
     void UpdateEffectUi(unsigned int selectEffectIndx = 0, unsigned int selectModeColorIdx = 0);
 
@@ -77,9 +87,9 @@ private slots:
      */
     void on_listWidgetEffects_currentRowChanged(int currentRow);
     void on_listWidgetEffects_itemEntered(QListWidgetItem *item);
+    void on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *item);
     void on_comboBox_EffectsColors_currentIndexChanged(int index);
     void on_pushButton_EffectsClearAll_clicked();
-    void on_pushButton_EffectDelete_clicked();
     void on_pushButton_AddEffects_clicked();
     void on_pushButton_EffectsDefault_clicked();
 

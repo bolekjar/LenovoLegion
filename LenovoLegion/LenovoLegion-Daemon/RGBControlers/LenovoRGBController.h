@@ -72,9 +72,13 @@ public:
 
     void        DeviceUpdateEfects()                   override;
     void        DeviceResetEffectsToDefault()          override;
+    void        DeviceRefreshEffects()                 override;
 
     void        DeviceUpdateProfile()                  override;
+    void        DeviceRefreshProfile()                 override;
+
     void        DeviceUpdateBrightness()               override;
+    void        DeviceRefreshBrightness()              override;
 
     void        DeviceRefresh()                        override;
 

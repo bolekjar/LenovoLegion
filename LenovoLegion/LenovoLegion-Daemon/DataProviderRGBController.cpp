@@ -287,7 +287,7 @@ namespace LenovoLegionDaemon {
         }
 
         /*
-         * Appply capture data request if provided
+         * Apply capture data request if provided
          */
         if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_CAPTURE_DATA)
         {
@@ -299,6 +299,22 @@ namespace LenovoLegionDaemon {
             }
 
             m_rgbController->setCaptureData(captureData);
+        }
+
+        /*
+         * Apply refresh profile request if provided
+         */
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_REFRESH_PROFILE)
+        {
+            m_rgbController->RefreshProfile();
+        }
+
+        /*
+         * Apply refresh brightness request if provided
+         */
+        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_REFRESH_BRITNESS)
+        {
+            m_rgbController->RefreshBrightness();
         }
 
         return {};

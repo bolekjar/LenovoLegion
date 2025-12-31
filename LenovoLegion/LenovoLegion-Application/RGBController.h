@@ -22,11 +22,13 @@ class DataProvider;
 class RGBController : public LenovoLegionDaemon::RGBControllerInterface
 {
     enum PENDING_CHANGES : int {
-        CHANGE_PROFILES        = 0,
-        CHANGE_BRIGHTNESS      = 1,
-        CHANGE_EFFECTS         = 2,
-        CHANGE_RESET_EFFECTS   = 3,
-        MAXIMUM_CHANGES        = 4
+        CHANGE_PROFILES         = 0,
+        CHANGE_BRIGHTNESS       = 1,
+        CHANGE_EFFECTS          = 2,
+        CHANGE_RESET_EFFECTS    = 3,
+        CHANGE_REFRESH_PROFILE  = 4,
+        CHANGE_REFRESH_BRITNESS = 5,
+        MAXIMUM_CHANGES         = 6
     };
 
 public:
@@ -52,6 +54,7 @@ public:
      */
     virtual const LenovoLegionDaemon::Profiles&         GetProfiles()                          const            override;
     virtual void                                        SetProfile(unsigned int profileIdx)                     override;
+    virtual void                                        RefreshProfile()                                        override;
 
 
     /*
@@ -66,6 +69,7 @@ public:
      */
     virtual const LenovoLegionDaemon::Brightnesses&     GetBrightness()      const                             override;
     virtual void                                        SetBrightness(unsigned int brightness)                 override;
+    virtual void                                        RefreshBrightness()                                    override;
 
 
 
@@ -107,7 +111,7 @@ public:
     virtual void ApplyPendingChanges()                                                                          override;
 
 private:
-    void readRGBControllerData(const legion::messages::RGBControllerRequest::RequestFlags& requestFlags);
+    void readRGBControllerData(const uint32_t requestFlags);
     void sendRGBControllerData();
 
 private:

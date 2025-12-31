@@ -69,6 +69,7 @@ public:
      */
     virtual const Profiles&                 GetProfiles()         const               override;
     virtual void                            SetProfile(unsigned int profileIdx)       override;
+    virtual void                            RefreshProfile()                          override;
 
 
     /*
@@ -84,6 +85,7 @@ public:
      */
     virtual const Brightnesses&             GetBrightness()       const               override;
     virtual void                            SetBrightness(unsigned int brightness)    override;
+    virtual void                            RefreshBrightness()                       override;
 
 
     /*
@@ -131,9 +133,13 @@ public:
     \*---------------------------------------------------------*/
     virtual void        DeviceUpdateEfects()                    =   0;
     virtual void        DeviceResetEffectsToDefault()           =   0;
+    virtual void        DeviceRefreshEffects()                  =   0;
 
     virtual void        DeviceUpdateProfile()                   =   0;
+    virtual void        DeviceRefreshProfile()                  =   0;
+
     virtual void        DeviceUpdateBrightness()                =   0;
+    virtual void        DeviceRefreshBrightness()               =   0;
 
     virtual void        DeviceRefresh()                         =   0;
 

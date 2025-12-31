@@ -95,7 +95,6 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     ui->listWidgetEffects->viewport()->setMouseTracking(true);
     ui->listWidgetEffects->viewport()->installEventFilter(this);
 
-
     /*-----------------------------------------------------*\
     | Store device pointer                                  |
     \*-----------------------------------------------------*/
@@ -112,50 +111,13 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
     /*-----------------------------------------------------*\
      | The profile selection  box                           |
     \*-----------------------------------------------------*/
-    ui->ProfileBox->blockSignals(true);
-    ui->ProfileBox->setVisible(false);
-    ui->ProfileLabel->setVisible(false);
-    ui->ProfileBox->clear();
-
-    auto profiles = device->GetProfiles();
-    if(profiles.max > 0)
-    {
-        /*-----------------------------------------------------*\
-        | Fill in the profile selection box                    |
-        \*-----------------------------------------------------*/
-        for (std::size_t i = profiles.min; i < profiles.max + 1; i++)
-        {
-            ui->ProfileBox->addItem(QString("Profile ").append(QString::number(i)),QVariant::fromValue(i));          
-        }
-
-        ui->ProfileBox->setCurrentIndex(profiles.active - profiles.min);
-
-        ui->ProfileBox->setVisible(true);
-        ui->ProfileLabel->setVisible(true);
-        ui->ProfileBox->blockSignals(false);
-    }
-
-
+    UpdateProfileUi();
 
 
     /*-----------------------------------------------------*\
      | Fill the brightness slider                           |
     \*-----------------------------------------------------*/
-    ui->BrightnessSlider->blockSignals(true);
-    ui->BrightnessSlider->setVisible(false);
-    ui->BrightnessSlider->setEnabled(false);
-
-    auto brightness = device->GetBrightness();
-    if(brightness.min < brightness.max)
-    {
-        ui->BrightnessSlider->setMinimum(brightness.min);
-        ui->BrightnessSlider->setMaximum(brightness.max);
-
-        ui->BrightnessSlider->setValue(brightness.active);
-        ui->BrightnessSlider->setEnabled(true);
-        ui->BrightnessSlider->setVisible(true);
-        ui->BrightnessSlider->blockSignals(false);
-    }
+    UpdateBrightnessUi();
 
 
     /*-----------------------------------------------------*\
@@ -203,6 +165,40 @@ OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface 
 OpenRGBDevicePage::~OpenRGBDevicePage()
 {
     delete ui;
+}
+
+void OpenRGBDevicePage::dataProviderEvent(const legion::messages::Notification &notification)
+{
+    if(notification.has_action())
+    {
+        if(notification.action() == legion::messages::Notification::SPECIAL_KEY_PRESSED && notification.has_special_key())
+        {
+            switch (notification.special_key()) {
+            case legion::messages::Notification::SPECTRUMBACKLIGHTOFF:
+            case legion::messages::Notification::SPECTRUMBACKLIGHT1:
+            case legion::messages::Notification::SPECTRUMBACKLIGHT2:
+            case legion::messages::Notification::SPECTRUMBACKLIGHT3:
+                device->RefreshBrightness();
+                device->ApplyPendingChanges();
+                UpdateBrightnessUi();
+                break;
+
+            case legion::messages::Notification::SPECTRUMPRESET1:
+            case legion::messages::Notification::SPECTRUMPRESET2:
+            case legion::messages::Notification::SPECTRUMPRESET3:
+            case legion::messages::Notification::SPECTRUMPRESET4:
+            case legion::messages::Notification::SPECTRUMPRESET5:
+            case legion::messages::Notification::SPECTRUMPRESET6:
+                device->RefreshProfile();
+                device->ApplyPendingChanges();
+                UpdateProfileUi();
+                UpdateEffectUi();
+                break;
+            default:
+                break;
+            }
+        }
+    }
 }
 
 void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int value)
@@ -497,6 +493,51 @@ void OpenRGBDevicePage::SetDevice(unsigned char red, unsigned char green, unsign
     colorChanged();
 }
 
+void OpenRGBDevicePage::UpdateProfileUi()
+{
+    ui->ProfileBox->blockSignals(true);
+    ui->ProfileBox->setVisible(false);
+    ui->ProfileLabel->setVisible(false);
+    ui->ProfileBox->clear();
+
+    auto profiles = device->GetProfiles();
+    if(profiles.max > 0)
+    {
+        /*-----------------------------------------------------*\
+        | Fill in the profile selection box                    |
+        \*-----------------------------------------------------*/
+        for (std::size_t i = profiles.min; i < profiles.max + 1; i++)
+        {
+            ui->ProfileBox->addItem(QString("Profile ").append(QString::number(i)),QVariant::fromValue(i));
+        }
+
+        ui->ProfileBox->setCurrentIndex(profiles.active - profiles.min);
+
+        ui->ProfileBox->setVisible(true);
+        ui->ProfileLabel->setVisible(true);
+        ui->ProfileBox->blockSignals(false);
+    }
+}
+
+void OpenRGBDevicePage::UpdateBrightnessUi()
+{
+    ui->BrightnessSlider->blockSignals(true);
+    ui->BrightnessSlider->setVisible(false);
+    ui->BrightnessSlider->setEnabled(false);
+
+    auto brightness = device->GetBrightness();
+    if(brightness.min < brightness.max)
+    {
+        ui->BrightnessSlider->setMinimum(brightness.min);
+        ui->BrightnessSlider->setMaximum(brightness.max);
+
+        ui->BrightnessSlider->setValue(brightness.active);
+        ui->BrightnessSlider->setEnabled(true);
+        ui->BrightnessSlider->setVisible(true);
+        ui->BrightnessSlider->blockSignals(false);
+    }
+}
+
 void OpenRGBDevicePage::on_SwatchBox_swatchChanged(const QColor color)
 {
     /*-----------------------------------------------------*\
@@ -721,6 +762,14 @@ bool OpenRGBDevicePage::eventFilter(QObject *watched, QEvent *event)
         else if (event->type() == QEvent::Leave) {
             ui->DeviceViewBox->markLeds({});
         }
+        else if (event->type() == QEvent::MouseButtonDblClick) {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            QListWidgetItem* item = ui->listWidgetEffects->itemAt(mouseEvent->pos());
+            if (item) {
+                on_listWidgetEffects_itemDoubleClicked(item);
+                return true;
+            }
+        }
     }
     return QObject::eventFilter(watched, event);
 }
@@ -737,8 +786,6 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->RandomEffectsCheck->blockSignals(true);
     ui->ModeSpecificEffectsCheck->blockSignals(true);
     ui->PerLEDEffectsCheck->blockSignals(true);
-    ui->pushButton_EffectDelete->blockSignals(true);
-
 
 
     ui->listWidgetEffects->setEnabled(false);
@@ -751,8 +798,6 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->RandomEffectsCheck->setEnabled(false);
     ui->ModeSpecificEffectsCheck->setEnabled(false);
     ui->PerLEDEffectsCheck->setEnabled(false);
-    ui->pushButton_EffectDelete->setEnabled(false);
-
 
     ui->listWidgetEffects->clear();
     ui->SelectedEffectsBox->clear();
@@ -813,8 +858,6 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
             ui->comboBox_EffectsColors->addItem(QString().asprintf("R:%02X G:%02X B:%02X", RGBGetRValue(color),RGBGetGValue(color),RGBGetBValue(color)));
         }
 
-        ui->pushButton_EffectDelete->setEnabled(true);
-        ui->pushButton_EffectDelete->blockSignals(false);
     }
 
     /*
@@ -1031,16 +1074,6 @@ void OpenRGBDevicePage::on_comboBox_modeSpecificColor_currentIndexChanged(int in
     updateColorUi();
 }
 
-void OpenRGBDevicePage::on_pushButton_EffectDelete_clicked()
-{
-    if(ui->SelectedEffectsBox->count() > 0)
-    {
-        device->RemoveEffect(ui->SelectedEffectsBox->itemData(0).value<int>());
-        device->ApplyPendingChanges();
-        UpdateEffectUi();
-    }
-}
-
 void OpenRGBDevicePage::on_comboBox_EffectsColors_currentIndexChanged(int index)
 {
     UpdateEffectUi(ui->listWidgetEffects->currentRow(), index);
@@ -1072,20 +1105,21 @@ void OpenRGBDevicePage::on_listWidgetEffects_itemEntered(QListWidgetItem *item)
                 }
                 else
                 {
-                    if(effect.m_colors.size() > 0)
-                    {
-                        indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[0]),RGBGetGValue(effect.m_colors[0]),RGBGetBValue(effect.m_colors[0]));
-                    }
-                    else
-                    {
-                        indices[idx] = QColor::fromRgb(0,0,0);
-                    }
+                    indices[idx] = QColor::fromRgb(53,87,0xBB);
                 }
             }
         }
         return indices;
     }());
 }
+
+void OpenRGBDevicePage::on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *item)
+{
+    device->RemoveEffect(ui->listWidgetEffects->row(item));
+    device->ApplyPendingChanges();
+    UpdateEffectUi();
+}
+
 
 
 }

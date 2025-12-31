@@ -341,6 +341,8 @@ LenovoRGBController::~LenovoRGBController()
 
 void LenovoRGBController::DeviceUpdateProfile()
 {
+    LOG_D("Updating active profile on device");
+
     auto waitForApplyProfileOnController = [this](int maxWaitTimeinMicros = 1000000) {
         while(fromControlerProfile(controller->getCurrentProfileId()) != m_profiles.active)
         {
@@ -361,13 +363,28 @@ void LenovoRGBController::DeviceUpdateProfile()
     readActiveProfileSettings();
 }
 
+void LenovoRGBController::DeviceRefreshProfile()
+{
+    LOG_D("Refreshing active profile from device");
+    m_profiles.active = fromControlerProfile(controller->getCurrentProfileId());
+}
+
 void LenovoRGBController::DeviceUpdateBrightness()
 {
-    controller->setBrightness(static_cast<uint8_t>(m_britnesses.active));
+    LOG_D("Updating brightness on device");
+    controller->setBrightness(toControlerBrightness(static_cast<uint8_t>(m_britnesses.active)));
+}
+
+void LenovoRGBController::DeviceRefreshBrightness()
+{
+    LOG_D("Refreshing brightness from device");
+    m_britnesses.active = fromControlerBrightness(controller->getCurrentBrightness());
 }
 
 std::vector<RGBColor> LenovoRGBController::DeviceGetState() const
 {
+    LOG_D("Getting current LED state from device");
+
     std::vector<RGBColor> colors;
 
     auto state = controller->getState();
@@ -398,17 +415,17 @@ void LenovoRGBController::DeviceRefresh()
     /*
      * Read active profile
      */
-    m_profiles.active =  fromControlerProfile(controller->getCurrentProfileId());
+    DeviceRefreshProfile();
 
     /*
      * Read brightness
      */
-    m_britnesses.active = controller->getCurrentBrightness();
+    DeviceRefreshBrightness();
 
     /*
      * Read active profile settings
      */
-    readActiveProfileSettings();
+    DeviceRefreshEffects();
 }
 
 void LenovoRGBController::DeviceUpdateEfects()
@@ -478,6 +495,13 @@ void LenovoRGBController::timerEvent(QTimerEvent *)
 void LenovoRGBController::DeviceResetEffectsToDefault()
 {
     controller->setProfileDefault(toControlerProfile(m_profiles.active));
+}
+
+void LenovoRGBController::DeviceRefreshEffects()
+{
+    LOG_D("Refreshing effects from device");
+
+    readActiveProfileSettings();
 }
 
 void LenovoRGBController::DeviceUpdateDirect()
