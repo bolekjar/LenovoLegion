@@ -69,7 +69,6 @@ public:
      */
     virtual const Profiles&                 GetProfiles()         const               override;
     virtual void                            SetProfile(unsigned int profileIdx)       override;
-    virtual void                            RefreshProfile()                          override;
 
 
     /*
@@ -85,7 +84,6 @@ public:
      */
     virtual const Brightnesses&             GetBrightness()       const               override;
     virtual void                            SetBrightness(unsigned int brightness)    override;
-    virtual void                            RefreshBrightness()                       override;
 
 
     /*

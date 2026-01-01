@@ -116,11 +116,6 @@ void RGBController::SetProfile(unsigned int profileIdx)
     m_profiles.active = profileIdx;
 }
 
-void RGBController::RefreshProfile()
-{
-    DeviceRefreshProfile();
-    DeviceRefreshEffects();
-}
 
 const std::vector<led>& RGBController::GetLEDs() const
 {
@@ -224,12 +219,6 @@ void RGBController::SetBrightness(unsigned int brightness)
 {
     m_britnesses.active = brightness;
 }
-
-void RGBController::RefreshBrightness()
-{
-    DeviceRefreshBrightness();
-}
-
 
 std::string device_type_to_str(device_type type)
 {

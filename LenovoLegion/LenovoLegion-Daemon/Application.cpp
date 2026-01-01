@@ -178,6 +178,12 @@ void Application::appInitImpl(std::unique_ptr<ApplicationModulesHandler_T>)
 
 
     /*
+     * Connect SysFs driver manager events to Data Provider Manager
+     */
+    connect(m_sysFsDriverManager,&SysFsDriverManager::kernelEvent,m_dataProviderManager,&DataProviderManager::kernelEventHandler);
+
+
+    /*
      * Init Computer
      */
     {

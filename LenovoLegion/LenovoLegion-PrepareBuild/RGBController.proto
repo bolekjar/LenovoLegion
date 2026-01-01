@@ -131,8 +131,6 @@ message RGBControllerSetRequest
                 SET_REQUEST_LED_GROUP_EFFECTS    = 0x004;
                 SET_REQUEST_RESET_EFECTS_TTO_DEF = 0x010;
                 SET_REQUEST_CAPTURE_DATA         = 0x020;
-                SET_REQUEST_REFRESH_PROFILE      = 0x040;
-                SET_REQUEST_REFRESH_BRITNESS     = 0x080;
                 REQUEST_ALL                      = 0xFFF;
              }
 

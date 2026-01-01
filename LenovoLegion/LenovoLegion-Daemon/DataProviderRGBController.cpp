@@ -8,6 +8,8 @@
 #include "DataProviderRGBController.h"
 #include "RGBController.h"
 
+#include "SysFsDriverLegionEvents.h"
+
 #include "Core/LoggerHolder.h"
 
 #include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
@@ -301,22 +303,6 @@ namespace LenovoLegionDaemon {
             m_rgbController->setCaptureData(captureData);
         }
 
-        /*
-         * Apply refresh profile request if provided
-         */
-        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_REFRESH_PROFILE)
-        {
-            m_rgbController->RefreshProfile();
-        }
-
-        /*
-         * Apply refresh brightness request if provided
-         */
-        if(rgbController.set_request_flags() & legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_REFRESH_BRITNESS)
-        {
-            m_rgbController->RefreshBrightness();
-        }
-
         return {};
     }
 
@@ -412,6 +398,47 @@ namespace LenovoLegionDaemon {
             disconnect(m_rgbController.get(),&RGBController::dataRequested,this,&DataProviderRGBController::onDataRequested);
         }
         m_rgbController.reset();
+    }
+
+    void DataProviderRGBController::kernelEventHandler(const SysFsDriver::SubsystemEvent &event)
+    {
+        LOG_D(__PRETTY_FUNCTION__);
+
+        if(event.m_driverName == SysFsDriverLegionEvents::DRIVER_NAME)
+        {
+            if(event.m_action == SysFsDriver::SubsystemEvent::Action::CHANGED)
+            {
+                if(static_cast<SysFsDriverLegionEvents::LegionVmiEventType>(QString(event.m_DriverSpecificEventType.data()).toInt()) == SysFsDriverLegionEvents::LegionVmiEventType::LENOVO_WMI_EVENT_UTILITY)
+                {
+                    if(m_rgbController != nullptr)
+                    {
+                        if(static_cast<SysFsDriverLegionEvents::LegionVmiEventType>(QString(event.m_DriverSpecificEventType.data()).toInt()) == SysFsDriverLegionEvents::LegionVmiEventType::LENOVO_WMI_EVENT_UTILITY)
+                        {
+                            LOG_D("DataProviderRGBController: kernelEventHandler - LENOVO_WMI_EVENT_UTILITY received, refreshing RGB Controller data");
+
+                            switch(static_cast<legion::messages::Notification_SpecialKey>(QString(event.m_DriverSpecificEventValue.data()).toUInt()))
+                            {
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMBACKLIGHTOFF:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMBACKLIGHT1:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMBACKLIGHT2:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMBACKLIGHT3:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMPRESET1:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMPRESET2:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMPRESET3:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMPRESET4:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMPRESET5:
+                                case legion::messages::Notification_SpecialKey::Notification_SpecialKey_SPECTRUMPRESET6:
+                                    m_rgbController->DeviceRefresh();
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void DataProviderRGBController::registerControler(std::string name, HIDDeviceDetectorFunction det, uint16_t vid, uint16_t pid, uint16_t pidMask)

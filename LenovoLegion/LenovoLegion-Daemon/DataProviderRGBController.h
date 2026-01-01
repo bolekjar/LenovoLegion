@@ -65,6 +65,8 @@ public:
     virtual void init() override;
     virtual void clean() override;
 
+
+    virtual void kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent &)       override;
 public:
 
     static void registerControler(std::string               name,

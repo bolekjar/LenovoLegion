@@ -11,6 +11,8 @@
 
 #include "../LenovoLegion-Daemon/DataProviderRGBController.h"
 
+#include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
+
 #include <Core/LoggerHolder.h>
 
 namespace LenovoLegionGui {
@@ -231,16 +233,6 @@ void RGBController::sendRGBControllerData()
         rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_RESET_EFECTS_TTO_DEF);
     }
 
-    if(m_pendingChanges.test(CHANGE_REFRESH_PROFILE))
-    {
-        rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_REFRESH_PROFILE);
-    }
-
-    if(m_pendingChanges.test(CHANGE_REFRESH_BRITNESS))
-    {
-        rgbControllerData.set_set_request_flags(rgbControllerData.set_request_flags() | legion::messages::RGBControllerSetRequest::SetRequestFlags::RGBControllerSetRequest_SetRequestFlags_SET_REQUEST_REFRESH_BRITNESS);
-    }
-
     if(m_pendingChanges.any())
     {
         m_dataProvider->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,rgbControllerData);
@@ -249,17 +241,6 @@ void RGBController::sendRGBControllerData()
     if(m_pendingChanges.test(CHANGE_PROFILES) || m_pendingChanges.test(CHANGE_RESET_EFFECTS))
     {
         readRGBControllerData(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS);
-    }
-
-    if(m_pendingChanges.test(CHANGE_REFRESH_BRITNESS))
-    {
-        readRGBControllerData(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_BRITNESS);
-    }
-
-    if(m_pendingChanges.test(CHANGE_REFRESH_PROFILE))
-    {
-        readRGBControllerData(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_PROFILE           |
-                              legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS);
     }
 
     m_pendingChanges.reset();
@@ -327,11 +308,6 @@ void RGBController::SetProfile(unsigned int profileIdx)
 {
     m_profiles.active = profileIdx;
     m_pendingChanges.set(CHANGE_PROFILES);
-}
-
-void RGBController::RefreshProfile()
-{
-    m_pendingChanges.set(CHANGE_REFRESH_PROFILE);
 }
 
 const std::vector<LenovoLegionDaemon::led>& RGBController::GetLEDs() const
@@ -406,11 +382,6 @@ void RGBController::SetBrightness(unsigned int brightness)
 {
     m_brightness.active = brightness;
     m_pendingChanges.set(CHANGE_BRIGHTNESS);
-}
-
-void RGBController::RefreshBrightness()
-{
-    m_pendingChanges.set(CHANGE_REFRESH_BRITNESS);
 }
 
 const std::vector<LenovoLegionDaemon::led_group_effect> &RGBController::GetEffects() const
@@ -493,6 +464,13 @@ void RGBController::ResetEffectsToDefault()
 void RGBController::ApplyPendingChanges()
 {
     sendRGBControllerData();
+}
+
+void RGBController::RefreshData()
+{
+    readRGBControllerData(legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_BRITNESS |
+                          legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_PROFILE  |
+                          legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_LED_GROUP_EFFECTS);
 }
 
 }

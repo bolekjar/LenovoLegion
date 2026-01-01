@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "../LenovoLegion-Daemon/RGBControllerInterface.h"
+#include "RGBController.h"
+
 #include "../LenovoLegion-PrepareBuild/Notification.pb.h"
 
 #include <QFrame>
@@ -28,7 +29,7 @@ class OpenRGBDevicePage : public QFrame
     Q_OBJECT
 
 public:
-    explicit OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface *dev, QWidget *parent = nullptr);
+    explicit OpenRGBDevicePage(RGBController *dev, QWidget *parent = nullptr);
     ~OpenRGBDevicePage();
 
     void dataProviderEvent(const legion::messages::Notification &notification);
@@ -107,7 +108,7 @@ private slots:
 
 private:
     Ui::OpenRGBDevicePage *ui;
-    std::unique_ptr<LenovoLegionDaemon::RGBControllerInterface> device;
+    std::unique_ptr<RGBController> device;
 
     bool UpdateHex          = true;
     bool HexFormatRGB       = true;

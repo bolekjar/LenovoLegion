@@ -65,11 +65,19 @@ DataProvider& DataProviderManager::getDataProvider(const quint8 dataType){
     return *m_dataProviders.at(dataType);
 }
 
-void DataProviderManager::forEachDataProviderDo(const std::function<void (const DataProvider &)> &func) const
+void DataProviderManager::forEachDataProviderDo(const std::function<void (DataProvider &)> &func) const
 {
     for(const auto& driver : m_dataProviders)
     {
         func(*driver.second);
+    }
+}
+
+void DataProviderManager::kernelEventHandler(const SysFsDriver::SubsystemEvent &event)
+{
+    for(auto& driver : m_dataProviders)
+    {
+        driver.second->kernelEventHandler(event);
     }
 }
 

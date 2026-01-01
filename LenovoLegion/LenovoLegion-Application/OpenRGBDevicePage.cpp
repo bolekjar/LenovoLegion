@@ -54,7 +54,7 @@ QString OpenRGBDevicePage::ModeDescription(const LenovoLegionDaemon::mode& m)
     return "";
 }
 
-OpenRGBDevicePage::OpenRGBDevicePage(LenovoLegionDaemon::RGBControllerInterface *dev, QWidget *parent) :
+OpenRGBDevicePage::OpenRGBDevicePage(RGBController *dev, QWidget *parent) :
     QFrame(parent),
     ui(new Ui::OpenRGBDevicePage)
 {
@@ -178,8 +178,7 @@ void OpenRGBDevicePage::dataProviderEvent(const legion::messages::Notification &
             case legion::messages::Notification::SPECTRUMBACKLIGHT1:
             case legion::messages::Notification::SPECTRUMBACKLIGHT2:
             case legion::messages::Notification::SPECTRUMBACKLIGHT3:
-                device->RefreshBrightness();
-                device->ApplyPendingChanges();
+                device->RefreshData();
                 UpdateBrightnessUi();
                 break;
 
@@ -189,8 +188,7 @@ void OpenRGBDevicePage::dataProviderEvent(const legion::messages::Notification &
             case legion::messages::Notification::SPECTRUMPRESET4:
             case legion::messages::Notification::SPECTRUMPRESET5:
             case legion::messages::Notification::SPECTRUMPRESET6:
-                device->RefreshProfile();
-                device->ApplyPendingChanges();
+                device->RefreshData();
                 UpdateProfileUi();
                 UpdateEffectUi();
                 break;

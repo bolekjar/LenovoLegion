@@ -80,7 +80,6 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
     legion::messages::Notification msg;
 
 
-
     if(event.m_driverName == SysFsDriverACPIPlatformProfile::DRIVER_NAME)
     {
         if(event.m_action == SysFsDriver::SubsystemEvent::Action::CHANGED)

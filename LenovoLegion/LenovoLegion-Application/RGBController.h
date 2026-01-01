@@ -11,8 +11,6 @@
 
 #include "../LenovoLegion-Daemon/RGBControllerInterface.h"
 
-#include "../LenovoLegion-PrepareBuild/RGBController.pb.h"
-
 #include <bitset>
 
 namespace LenovoLegionGui {
@@ -26,9 +24,7 @@ class RGBController : public LenovoLegionDaemon::RGBControllerInterface
         CHANGE_BRIGHTNESS       = 1,
         CHANGE_EFFECTS          = 2,
         CHANGE_RESET_EFFECTS    = 3,
-        CHANGE_REFRESH_PROFILE  = 4,
-        CHANGE_REFRESH_BRITNESS = 5,
-        MAXIMUM_CHANGES         = 6
+        MAXIMUM_CHANGES         = 4
     };
 
 public:
@@ -54,7 +50,6 @@ public:
      */
     virtual const LenovoLegionDaemon::Profiles&         GetProfiles()                          const            override;
     virtual void                                        SetProfile(unsigned int profileIdx)                     override;
-    virtual void                                        RefreshProfile()                                        override;
 
 
     /*
@@ -69,7 +64,6 @@ public:
      */
     virtual const LenovoLegionDaemon::Brightnesses&     GetBrightness()      const                             override;
     virtual void                                        SetBrightness(unsigned int brightness)                 override;
-    virtual void                                        RefreshBrightness()                                    override;
 
 
 
@@ -108,7 +102,15 @@ public:
     virtual std::vector<LenovoLegionDaemon::RGBColor>         GetStateForAllLeds()              const              override;
 
 
-    virtual void ApplyPendingChanges()                                                                          override;
+    /*
+     * Apply pending changes
+     */
+    void ApplyPendingChanges();
+
+    /*
+     * Refresh data from daemon
+     */
+    void RefreshData();
 
 private:
     void readRGBControllerData(const uint32_t requestFlags);

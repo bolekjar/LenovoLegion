@@ -269,8 +269,6 @@ public:
      */
     virtual const Profiles&               GetProfiles()        const                                            = 0;
     virtual void                          SetProfile(unsigned int profileIdx)                                   = 0;
-    virtual void                          RefreshProfile()                                                      = 0;
-
 
     /*
      * Zone Information
@@ -284,7 +282,6 @@ public:
      */
     virtual const Brightnesses&           GetBrightness()    const                                               = 0;
     virtual void                          SetBrightness(unsigned int brightness)                                 = 0;
-    virtual void                          RefreshBrightness()                                                    = 0;
 
 
     /*
@@ -323,11 +320,6 @@ public:
      */
     virtual std::vector<RGBColor>         GetStateForAllLeds()    const                                         = 0;
 
-
-    /*
-     * Apply any pending changes to the device
-     */
-    virtual void                          ApplyPendingChanges() {};
 };
 
 }

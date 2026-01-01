@@ -10,7 +10,7 @@
 #include "Core/ExceptionBuilder.h"
 #include <QObject>
 
-
+#include "SysFsDriver.h"
 
 namespace LenovoLegionDaemon {
 
@@ -43,8 +43,10 @@ public:
     virtual QByteArray deserializeAndSetData(const QByteArray&)                                                                                {return {};};
     virtual QByteArray serializeNotification(const quint8 ,const std::vector<std::string>& )                                             const {return {};};
 
-    virtual void init()  {};
-    virtual void clean() {};
+    virtual void init()                 {};
+    virtual void clean()                {};
+
+    virtual void kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent &)   {};
 
 private:
 
