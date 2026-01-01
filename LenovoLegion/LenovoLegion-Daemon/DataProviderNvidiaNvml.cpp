@@ -38,7 +38,7 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
         int gpuOffset, memOffset;
 
 
-        LOG_D("Filling NVML GPU data");
+        LOG_T("Filling NVML GPU data");
 
         /*
          * Name

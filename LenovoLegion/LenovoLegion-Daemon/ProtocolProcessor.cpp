@@ -66,7 +66,7 @@ void ProtocolProcessor::readyReadHandler()
 
     ProtocolParser::parseMessage(*m_clientSocket,[this](const MessageHeader& header,const QByteArray& data ){
 
-        LOG_D(QString("Message header was readed: header.m_type= ").append(QString::number(header.m_type)).append(", header.m_dataType=").append(QString::number(header.m_dataType)).append(", header.m_dataLength=").append(QString::number(header.m_dataLength)));
+        LOG_T(QString("Message header was readed: header.m_type= ").append(QString::number(header.m_type)).append(", header.m_dataType=").append(QString::number(header.m_dataType)).append(", header.m_dataLength=").append(QString::number(header.m_dataLength)));
 
         switch (header.m_type) {
         case MessageHeader::GET_DATA_REQUEST: {
