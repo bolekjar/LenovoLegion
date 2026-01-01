@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderCPUPower::serializeAndGetData() const
     legion::messages::CPUPower         cpuPower;
     QByteArray                         byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     try {
@@ -259,7 +259,7 @@ QByteArray SysFsDataProviderCPUPower::deserializeAndSetData(const QByteArray &da
     SysFsDriverLegionOther::Other::GPU gpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
     legion::messages::CPUPower         cpuPower;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     if(!cpuPower.ParseFromArray(data.data(),data.size()))

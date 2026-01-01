@@ -26,7 +26,7 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
     QByteArray                   byteArray;
 
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     /*
      * Static data
@@ -37,6 +37,8 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
         unsigned int graphicsClock, smClock, memClock;
         int gpuOffset, memOffset;
 
+
+        LOG_D("Filling NVML GPU data");
 
         /*
          * Name
@@ -192,7 +194,7 @@ QByteArray DataProviderNvidiaNvml::serializeAndGetData() const
     }
     else
     {
-        LOG_D("No NVIDIA GPU detected, skipping data collection.");
+        LOG_T("No NVIDIA GPU detected, skipping data collection.");
     }
 
 
@@ -209,7 +211,7 @@ QByteArray DataProviderNvidiaNvml::deserializeAndSetData(const QByteArray &data)
 {
     legion::messages::NvidiaNvml       nvmlData;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     if(!nvmlData.ParseFromArray(data.data(),data.size()))
@@ -380,7 +382,7 @@ void DataProviderNvidiaNvml::cleanUp()
         }
         else {
             m_device = nullptr;
-            LOG_D("NVML shutdown successful");
+            LOG_T("NVML shutdown successful");
         }
     }
 }

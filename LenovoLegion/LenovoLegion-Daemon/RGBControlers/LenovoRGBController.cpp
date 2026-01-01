@@ -328,7 +328,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr) :
            return effect.m_mode == MODE_LEGION_AURASYNC;
        }) != m_effects.end())
     {
-        LOG_D("Starting timer for direct control mode");
+        LOG_T("Starting timer for direct control mode");
 
         controller->setLedsDirectOn(toControlerProfile(m_profiles.active));
         m_timerId = startTimer(TIMER_INTERVAL_DIRECT_MODE_UPDATE_MS);
@@ -341,7 +341,7 @@ LenovoRGBController::~LenovoRGBController()
 
 void LenovoRGBController::DeviceUpdateProfile()
 {
-    LOG_D("Updating active profile on device");
+    LOG_T("Updating active profile on device");
 
     auto waitForApplyProfileOnController = [this](int maxWaitTimeinMicros = 1000000) {
         while(fromControlerProfile(controller->getCurrentProfileId()) != m_profiles.active)
@@ -365,25 +365,25 @@ void LenovoRGBController::DeviceUpdateProfile()
 
 void LenovoRGBController::DeviceRefreshProfile()
 {
-    LOG_D("Refreshing active profile from device");
+    LOG_T("Refreshing active profile from device");
     m_profiles.active = fromControlerProfile(controller->getCurrentProfileId());
 }
 
 void LenovoRGBController::DeviceUpdateBrightness()
 {
-    LOG_D("Updating brightness on device");
+    LOG_T("Updating brightness on device");
     controller->setBrightness(toControlerBrightness(static_cast<uint8_t>(m_britnesses.active)));
 }
 
 void LenovoRGBController::DeviceRefreshBrightness()
 {
-    LOG_D("Refreshing brightness from device");
+    LOG_T("Refreshing brightness from device");
     m_britnesses.active = fromControlerBrightness(controller->getCurrentBrightness());
 }
 
 std::vector<RGBColor> LenovoRGBController::DeviceGetState() const
 {
-    LOG_D("Getting current LED state from device");
+    LOG_T("Getting current LED state from device");
 
     std::vector<RGBColor> colors;
 
@@ -485,7 +485,7 @@ void LenovoRGBController::DeviceUpdateEfects()
 
 void LenovoRGBController::timerEvent(QTimerEvent *)
 {
-    LOG_D("LenovoRGBController::timerEvent: Updating direct LED colors");
+    LOG_T("LenovoRGBController::timerEvent: Updating direct LED colors");
 
     controller->setLedsDirect(m_captureData);
 
@@ -499,18 +499,15 @@ void LenovoRGBController::DeviceResetEffectsToDefault()
 
 void LenovoRGBController::DeviceRefreshEffects()
 {
-    LOG_D("Refreshing effects from device");
+    LOG_T("Refreshing effects from device");
 
     readActiveProfileSettings();
 }
 
-void LenovoRGBController::DeviceUpdateDirect()
-{
-    LOG_W("Direct control is not supported for Lenovo RGB Controller"); // TODO
-}
-
 void LenovoRGBController::readActiveProfileSettings()
 {
+    LOG_T("Reading active profile settings from device");
+
     m_effects.clear();
 
     /*---------------------------------------------------------*\
@@ -536,18 +533,18 @@ void LenovoRGBController::readActiveProfileSettings()
                                  * Build the led id to index map
                                  */
                                 for (size_t idx = 0; idx < this->m_leds.size(); ++idx) {
-//                                    LOG_D(QString::asprintf("Mapping LED Index %d to ID %X", idx, this->m_leds.at(idx).value));
+                                    LOG_T(QString::asprintf("Mapping LED Index %zu to ID %X", idx, this->m_leds.at(idx).value));
                                     l_ledIdToIndex.insert(std::pair(this->m_leds.at(idx).value,idx));
                                 }
 
                                 for (uint16_t ledId : grub.m_leds)
                                 {
- //                                   LOG_D(QString::asprintf("Mapping LED ID %X to colors", ledId));
+                                    LOG_T(QString::asprintf("Mapping LED ID %X to colors", ledId));
                                     auto range = l_ledIdToIndex.equal_range(ledId);
 
                                     for (auto i = range.first; i != range.second; ++i)
                                     {
- //                                       LOG_D(QString::asprintf(" - Setting color for LED Index %d", i->second));
+                                        LOG_T(QString::asprintf(" - Setting color for LED Index %lu", i->second));
                                         leds.push_back(this->m_leds.at(i->second));
                                     }
                                 }

@@ -24,7 +24,7 @@ void SysFsDriverLegionEvents::handleKernelEvent(const SysFsDriver::KernelEvent::
 
      if(m_blockKernelEvent)
      {
-         LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+         LOG_T(QString("Kernel event blocked for driver: ") + m_name);
          return;
      }
 

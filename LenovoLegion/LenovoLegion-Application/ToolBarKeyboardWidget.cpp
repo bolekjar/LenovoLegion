@@ -28,7 +28,7 @@ ToolBarKeyboardWidget::ToolBarKeyboardWidget(DataProvider* dataProvider,QWidget 
         }
         catch(RGBController::exception_T &ex)
         {
-            LOG_D(QString("ToolBarKeyboardWidget: Failed to initialize OpenRGBDevicePage: ").append(ex.what()));
+            LOG_W(QString("ToolBarKeyboardWidget: Failed to initialize OpenRGBDevicePage: ").append(ex.what()));
         }
     });
 

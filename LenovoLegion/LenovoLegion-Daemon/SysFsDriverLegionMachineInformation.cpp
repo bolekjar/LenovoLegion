@@ -27,7 +27,7 @@ SysFsDriverLegionMachineInformation::SysFsDriverLegionMachineInformation(QObject
 
 void SysFsDriverLegionMachineInformation::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 

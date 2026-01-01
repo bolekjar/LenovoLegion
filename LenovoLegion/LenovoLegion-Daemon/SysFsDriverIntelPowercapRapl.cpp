@@ -16,7 +16,7 @@ SysFsDriverIntelPowercapRapl::SysFsDriverIntelPowercapRapl(QObject* parrent) : S
 
 void SysFsDriverIntelPowercapRapl::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -42,12 +42,10 @@ void SysFsDriverIntelPowercapRapl::init()
 
         m_descriptor["max_energy_range"] = std::filesystem::path(m_path).append("max_energy_range_uj");
         m_descriptor["powercapCPUEnergy"] = std::filesystem::path(m_path).append("energy_uj");
-
-        LOG_D(QString("Power Intel Powercap RAPL driver descriptor added !"));
     }
     else
     {
-        LOG_D(QString("Intel Powercap RAPL driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("Intel Powercap RAPL driver not found in path: ") + m_path.c_str());
     }
 }
 
@@ -57,7 +55,7 @@ void SysFsDriverIntelPowercapRapl::handleKernelEvent(const KernelEvent::Event &e
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 

@@ -50,6 +50,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="checkBox_AppTraceLogging">
+          <property name="text">
+           <string>Enable trace logging</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_Theme">
           <item>
            <widget class="QLabel" name="label_Theme">
@@ -133,6 +140,13 @@
          <widget class="QCheckBox" name="checkBox_DebugLogging">
           <property name="text">
            <string>Enable debug logging</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_TraceLogging">
+          <property name="text">
+           <string>Enable trace logging</string>
           </property>
          </widget>
         </item>

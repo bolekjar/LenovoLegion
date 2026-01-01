@@ -28,21 +28,21 @@ ProtocolProcessor::~ProtocolProcessor()
 
 void ProtocolProcessor::stop()
 {
-    LOG_D("ProtocolProcessor stopped !");
+    LOG_T("ProtocolProcessor stopped !");
 
     ProtocolProcessorBase::stop();
 }
 
 void ProtocolProcessor::start()
 {
-    LOG_D("ProtocolProcessor started !");
+    LOG_T("ProtocolProcessor started !");
 
     ProtocolProcessorBase::start();
 }
 
 void ProtocolProcessor::disconnectedHandler()
 {
-    LOG_D("ProtocolProcessor client disconnected !");
+    LOG_T("ProtocolProcessor client disconnected !");
     ProtocolProcessorBase::stop();
     ProtocolProcessorBase::waitForExit();
 
@@ -129,7 +129,7 @@ void ProtocolProcessor::readyReadHandler()
             break;
         }
 
-        LOG_D(QString("Message received: done !"));
+        LOG_T(QString("Message received: done !"));
     });
 }
 

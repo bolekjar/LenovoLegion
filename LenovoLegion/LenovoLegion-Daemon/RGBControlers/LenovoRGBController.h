@@ -87,8 +87,6 @@ public:
     virtual CaptureDataRequestParams DeviceGetCaptureDataRequestParams() const  override;
 
 private:
-
-    void DeviceUpdateDirect();
     void readActiveProfileSettings();
 
 

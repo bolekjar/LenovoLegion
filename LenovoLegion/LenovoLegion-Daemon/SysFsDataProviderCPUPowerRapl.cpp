@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderCPUPowerRapl::serializeAndGetData() const
     legion::messages::CPUPowerRapl         cpuPowerRapl;
     QByteArray                             byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverIntelPowercapRapl::IntelPowercapRapl cpuRaplControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverIntelPowercapRapl::DRIVER_NAME));
@@ -85,7 +85,7 @@ QByteArray SysFsDataProviderCPUPowerRapl::deserializeAndSetData(const QByteArray
     SysFsDriverIntelPowercapRapl::IntelPowercapRapl cpuRaplControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverIntelPowercapRapl::DRIVER_NAME));
     legion::messages::CPUPowerRapl                  cpuPowerRapl;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     if(!cpuPowerRapl.ParseFromArray(data.data(),data.size()))

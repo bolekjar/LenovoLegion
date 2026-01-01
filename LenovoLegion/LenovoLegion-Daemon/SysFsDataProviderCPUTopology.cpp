@@ -29,7 +29,7 @@ QByteArray SysFsDataProviderCPUTopology::serializeAndGetData() const
     legion::messages::CPUTopology     cpuTopologyData;
     QByteArray                        byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverCPUCore::CPUCore core(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverCPUCore::DRIVER_NAME));

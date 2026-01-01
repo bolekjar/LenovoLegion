@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderFanOption::serializeAndGetData() const
     legion::messages::FanOption         fanOptionMsg;
     QByteArray                          byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     try {
@@ -61,7 +61,7 @@ QByteArray SysFsDataProviderFanOption::deserializeAndSetData(const QByteArray &d
     SysFsDriverLegionEc::EC::FanControl fanControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionEc::DRIVER_NAME));
     legion::messages::FanOption         fanOptionMsg;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!fanOptionMsg.ParseFromArray(data.data(),data.size()))
     {

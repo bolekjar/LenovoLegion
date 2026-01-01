@@ -29,7 +29,7 @@ namespace LenovoLegionDaemon {
         legion::messages::RGBControllerResponse rgbController;
         QByteArray byteArray;
 
-        LOG_D(__PRETTY_FUNCTION__);
+        LOG_T(__PRETTY_FUNCTION__);
 
         if(m_rgbController == nullptr)
         {
@@ -201,7 +201,7 @@ namespace LenovoLegionDaemon {
     {
         legion::messages::RGBControllerSetRequest rgbController;
 
-        LOG_D(__PRETTY_FUNCTION__);
+        LOG_T(__PRETTY_FUNCTION__);
 
         if(!rgbController.ParseFromArray(data.data(), data.size()))
         {
@@ -310,7 +310,7 @@ namespace LenovoLegionDaemon {
     {
         QByteArray data;
 
-        LOG_D("DataProviderRGBController::serializeNotification forProvider=" + QString::number(forProvider) + ", params size=" + QString::number(params.size()));
+        LOG_T("DataProviderRGBController::serializeNotification forProvider=" + QString::number(forProvider) + ", params size=" + QString::number(params.size()));
 
 
 
@@ -335,7 +335,7 @@ namespace LenovoLegionDaemon {
 
     void DataProviderRGBController::init()
     {
-        LOG_D(__PRETTY_FUNCTION__);
+        LOG_T(__PRETTY_FUNCTION__);
 
         clean();
 
@@ -351,7 +351,7 @@ namespace LenovoLegionDaemon {
 
             for (hid_device_info * current_hid_device = hid_devices; current_hid_device != nullptr; current_hid_device = current_hid_device->next)
             {
-                LOG_D(QString::asprintf("Checking HID Device: VID=%X, PID=%X, Interface=%d, Usage_Page=%X, Path=%s",
+                LOG_T(QString::asprintf("Checking HID Device: VID=%X, PID=%X, Interface=%d, Usage_Page=%X, Path=%s",
                                         current_hid_device->vendor_id,
                                         current_hid_device->product_id,
                                         current_hid_device->interface_number,
@@ -374,7 +374,7 @@ namespace LenovoLegionDaemon {
                             connect(m_rgbController.get(),&RGBController::dataRequested,this,&DataProviderRGBController::onDataRequested);
                         }
 
-                        LOG_D(QString("RGB Controller Detected: ").append(detector.m_name.c_str()));
+                        LOG_T(QString("RGB Controller Detected: ").append(detector.m_name.c_str()));
                     }
                 } catch (bj::framework::exception::Exception& ex)
                 {
@@ -402,7 +402,7 @@ namespace LenovoLegionDaemon {
 
     void DataProviderRGBController::kernelEventHandler(const SysFsDriver::SubsystemEvent &event)
     {
-        LOG_D(__PRETTY_FUNCTION__);
+        LOG_T(__PRETTY_FUNCTION__);
 
         if(event.m_driverName == SysFsDriverLegionEvents::DRIVER_NAME)
         {

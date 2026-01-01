@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderPowerProfile::serializeAndGetData() const
     legion::messages::PowerProfile     powerProfile;
     QByteArray                         byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFSDriverLegionGameZone::GameZone::SmartFan smartFan(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
@@ -61,7 +61,7 @@ QByteArray SysFsDataProviderPowerProfile::deserializeAndSetData(const QByteArray
     SysFSDriverLegionGameZone::GameZone::SmartFan smartFan(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
     legion::messages::PowerProfile                powerProfile;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!powerProfile.ParseFromArray(data.data(),data.size()))
     {

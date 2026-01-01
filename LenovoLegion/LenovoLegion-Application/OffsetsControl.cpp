@@ -83,7 +83,7 @@ const QMap<QString, legion::messages::NvidiaNvml> OffsetsControl::GPU_CLOCK_PRES
     {"Extreme Overclock",[](){
          legion::messages::NvidiaNvml clock;
 
-         clock.mutable_gpu_offset()->set_value(250);
+         clock.mutable_gpu_offset()->set_value(200);
          clock.mutable_memory_offset()->set_value(500);
 
          return clock;

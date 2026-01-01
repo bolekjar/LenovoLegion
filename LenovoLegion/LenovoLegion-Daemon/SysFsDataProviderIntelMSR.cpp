@@ -25,7 +25,7 @@ QByteArray SysFsDataProviderIntelMSR::serializeAndGetData() const
     legion::messages::CpuIntelMSR cpuIntelMSRMessage;;
     QByteArray                    byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     try {
@@ -78,7 +78,7 @@ QByteArray SysFsDataProviderIntelMSR::deserializeAndSetData(const QByteArray &da
     SysFSDriverLegionIntelMSR::IntelMSR intelMSR(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionIntelMSR::DRIVER_NAME));
     legion::messages::CpuIntelMSR cpuIntelMSRMessage;
 
-    LOG_D(QString(__PRETTY_FUNCTION__));
+    LOG_T(QString(__PRETTY_FUNCTION__));
 
     // Skip if buffer is empty
     if(data.isEmpty() || data.size() == 0) {

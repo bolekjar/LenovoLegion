@@ -141,7 +141,6 @@ void Application::onExitActionTriggered()
 void Application::loadSettings()
 {
     // Settings are loaded automatically via ApplicationSettings singleton
-    LOG_D("Application settings loaded");
 }
 
 void Application::applyStartupSettings()
@@ -149,20 +148,25 @@ void Application::applyStartupSettings()
     // Apply debug logging setting
     bool appDebugLogging = false;
     ApplicationSettings::instance()->loadAppDebugLogging(appDebugLogging);
-    applyDebugLogging(appDebugLogging);
+    
+    // Apply trace logging setting
+    bool appTraceLogging = false;
+    ApplicationSettings::instance()->loadAppTraceLogging(appTraceLogging);
+    
+    applyLogging(appDebugLogging, appTraceLogging);
     
     // Apply theme setting
     ApplicationSettings::ThemeType theme = ApplicationSettings::ThemeType::NoTheme;
     ApplicationSettings::instance()->loadStylesheetTheme(theme);
     applyTheme(theme);
-    LOG_D(QString("Applied theme: ").append(QString::number(static_cast<int>(theme))));
+    LOG_T(QString("Applied theme: ").append(QString::number(static_cast<int>(theme))));
     
     // Apply start minimized setting
     bool startMinimized = false;
     ApplicationSettings::instance()->loadStartMinimized(startMinimized);
     
     if (startMinimized) {
-        LOG_D("Starting minimized to system tray");
+        LOG_T("Starting minimized to system tray");
         // Don't show main window on startup
     } else {
         m_mainWindow->show();
@@ -171,24 +175,38 @@ void Application::applyStartupSettings()
 
 void Application::applyDebugLogging(bool enable)
 {
-    if (enable) {
-        // Enable all log levels including DEBUG
-        setLogingSeverityLevel(bj::framework::Logger::SEVERITY_BITSET(
-            (1 << bj::framework::Logger::SEVERITY::DEBUG)    |
-            (1 << bj::framework::Logger::SEVERITY::INFO)     |
-            (1 << bj::framework::Logger::SEVERITY::WARNING)  |
-            (1 << bj::framework::Logger::SEVERITY::ERROR)
-        ));
-        LOG_D("Debug logging enabled");
-    } else {
-        // Disable DEBUG level, keep INFO, WARNING, ERROR
-        setLogingSeverityLevel(bj::framework::Logger::SEVERITY_BITSET(
-            (1 << bj::framework::Logger::SEVERITY::INFO)     |
-            (1 << bj::framework::Logger::SEVERITY::WARNING)  |
-            (1 << bj::framework::Logger::SEVERITY::ERROR)
-        ));
-        LOG_D("Debug logging disabled");
+    bool traceLogging = false;
+    ApplicationSettings::instance()->loadAppTraceLogging(traceLogging);
+    applyLogging(enable, traceLogging);
+}
+
+void Application::applyTraceLogging(bool enable)
+{
+    bool debugLogging = false;
+    ApplicationSettings::instance()->loadAppDebugLogging(debugLogging);
+    applyLogging(debugLogging, enable);
+}
+
+void Application::applyLogging(bool enableDebug, bool enableTrace)
+{
+    bj::framework::Logger::SEVERITY_BITSET severity(
+        (1 << bj::framework::Logger::SEVERITY::INFO)     |
+        (1 << bj::framework::Logger::SEVERITY::WARNING)  |
+        (1 << bj::framework::Logger::SEVERITY::ERROR)
+    );
+    
+    if (enableDebug) {
+        severity |= (1 << bj::framework::Logger::SEVERITY::DEBUG);
     }
+    
+    if (enableTrace) {
+        severity |= (1 << bj::framework::Logger::SEVERITY::TRACE);
+    }
+    
+    setLogingSeverityLevel(severity);
+    
+    LOG_T(QString("Logging updated - Debug: ").append(enableDebug ? "enabled" : "disabled")
+          .append(", Trace: ").append(enableTrace ? "enabled" : "disabled"));
 }
 
 void Application::applyTheme(ApplicationSettings::ThemeType theme)
@@ -202,21 +220,27 @@ void Application::onSettingChanged(LenovoLegionGui::ApplicationSettings::Setting
     
     switch (setting) {
         case SettingType::StartMinimized:
-            LOG_D(QString("Setting changed: StartMinimized = ").append(value ? "true" : "false"));
+            LOG_T(QString("Setting changed: StartMinimized = ").append(value ? "true" : "false"));
             // This affects next startup, no action needed now
             break;
             
         case SettingType::MinimizeToTray:
-            LOG_D(QString("Setting changed: MinimizeToTray = ").append(value ? "true" : "false"));
+            LOG_T(QString("Setting changed: MinimizeToTray = ").append(value ? "true" : "false"));
             // This is handled in MainWindow::closeEvent
             break;
             
         case SettingType::AppDebugLogging:
-            LOG_D(QString("Setting changed: AppDebugLogging = ").append(value ? "true" : "false"));
+            LOG_T(QString("Setting changed: AppDebugLogging = ").append(value ? "true" : "false"));
             applyDebugLogging(value);
             break;
+            
+        case SettingType::AppTraceLogging:
+            LOG_T(QString("Setting changed: AppTraceLogging = ").append(value ? "true" : "false"));
+            applyTraceLogging(value);
+            break;
+            
         case SettingType::StylesheetTheme:
-            LOG_D(QString("Setting changed: StylesheetTheme = ").append(value ? "true" : "false"));
+            LOG_T(QString("Setting changed: StylesheetTheme = ").append(value ? "true" : "false"));
             // This is handled in ToolBarSettingsWidget::onStylesheetThemeChanged
             break;
         default:

@@ -25,7 +25,7 @@ QByteArray SysFsDataProviderFanCurve::serializeAndGetData() const
     legion::messages::FanCurve         fanCurveMsg;
     QByteArray                         byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     try {
@@ -157,7 +157,7 @@ QByteArray SysFsDataProviderFanCurve::deserializeAndSetData(const QByteArray &da
     SysFSDriverLegionFanMode::FanMode::FanCurve fanCurve(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionFanMode::DRIVER_NAME));
     legion::messages::FanCurve         fanCurveMsg;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!fanCurveMsg.ParseFromArray(data.data(),data.size()))
     {

@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderCPUFrequency::serializeAndGetData() const
     legion::messages::CPUFrequency         cpuFrequency;
     QByteArray                             byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
@@ -91,7 +91,7 @@ QByteArray SysFsDataProviderCPUFrequency::deserializeAndSetData(const QByteArray
     SysFsDriverCPUXList::CPUXList   cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
     legion::messages::CPUFrequency  cpuFrequency;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     if(!cpuFrequency.ParseFromArray(data.data(),data.size()))

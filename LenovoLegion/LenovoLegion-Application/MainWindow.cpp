@@ -186,7 +186,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (minimizeToTray) {
         hide();
         event->ignore();
-        LOG_D("Window minimized to system tray");
+        LOG_T("Window minimized to system tray");
     } else {
         // Allow the window to close normally
         event->accept();

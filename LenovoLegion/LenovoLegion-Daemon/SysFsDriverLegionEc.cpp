@@ -20,7 +20,7 @@ SysFsDriverLegionEc::SysFsDriverLegionEc(QObject *parrent): SysFsDriver(DRIVER_N
 
 void SysFsDriverLegionEc::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 

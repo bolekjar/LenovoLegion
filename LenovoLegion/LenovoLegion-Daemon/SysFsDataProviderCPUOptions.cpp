@@ -27,7 +27,7 @@ QByteArray SysFsDataProviderCPUOptions::serializeAndGetData() const
     legion::messages::CPUOptions       cpuOption;
     QByteArray                         byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
@@ -84,7 +84,7 @@ QByteArray SysFsDataProviderCPUOptions::deserializeAndSetData(const QByteArray &
     SysFsDriverCPUXList::CPUXList cpuXlist(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFsDriverCPUXList::DRIVER_NAME));
     legion::messages::CPUOptions  cpuOptions;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!cpuOptions.ParseFromArray(data.data(),data.size()))
     {

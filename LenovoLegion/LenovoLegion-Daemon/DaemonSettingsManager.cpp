@@ -38,7 +38,7 @@ DaemonSettingsManager::DaemonSettingsManager() : m_daemonSettings{}
 
 void DaemonSettingsManager::loadAllSettings(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadAllSettings - start");
+    LOG_T("DaemonSettingsManager::loadAllSettings - start");
     
     // Always load daemon settings first
     loadDaemonSettings();
@@ -49,7 +49,7 @@ void DaemonSettingsManager::loadAllSettings(DataProviderManager* dataProviderMan
         return;
     }
     
-    LOG_D("DaemonSettingsManager::loadAllSettings - applying saved hardware settings");
+    LOG_T("DaemonSettingsManager::loadAllSettings - applying saved hardware settings");
     
     // Load power profile first to check if CUSTOM mode is saved
     legion::messages::PowerProfile savedProfile;
@@ -83,7 +83,7 @@ void DaemonSettingsManager::loadAllSettings(DataProviderManager* dataProviderMan
     loadNvidiaNvml(dataProviderManager);
     loadIntelMSR(dataProviderManager);
     loadOther(dataProviderManager);
-    LOG_D("DaemonSettingsManager::loadAllSettings - complete");
+    LOG_T("DaemonSettingsManager::loadAllSettings - complete");
 }
 
 void DaemonSettingsManager::saveAllSettings(DataProviderManager* dataProviderManager)
@@ -108,7 +108,7 @@ void DaemonSettingsManager::saveAllSettings(DataProviderManager* dataProviderMan
 
 void DaemonSettingsManager::saveAllSettingsOnExit(DataProviderManager *dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveAllSettingsOnExit - start");
+    LOG_T("DaemonSettingsManager::saveAllSettingsOnExit - start");
 
     if (!shouldSaveOnExit()) {
         LOG_D("DaemonSettingsManager::saveAllSettingsOnExit - save disabled by user settings");
@@ -117,36 +117,39 @@ void DaemonSettingsManager::saveAllSettingsOnExit(DataProviderManager *dataProvi
 
     saveAllSettings(dataProviderManager);
 
-    LOG_D("DaemonSettingsManager::saveAllSettingsOnExit - complete");
+    LOG_T("DaemonSettingsManager::saveAllSettingsOnExit - complete");
 }
 
 void DaemonSettingsManager::loadDaemonSettings()
 {
-    LOG_D("DaemonSettingsManager::loadDaemonSettings");
+    LOG_T("DaemonSettingsManager::loadDaemonSettings");
     SettingsLoaderDaemonSettings loader;
     loader.loadDaemonSettings(m_daemonSettings);
     
-    // Apply debug logging level immediately after loading
+    // Apply debug and trace logging levels immediately after loading
     bj::framework::Logger::SEVERITY_BITSET severity;
+    
+    // Always include base levels
+    severity = bj::framework::Logger::SEVERITY_BITSET()
+             .set(bj::framework::Logger::ERROR)
+             .set(bj::framework::Logger::WARNING)
+             .set(bj::framework::Logger::INFO);
+    
+    // Add debug if enabled
     if(m_daemonSettings.debug_logging())
     {
         LOG_D("Debug logging enabled from settings");
-        // Enable debug logging
-        severity = bj::framework::Logger::SEVERITY_BITSET()
-                 .set(bj::framework::Logger::ERROR)
-                 .set(bj::framework::Logger::WARNING)
-                 .set(bj::framework::Logger::INFO)
-                 .set(bj::framework::Logger::DEBUG);
+        severity.set(bj::framework::Logger::DEBUG);
     }
-    else
+    
+    // Add trace if enabled
+    if(m_daemonSettings.trace_logging())
     {
-        // Disable debug logging (default)
-        severity = bj::framework::Logger::SEVERITY_BITSET()
-                 .set(bj::framework::Logger::ERROR)
-                 .set(bj::framework::Logger::WARNING)
-                 .set(bj::framework::Logger::INFO);
+        LOG_D("Trace logging enabled from settings");
+        severity.set(bj::framework::Logger::TRACE);
     }
-   LoggerHolder::getInstance().setSeverity(severity);
+    
+    LoggerHolder::getInstance().setSeverity(severity);
 }
 
 void DaemonSettingsManager::saveDaemonSettings()
@@ -158,7 +161,7 @@ void DaemonSettingsManager::saveDaemonSettings()
 
 void DaemonSettingsManager::loadPowerProfile(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadPowerProfile");
+    LOG_T("DaemonSettingsManager::loadPowerProfile");
     try {
         legion::messages::PowerProfile profile;
         SettingsLoaderPowerProfiles().loadPowerProfile(profile);
@@ -180,7 +183,7 @@ void DaemonSettingsManager::loadPowerProfile(DataProviderManager* dataProviderMa
 
 void DaemonSettingsManager::savePowerProfile(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::savePowerProfile");
+    LOG_T("DaemonSettingsManager::savePowerProfile");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderPowerProfile::dataType).serializeAndGetData();
         legion::messages::PowerProfile profile;
@@ -195,7 +198,7 @@ void DaemonSettingsManager::savePowerProfile(DataProviderManager* dataProviderMa
 
 void DaemonSettingsManager::loadCPUControlData(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadCPUControlData");
+    LOG_T("DaemonSettingsManager::loadCPUControlData");
     try {
         legion::messages::CPUOptions opts;
         SettingsLoaderCPUControlData().loadPowerProfile(opts);
@@ -217,7 +220,7 @@ void DaemonSettingsManager::loadCPUControlData(DataProviderManager* dataProvider
 
 void DaemonSettingsManager::saveCPUControlData(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveCPUControlData");
+    LOG_T("DaemonSettingsManager::saveCPUControlData");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderCPUOptions::dataType).serializeAndGetData();
         legion::messages::CPUOptions opts;
@@ -232,7 +235,7 @@ void DaemonSettingsManager::saveCPUControlData(DataProviderManager* dataProvider
 
 void DaemonSettingsManager::loadCPUFrequency(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadCPUFrequency");
+    LOG_T("DaemonSettingsManager::loadCPUFrequency");
     try {
         legion::messages::CPUFrequency freq;
         SettingsLoaderCPUFrequency().loadCPUFrequency(freq);
@@ -269,7 +272,7 @@ void DaemonSettingsManager::saveCPUFrequency(DataProviderManager* dataProviderMa
 
 void DaemonSettingsManager::loadFanCurve(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadFanCurve");
+    LOG_T("DaemonSettingsManager::loadFanCurve");
     try {
         legion::messages::FanCurve curve;
         SettingsLoaderFanCurve().loadFanCurve(curve);
@@ -291,7 +294,7 @@ void DaemonSettingsManager::loadFanCurve(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::saveFanCurve(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveFanCurve");
+    LOG_T("DaemonSettingsManager::saveFanCurve");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderFanCurve::dataType).serializeAndGetData();
         legion::messages::FanCurve curve;
@@ -306,7 +309,7 @@ void DaemonSettingsManager::saveFanCurve(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::loadFanOption(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadFanOption");
+    LOG_T("DaemonSettingsManager::loadFanOption");
     try {
         legion::messages::FanOption opt;
         SettingsLoaderFanOption().loadFanOption(opt);
@@ -328,7 +331,7 @@ void DaemonSettingsManager::loadFanOption(DataProviderManager* dataProviderManag
 
 void DaemonSettingsManager::saveFanOption(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveFanOption");
+    LOG_T("DaemonSettingsManager::saveFanOption");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderFanOption::dataType).serializeAndGetData();
         legion::messages::FanOption opt;
@@ -343,7 +346,7 @@ void DaemonSettingsManager::saveFanOption(DataProviderManager* dataProviderManag
 
 void DaemonSettingsManager::loadCPUSMT(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadCPUSMT");
+    LOG_T("DaemonSettingsManager::loadCPUSMT");
     try {
         legion::messages::CPUSMT smt;
         SettingsLoaderCPUSMT().loadCPUSMT(smt);
@@ -365,7 +368,7 @@ void DaemonSettingsManager::loadCPUSMT(DataProviderManager* dataProviderManager)
 
 void DaemonSettingsManager::saveCPUSMT(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveCPUSMT");
+    LOG_T("DaemonSettingsManager::saveCPUSMT");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderCPUSMT::dataType).serializeAndGetData();
         legion::messages::CPUSMT smt;
@@ -380,7 +383,7 @@ void DaemonSettingsManager::saveCPUSMT(DataProviderManager* dataProviderManager)
 
 void DaemonSettingsManager::loadCPUPower(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadCPUPower");
+    LOG_T("DaemonSettingsManager::loadCPUPower");
     try {
         legion::messages::CPUPower power;
         SettingsLoaderCPUPower().loadCPUPower(power);
@@ -402,7 +405,7 @@ void DaemonSettingsManager::loadCPUPower(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::saveCPUPower(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveCPUPower");
+    LOG_T("DaemonSettingsManager::saveCPUPower");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderCPUPower::dataType).serializeAndGetData();
         legion::messages::CPUPower power;
@@ -417,7 +420,7 @@ void DaemonSettingsManager::saveCPUPower(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::loadGPUPower(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadGPUPower");
+    LOG_T("DaemonSettingsManager::loadGPUPower");
     try {
         legion::messages::GPUPower power;
         SettingsLoaderGPUPower().loadGPUPower(power);
@@ -454,7 +457,7 @@ void DaemonSettingsManager::saveGPUPower(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::loadCPUPowerRapl(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadCPUPowerRapl");
+    LOG_T("DaemonSettingsManager::loadCPUPowerRapl");
     try {
         legion::messages::CPUPowerRapl rapl;
         SettingsLoaderCPUPowerRapl().loadCPUPowerRapl(rapl);
@@ -476,7 +479,7 @@ void DaemonSettingsManager::loadCPUPowerRapl(DataProviderManager* dataProviderMa
 
 void DaemonSettingsManager::saveCPUPowerRapl(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveCPUPowerRapl");
+    LOG_T("DaemonSettingsManager::saveCPUPowerRapl");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderCPUPowerRapl::dataType).serializeAndGetData();
         legion::messages::CPUPowerRapl rapl;
@@ -491,7 +494,7 @@ void DaemonSettingsManager::saveCPUPowerRapl(DataProviderManager* dataProviderMa
 
 void DaemonSettingsManager::loadNvidiaNvml(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadNvidiaNvml");
+    LOG_T("DaemonSettingsManager::loadNvidiaNvml");
     try {
         legion::messages::NvidiaNvml nvml;
         SettingsLoaderNvidiaNvml().loadNvidiaNvml(nvml);
@@ -513,7 +516,7 @@ void DaemonSettingsManager::loadNvidiaNvml(DataProviderManager* dataProviderMana
 
 void DaemonSettingsManager::saveNvidiaNvml(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveNvidiaNvml");
+    LOG_T("DaemonSettingsManager::saveNvidiaNvml");
     try {
         auto data = dataProviderManager->getDataProvider(DataProviderNvidiaNvml::dataType).serializeAndGetData();
         legion::messages::NvidiaNvml nvml;
@@ -528,7 +531,7 @@ void DaemonSettingsManager::saveNvidiaNvml(DataProviderManager* dataProviderMana
 
 void DaemonSettingsManager::loadIntelMSR(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadIntelMSR");
+    LOG_T("DaemonSettingsManager::loadIntelMSR");
     try {
         legion::messages::CpuIntelMSR intelMSR;
         SettingsLoaderIntelMSR().loadIntelMSR(intelMSR);
@@ -550,7 +553,7 @@ void DaemonSettingsManager::loadIntelMSR(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::saveIntelMSR(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::saveIntelMSR");
+    LOG_T("DaemonSettingsManager::saveIntelMSR");
     try {
         auto data = dataProviderManager->getDataProvider(SysFsDataProviderIntelMSR::dataType).serializeAndGetData();
         legion::messages::CpuIntelMSR intelMSR;
@@ -571,7 +574,7 @@ void DaemonSettingsManager::saveIntelMSR(DataProviderManager* dataProviderManage
 
 void DaemonSettingsManager::loadOther(DataProviderManager* dataProviderManager)
 {
-    LOG_D("DaemonSettingsManager::loadOther");
+    LOG_T("DaemonSettingsManager::loadOther");
     try {
         legion::messages::OtherSettings otherSettings;
         SettingsLoaderOther().loadOther(otherSettings);

@@ -21,3 +21,4 @@ using LoggerHolder = bj::framework::SingletonHolder<bj::framework::Logger,bj::fr
 #define LOG_D(x)  LOG_DEBUG(x,LoggerHolder);
 #define LOG_E(x)  LOG_ERROR(x,LoggerHolder);
 #define LOG_W(x)  LOG_WARNING(x,LoggerHolder);
+#define LOG_T(x)  LOG_TRACE(x,LoggerHolder);

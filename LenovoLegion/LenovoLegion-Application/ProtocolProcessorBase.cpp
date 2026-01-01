@@ -88,13 +88,13 @@ LenovoLegionDaemon::MessageHeader ProtocolProcessorBase::receiveMessageDataReady
 void ProtocolProcessorBase::onConnected()
 {
 
-    LOG_D(QString("Connected to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    LOG_T(QString("Connected to daemon socket ( ").append(SOCKET_NAME).append(" )"));
     emit connected();
 }
 
 void ProtocolProcessorBase::onDisconnected()
 {
-    LOG_D(QString("Disconnected from daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    LOG_T(QString("Disconnected from daemon socket ( ").append(SOCKET_NAME).append(" )"));
     emit disconnected();
 
     m_socket->close();
@@ -149,7 +149,7 @@ bool ProtocolProcessorBase::isConnected()
 
 void ProtocolProcessorBase::reconnect()
 {
-    LOG_D(QString("Reconnecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    LOG_T(QString("Reconnecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
     
     if (m_socket->isOpen()) {
         m_socket->close();

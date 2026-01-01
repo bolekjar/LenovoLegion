@@ -62,6 +62,7 @@ public:
         StartMinimized,
         MinimizeToTray,
         AppDebugLogging,
+        AppTraceLogging,
         SaveSettingsOnDaemonExit,
         DaemonDebugLogging,
         StylesheetTheme
@@ -85,6 +86,7 @@ public:
     ApplicationSettings& loadStartMinimized(bool& value);
     ApplicationSettings& loadMinimizeToTray(bool& value);
     ApplicationSettings& loadAppDebugLogging(bool& value);
+    ApplicationSettings& loadAppTraceLogging(bool& value);
     ApplicationSettings& loadSaveSettingsOnDaemonExit(bool& value);
     ApplicationSettings& loadDaemonDebugLogging(bool& value);
     ApplicationSettings& loadStylesheetTheme(ThemeType& value);
@@ -93,6 +95,7 @@ public:
     ApplicationSettings& saveStartMinimized(bool value);
     ApplicationSettings& saveMinimizeToTray(bool value);
     ApplicationSettings& saveAppDebugLogging(bool value);
+    ApplicationSettings& saveAppTraceLogging(bool value);
     ApplicationSettings& saveSaveSettingsOnDaemonExit(bool value);
     ApplicationSettings& saveDaemonDebugLogging(bool value);
     ApplicationSettings& saveStylesheetTheme(ThemeType value);

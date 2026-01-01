@@ -16,7 +16,7 @@ SysFsDriverPowerSuplyBattery0::SysFsDriverPowerSuplyBattery0(QObject* parrent) :
 
 void SysFsDriverPowerSuplyBattery0::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -25,12 +25,10 @@ void SysFsDriverPowerSuplyBattery0::init()
         LOG_D(QString("Found Power supply battery driver in path: ") + m_path.c_str());
 
         m_descriptor["powerSuplyBattery0"] = std::filesystem::path(m_path).append("status");
-
-        LOG_D(QString("Power supply battery driver descriptor added !"));
     }
     else
     {
-        LOG_D(QString("Power supply battery driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("Power supply battery driver not found in path: ") + m_path.c_str());
     }
 }
 
@@ -40,7 +38,7 @@ void SysFsDriverPowerSuplyBattery0::handleKernelEvent(const KernelEvent::Event &
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 

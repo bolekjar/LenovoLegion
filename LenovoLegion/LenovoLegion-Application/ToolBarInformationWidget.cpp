@@ -88,7 +88,7 @@ ToolBarInformationWidget::ToolBarInformationWidget(DataProvider* dataProvider,QW
 
 void ToolBarInformationWidget::loadMachineInformation()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
     
     try {
         m_machineInfo = m_dataProvider->getDataMessage<legion::messages::MachineInformation>(
@@ -102,7 +102,7 @@ void ToolBarInformationWidget::loadMachineInformation()
 
 void ToolBarInformationWidget::displayMachineInformation()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
     
     // Display BIOS information
     ui->label_BiosDateValue->setText(m_machineInfo.bios_date().data());
@@ -132,7 +132,7 @@ void ToolBarInformationWidget::displayMachineInformation()
 
 void ToolBarInformationWidget::loadCPUInformation()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
     
     try {
         m_cpuInfo = m_dataProvider->getDataMessage<legion::messages::CPUInfo>(
@@ -146,7 +146,7 @@ void ToolBarInformationWidget::loadCPUInformation()
 
 void ToolBarInformationWidget::displayCPUInformation()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
     
     // Display CPU Model
     ui->label_CPUModelValue->setText(m_cpuInfo.cpu_model().data());
@@ -173,7 +173,7 @@ void ToolBarInformationWidget::displayCPUInformation()
 
 void ToolBarInformationWidget::loadGPUInformation()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
     
     try {
         m_gpuInfo = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(
@@ -187,7 +187,7 @@ void ToolBarInformationWidget::loadGPUInformation()
 
 void ToolBarInformationWidget::displayGPUInformation()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
     
     // Display GPU Name
     ui->label_GPUNameValue->setText(m_gpuInfo.name().data());

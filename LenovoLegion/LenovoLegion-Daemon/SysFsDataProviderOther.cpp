@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderOther::serializeAndGetData() const
     legion::messages::OtherSettings     otherSettingsMsg;
     QByteArray                          byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     try {
@@ -69,7 +69,7 @@ QByteArray SysFsDataProviderOther::deserializeAndSetData(const QByteArray &data)
     SysFSDriverLegionGameZone::GameZone gameZone(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
     legion::messages::OtherSettings     otherSettingsMsg;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!otherSettingsMsg.ParseFromArray(data.data(),data.size()))
     {

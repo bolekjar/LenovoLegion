@@ -29,7 +29,7 @@ QByteArray SysFsDataProviderHWMon::serializeAndGetData() const
     QByteArray                        byteArray;
 
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFSDriverHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverHWMon::DRIVER_NAME));

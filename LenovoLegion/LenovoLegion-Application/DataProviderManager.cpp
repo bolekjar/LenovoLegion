@@ -49,7 +49,7 @@ void DataProviderManager::daemonNotificationSlot(const legion::messages::Notific
 
 void DataProviderManager::reconnectToDaemon()
 {
-    LOG_D("Manual reconnect to daemon requested");
+    LOG_T("Manual reconnect to daemon requested");
     m_protocolProcessor->reconnect();
     m_protocolProcessorNotifier->reconnect();
 }

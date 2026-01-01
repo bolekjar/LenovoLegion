@@ -100,7 +100,7 @@ void ToolBarProfilesWidget::connectSignals()
 
 void ToolBarProfilesWidget::loadProfilesList()
 {
-    LOG_D("Loading profiles list");
+    LOG_T("Loading profiles list");
     
     ui->listWidget_Profiles->clear();
     
@@ -109,12 +109,12 @@ void ToolBarProfilesWidget::loadProfilesList()
         ui->listWidget_Profiles->addItem(profileName);
     }
     
-    LOG_D(QString("Loaded %1 profiles").arg(profiles.size()));
+    LOG_T(QString("Loaded %1 profiles").arg(profiles.size()));
 }
 
 void ToolBarProfilesWidget::updateProfileDetails(const QString& profileName)
 {
-    LOG_D(QString("Updating profile details for: ").append(profileName));
+    LOG_T(QString("Updating profile details for: ").append(profileName));
     
     ui->lineEdit_ProfileName->setText(profileName);
     
@@ -124,7 +124,7 @@ void ToolBarProfilesWidget::updateProfileDetails(const QString& profileName)
 
 void ToolBarProfilesWidget::onSaveProfile()
 {
-    LOG_D("Save Profile button clicked");
+    LOG_T("Save Profile button clicked");
     
     QString profileName = ui->lineEdit_ProfileName->text().trimmed();
     QString profileDescription = ui->lineEdit_ProfileDescription->text().trimmed();
@@ -184,7 +184,7 @@ void ToolBarProfilesWidget::onSaveProfile()
                                powerProfile.thermal_mode() == legion::messages::PowerProfile_Profiles_POWER_PROFILE_CUSTOM;
         
         if (isCustomProfile) {
-            LOG_D("Power profile is CUSTOM - saving FanCurve, CPUPower, and GPUPower");
+            LOG_T("Power profile is CUSTOM - saving FanCurve, CPUPower, and GPUPower");
             
             auto fanCurve = m_dataProvider->getDataMessage<legion::messages::FanCurve>(
                 LenovoLegionDaemon::SysFsDataProviderFanCurve::dataType);
@@ -198,7 +198,7 @@ void ToolBarProfilesWidget::onSaveProfile()
                 LenovoLegionDaemon::SysFsDataProviderGPUPower::dataType);
             profile.saveGPUPower(gpuPower);
         } else {
-            LOG_D("Power profile is not CUSTOM - skipping FanCurve, CPUPower, and GPUPower");
+            LOG_T("Power profile is not CUSTOM - skipping FanCurve, CPUPower, and GPUPower");
         }
         
         auto fanOption = m_dataProvider->getDataMessage<legion::messages::FanOption>(
@@ -232,7 +232,7 @@ void ToolBarProfilesWidget::onSaveProfile()
             LenovoLegionDaemon::SysFsDataProviderOther::dataType);
         profile.saveOther(otherSettings);
         
-        LOG_D(QString("Profile saved successfully: ").append(profileName));
+        LOG_T(QString("Profile saved successfully: ").append(profileName));
         
         QMessageBox msgBox(this);
         QPixmap infoIcon(":/images/icons/info.png");
@@ -259,7 +259,7 @@ void ToolBarProfilesWidget::onSaveProfile()
 
 void ToolBarProfilesWidget::onLoadProfile()
 {
-    LOG_D("Load Profile button clicked");
+    LOG_T("Load Profile button clicked");
     
     QListWidgetItem* selectedItem = ui->listWidget_Profiles->currentItem();
     if (!selectedItem) {
@@ -289,7 +289,7 @@ void ToolBarProfilesWidget::onLoadProfile()
         return;
     }
     
-    LOG_D(QString("Loading profile: ").append(profileName));
+    LOG_T(QString("Loading profile: ").append(profileName));
     
     try {
         ProfileSettings profile(profileName);
@@ -343,7 +343,7 @@ void ToolBarProfilesWidget::onLoadProfile()
         profile.loadOther(otherSettings);
         m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderOther::dataType, otherSettings);
         
-        LOG_D(QString("Profile loaded successfully: ").append(profileName));
+        LOG_T(QString("Profile loaded successfully: ").append(profileName));
         
         QMessageBox msgBox(this);
         QPixmap infoIcon(":/images/icons/info.png");
@@ -368,7 +368,7 @@ void ToolBarProfilesWidget::onLoadProfile()
 
 void ToolBarProfilesWidget::onDeleteProfile()
 {
-    LOG_D("Delete Profile button clicked");
+    LOG_T("Delete Profile button clicked");
     
     QListWidgetItem* selectedItem = ui->listWidget_Profiles->currentItem();
     if (!selectedItem) {
@@ -398,10 +398,10 @@ void ToolBarProfilesWidget::onDeleteProfile()
         return;
     }
     
-    LOG_D(QString("Deleting profile: ").append(profileName));
+    LOG_T(QString("Deleting profile: ").append(profileName));
     
     if (ProfileManager::deleteProfile(profileName)) {
-        LOG_D(QString("Profile deleted successfully: ").append(profileName));
+        LOG_T(QString("Profile deleted successfully: ").append(profileName));
         
         QMessageBox msgBox(this);
         QPixmap infoIcon(":/images/icons/info.png");
@@ -431,14 +431,14 @@ void ToolBarProfilesWidget::onProfileSelected()
 {
     QListWidgetItem* selectedItem = ui->listWidget_Profiles->currentItem();
     if (!selectedItem) {
-        LOG_D("No profile selected");
+        LOG_T("No profile selected");
         ui->lineEdit_ProfileName->clear();
         ui->lineEdit_ProfileDescription->clear();
         return;
     }
     
     QString profileName = selectedItem->text();
-    LOG_D(QString("Profile selected: ").append(profileName));
+    LOG_T(QString("Profile selected: ").append(profileName));
     
     updateProfileDetails(profileName);
 }

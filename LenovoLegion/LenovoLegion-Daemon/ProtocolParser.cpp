@@ -17,7 +17,7 @@ void ProtocolParser::parseMessage(QLocalSocket &socket, std::function<void (cons
     MessageHeader header;
     QByteArray bytes = readDataWithTimeout(socket,sizeof(MessageHeader));
 
-    LOG_D(QString("Raw message header = (").append(bytes.toHex(':').toStdString()).append(")"));
+    LOG_T(QString("Raw message header = (").append(bytes.toHex(':').toStdString()).append(")"));
 
 
     /*

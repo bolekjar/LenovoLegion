@@ -16,7 +16,7 @@ SysFsDriverACPIPlatformProfile::SysFsDriverACPIPlatformProfile(QObject *parrent)
 
 void SysFsDriverACPIPlatformProfile::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -27,17 +27,15 @@ void SysFsDriverACPIPlatformProfile::init()
             LOG_D(QString("Found ACPI platform profile driver in path: ") + m_path.c_str());
 
             m_descriptor["acpiPlatformProfile"] = std::filesystem::path(m_path).append("platform_profile");
-
-            LOG_D(QString("ACPI platform profile driver descriptor added !"));
         }
         else
         {
-            LOG_D(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
+            LOG_T(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
         }
     }
     else
     {
-        LOG_D(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("ACPI Platform Profile driver not found in path: ") + m_path.c_str());
     }
 }
 
@@ -47,7 +45,7 @@ void SysFsDriverACPIPlatformProfile::handleKernelEvent(const KernelEvent::Event 
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 

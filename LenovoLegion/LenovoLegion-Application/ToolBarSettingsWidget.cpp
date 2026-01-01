@@ -125,6 +125,9 @@ void ToolBarSettingsWidget::loadSettings()
     settings->loadAppDebugLogging(value);
     ui->checkBox_AppDebugLogging->setChecked(value);
     
+    settings->loadAppTraceLogging(value);
+    ui->checkBox_AppTraceLogging->setChecked(value);
+    
     // Load stylesheet theme
     ApplicationSettings::ThemeType theme;
     settings->loadStylesheetTheme(theme);
@@ -142,6 +145,7 @@ void ToolBarSettingsWidget::saveApplicationSettings()
     settings->saveStartMinimized(ui->checkBox_StartMinimized->isChecked())
             .saveMinimizeToTray(ui->checkBox_MinimizeToTray->isChecked())
             .saveAppDebugLogging(ui->checkBox_AppDebugLogging->isChecked())
+            .saveAppTraceLogging(ui->checkBox_AppTraceLogging->isChecked())
             .saveStylesheetTheme(static_cast<ApplicationSettings::ThemeType>(ui->comboBox_StylesheetTheme->currentIndex()));
     
     LOG_D("Application settings saved to file");
@@ -153,6 +157,7 @@ void ToolBarSettingsWidget::connectSignals()
     connect(ui->checkBox_StartMinimized, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onApplicationSettingChanged);
     connect(ui->checkBox_MinimizeToTray, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onApplicationSettingChanged);
     connect(ui->checkBox_AppDebugLogging, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onApplicationSettingChanged);
+    connect(ui->checkBox_AppTraceLogging, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onApplicationSettingChanged);
     
     // Connect theme combobox
     connect(ui->comboBox_StylesheetTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ToolBarSettingsWidget::onStylesheetThemeChanged);
@@ -161,6 +166,7 @@ void ToolBarSettingsWidget::connectSignals()
     connect(ui->checkBox_ApplySavedSettingsOnStart, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onDaemonSettingChanged);
     connect(ui->checkBox_SaveSettingsOnDaemonExit, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onDaemonSettingChanged);
     connect(ui->checkBox_DebugLogging, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onDaemonSettingChanged);
+    connect(ui->checkBox_TraceLogging, &QCheckBox::checkStateChanged, this, &ToolBarSettingsWidget::onDaemonSettingChanged);
     
     // Connect Reset to Defaults button
     connect(ui->pushButton_ResetDefaults, &QPushButton::clicked, this, &ToolBarSettingsWidget::onResetToDefaults);
@@ -182,7 +188,7 @@ void ToolBarSettingsWidget::onDaemonSettingChanged()
 
 void ToolBarSettingsWidget::onReconnectDaemon()
 {
-    LOG_D("Reconnect to daemon button clicked");
+    LOG_T("Reconnect to daemon button clicked");
     
     // Find DataProviderManager in parent hierarchy
     DataProviderManager* manager = nullptr;
@@ -198,7 +204,7 @@ void ToolBarSettingsWidget::onReconnectDaemon()
     
     if (manager) {
         manager->reconnectToDaemon();
-        LOG_D("Daemon reconnection initiated");
+        LOG_T("Daemon reconnection initiated");
     } else {
         LOG_W("Could not find DataProviderManager to reconnect");
     }
@@ -213,8 +219,9 @@ void ToolBarSettingsWidget::loadDaemonSettings()
     ui->checkBox_ApplySavedSettingsOnStart->setChecked(settings.apply_settings_on_start());
     ui->checkBox_SaveSettingsOnDaemonExit->setChecked(settings.save_settings_on_exit());
     ui->checkBox_DebugLogging->setChecked(settings.debug_logging());
+    ui->checkBox_TraceLogging->setChecked(settings.trace_logging());
 
-    LOG_D("Daemon settings loaded from daemon");
+    LOG_T("Daemon settings loaded from daemon");
 }
 
 void ToolBarSettingsWidget::sendDaemonSettingsToDaemon()
@@ -225,15 +232,16 @@ void ToolBarSettingsWidget::sendDaemonSettingsToDaemon()
     settings.set_apply_settings_on_start(ui->checkBox_ApplySavedSettingsOnStart->isChecked());
     settings.set_save_settings_on_exit(ui->checkBox_SaveSettingsOnDaemonExit->isChecked());
     settings.set_debug_logging(ui->checkBox_DebugLogging->isChecked());
+    settings.set_trace_logging(ui->checkBox_TraceLogging->isChecked());
         
     m_dataProvider->setDataMessage(LenovoLegionDaemon::DataProviderDaemonSettings::dataType, settings);
 
-    LOG_D("Daemon settings sent to daemon");
+    LOG_T("Daemon settings sent to daemon");
 }
 
 void ToolBarSettingsWidget::onSaveCurrentConfiguration()
 {
-    LOG_D("Save Current Configuration button clicked");
+    LOG_T("Save Current Configuration button clicked");
     
     QMessageBox msgBox(this);
     QPixmap dialogIcon(":/images/icons/dialog.png");
@@ -245,7 +253,7 @@ void ToolBarSettingsWidget::onSaveCurrentConfiguration()
     msgBox.setDefaultButton(QMessageBox::Yes);
 
     if (msgBox.exec() == QMessageBox::Yes) {
-        LOG_D("User confirmed: saving current configuration");
+        LOG_T("User confirmed: saving current configuration");
         
         // Send save_now command to daemon
         legion::messages::DaemonSettings settings;
@@ -254,6 +262,7 @@ void ToolBarSettingsWidget::onSaveCurrentConfiguration()
         settings.set_apply_settings_on_start(ui->checkBox_ApplySavedSettingsOnStart->isChecked());
         settings.set_save_settings_on_exit(ui->checkBox_SaveSettingsOnDaemonExit->isChecked());
         settings.set_debug_logging(ui->checkBox_DebugLogging->isChecked());
+        settings.set_trace_logging(ui->checkBox_TraceLogging->isChecked());
         
         // Set the save_now command flag
         settings.set_save_now(true);
@@ -272,13 +281,13 @@ void ToolBarSettingsWidget::onSaveCurrentConfiguration()
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
     } else {
-        LOG_D("User cancelled configuration save");
+        LOG_T("User cancelled configuration save");
     }
 }
 
 void ToolBarSettingsWidget::onStylesheetThemeChanged(int index)
 {
-    LOG_D(QString("Stylesheet theme changed to index: ") + QString::number(index));
+    LOG_T(QString("Stylesheet theme changed to index: ") + QString::number(index));
     
     ApplicationSettings::ThemeType theme = static_cast<ApplicationSettings::ThemeType>(index);
     

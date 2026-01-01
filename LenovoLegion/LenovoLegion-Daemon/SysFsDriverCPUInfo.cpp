@@ -17,7 +17,7 @@ SysFsDriverCPUInfo::SysFsDriverCPUInfo(QObject *parent): SysFsDriver(DRIVER_NAME
 
 void SysFsDriverCPUInfo::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -33,6 +33,9 @@ void SysFsDriverCPUInfo::init()
     
     const std::filesystem::path cache_path = std::filesystem::path(cpu0_path).append("cache");
     if (std::filesystem::exists(cache_path)) {
+
+        LOG_D(QString("Found CPU Info cache driver in path: ") + cache_path.c_str());
+
         for (int i = 0; i < 10; i++) {
             std::string index_path = std::filesystem::path(cache_path).append("index").string() + std::to_string(i);
 

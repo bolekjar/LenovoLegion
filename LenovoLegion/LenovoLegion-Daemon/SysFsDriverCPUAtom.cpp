@@ -16,7 +16,7 @@ SysFsDriverCPUAtom::SysFsDriverCPUAtom(QObject* parrent) : SysFsDriver(DRIVER_NA
 
 void SysFsDriverCPUAtom::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -25,12 +25,10 @@ void SysFsDriverCPUAtom::init()
         LOG_D(QString("CPU Atom topology driver found in path: ") + m_path.c_str());
 
         m_descriptor["cpus"] = std::filesystem::path(m_path).append("cpus");
-
-        LOG_D(QString("CPU Atom topology driver descriptor added !"));
     }
     else
     {
-        LOG_D(QString("CPU Atom topology driver not found in path: ") + m_path.c_str());
+        LOG_T(QString("CPU Atom topology driver not found in path: ") + m_path.c_str());
     }
 }
 

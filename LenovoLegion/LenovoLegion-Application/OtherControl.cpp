@@ -85,7 +85,7 @@ void OtherControl::refreshData()
     ui->checkBox_DisableTouchpad->blockSignals(false);
     ui->checkBox_DisableWinKey->blockSignals(false);
 
-    LOG_D("OtherControl: Refreshed data - TouchPad disabled: " + 
+    LOG_T("OtherControl: Refreshed data - TouchPad disabled: " +
           QString::number(m_otherSettingsData.touch_pad().current()) +
           ", WinKey disabled: " + 
           QString::number(m_otherSettingsData.win_key().current()));
@@ -93,7 +93,7 @@ void OtherControl::refreshData()
 
 void OtherControl::applySettings()
 {
-    LOG_D("OtherControl: Applying settings");
+    LOG_T("OtherControl: Applying settings");
 
     // Create message with new settings
     legion::messages::OtherSettings newSettings;
@@ -104,7 +104,7 @@ void OtherControl::applySettings()
     // Send to daemon
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderOther::dataType, newSettings);
 
-    LOG_D("OtherControl: Settings applied - TouchPad disabled: " + 
+    LOG_T("OtherControl: Settings applied - TouchPad disabled: " +
           QString::number(newSettings.touch_pad().current()) +
           ", WinKey disabled: " + 
           QString::number(newSettings.win_key().current()));
@@ -168,13 +168,13 @@ void OtherControl::refreshGpuSwitchData()
     ui->radioButton_HybridIGPUOnly->blockSignals(false);
     ui->radioButton_HybridOff->blockSignals(false);
 
-    LOG_D("OtherControl: Refreshed GPU switch data - Mode: " + 
+    LOG_T("OtherControl: Refreshed GPU switch data - Mode: " +
           QString::number(m_gpuSwitchData.current()));
 }
 
 void OtherControl::applyGpuSwitchSettings()
 {
-    LOG_D("OtherControl: Applying GPU switch settings");
+    LOG_T("OtherControl: Applying GPU switch settings");
 
     // Create message with new settings
     legion::messages::GpuSwitchValue newSettings;
@@ -207,7 +207,7 @@ void OtherControl::applyGpuSwitchSettings()
     }
 
 
-    LOG_D("OtherControl: GPU switch settings applied - Mode: " + 
+    LOG_T("OtherControl: GPU switch settings applied - Mode: " +
           QString::number(newSettings.current()));
 }
 

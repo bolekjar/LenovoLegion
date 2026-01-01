@@ -32,28 +32,28 @@ ProtocolProcessorNotifier::ProtocolProcessorNotifier(SysFsDriverManager* sysFsDr
 
 ProtocolProcessorNotifier::~ProtocolProcessorNotifier()
 {
-    LOG_D("ProtocolProcessorNotifier stopped !");
+    LOG_T("ProtocolProcessorNotifier stopped !");
 
     ProtocolProcessorBase::stop();
 }
 
 void ProtocolProcessorNotifier::stop()
 {
-    LOG_D("ProtocolProcessorNotifier stopped !");
+    LOG_T("ProtocolProcessorNotifier stopped !");
 
     ProtocolProcessorBase::stop();
 }
 
 void ProtocolProcessorNotifier::start()
 {
-    LOG_D("ProtocolProcessorNotifier started !");
+    LOG_T("ProtocolProcessorNotifier started !");
 
     ProtocolProcessorBase::start();
 }
 
 void ProtocolProcessorNotifier::readyReadHandler()
 {
-    LOG_D("ProtocolProcessorNotifier readyReadHandler");
+    LOG_T("ProtocolProcessorNotifier readyReadHandler");
 
     THROW_EXCEPTION(exception_T,ERROR_CODES::UNEXPECTED_MESSAGE,"ProtocolProcessorNotifier: Unexpected message !");
 }
@@ -73,7 +73,7 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
 
     if(!isRunning())
     {
-        LOG_D("ProtocolProcessorNotifier is not running, ignoring kernel event !");
+        LOG_T("ProtocolProcessorNotifier is not running, ignoring kernel event !");
         return;
     }
 
@@ -140,7 +140,7 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
             .m_dataLength   = data.length()
         },data));
 
-        LOG_D("ProtocolProcessorNotifier: Notification sent !");
+        LOG_T("ProtocolProcessorNotifier: Notification sent !");
     }
 }
 
@@ -153,7 +153,7 @@ void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon:
 
     if(!isRunning())
     {
-        LOG_D("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
+        LOG_T("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
         return;
     }
 
@@ -199,7 +199,7 @@ void ProtocolProcessorNotifier::dataRequestedHandler(const quint8 forDataTypePro
 
     if(!isRunning())
     {
-        LOG_D("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
+        LOG_T("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
         return;
     }
 
@@ -208,7 +208,7 @@ void ProtocolProcessorNotifier::dataRequestedHandler(const quint8 forDataTypePro
 
         if(data.size() > 0)
         {
-            LOG_D("ProtocolProcessorNotifier: dataRequestedHandler sending data for data type provider=" + QString::number(forDataTypeProvider));
+            LOG_T("ProtocolProcessorNotifier: dataRequestedHandler sending data for data type provider=" + QString::number(forDataTypeProvider));
 
             m_clientSocket->write(ProtocolParser::parseMessage(MessageHeader{
                                                                    .m_type         = MessageHeader::NOTIFICATION,

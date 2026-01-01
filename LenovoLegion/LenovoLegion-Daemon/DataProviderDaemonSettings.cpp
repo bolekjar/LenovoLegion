@@ -24,7 +24,7 @@ QByteArray DataProviderDaemonSettings::serializeAndGetData() const
     legion::messages::DaemonSettings daemonSettings;
     QByteArray byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     // Get current daemon settings from singleton
     daemonSettings = DaemonSettingsManager::getInstance().getDaemonSettings();
@@ -42,7 +42,7 @@ QByteArray DataProviderDaemonSettings::deserializeAndSetData(const QByteArray& d
 {
     legion::messages::DaemonSettings newSettings;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!newSettings.ParseFromArray(data.data(), data.size()))
     {
@@ -62,36 +62,40 @@ QByteArray DataProviderDaemonSettings::deserializeAndSetData(const QByteArray& d
         newSettings.set_save_now(false);
     }
     
-    // Check if debug_logging changed
+    // Check if debug_logging or trace_logging changed
     bool oldDebugLogging = oldSettings.debug_logging();
     bool newDebugLogging = newSettings.debug_logging();
+    bool oldTraceLogging = oldSettings.trace_logging();
+    bool newTraceLogging = newSettings.trace_logging();
     
-    if(oldDebugLogging != newDebugLogging)
+    if(oldDebugLogging != newDebugLogging || oldTraceLogging != newTraceLogging)
     {
-        LOG_D(QString("Debug logging setting changed from ") + QString::number(oldDebugLogging) + " to " + QString::number(newDebugLogging));
+        LOG_D(QString("Logging settings changed - Debug: ") + QString::number(oldDebugLogging) + " -> " + QString::number(newDebugLogging) +
+              ", Trace: " + QString::number(oldTraceLogging) + " -> " + QString::number(newTraceLogging));
         
         // Apply new logging level immediately
         bj::framework::Logger::SEVERITY_BITSET severity;
+        
+        // Always include base levels
+        severity = bj::framework::Logger::SEVERITY_BITSET()
+                 .set(bj::framework::Logger::ERROR)
+                 .set(bj::framework::Logger::WARNING)
+                 .set(bj::framework::Logger::INFO);
+        
+        // Add debug if enabled
         if(newDebugLogging)
         {
-            // Enable debug logging
-            severity = bj::framework::Logger::SEVERITY_BITSET()
-                     .set(bj::framework::Logger::ERROR)
-                     .set(bj::framework::Logger::WARNING)
-                     .set(bj::framework::Logger::INFO)
-                     .set(bj::framework::Logger::DEBUG);
+            severity.set(bj::framework::Logger::DEBUG);
         }
-        else
+        
+        // Add trace if enabled
+        if(newTraceLogging)
         {
-            // Disable debug logging
-            severity = bj::framework::Logger::SEVERITY_BITSET()
-                     .set(bj::framework::Logger::ERROR)
-                     .set(bj::framework::Logger::WARNING)
-                     .set(bj::framework::Logger::INFO);
+            severity.set(bj::framework::Logger::TRACE);
         }
         
         // Apply the new severity level
-       LoggerHolder::getInstance().setSeverity(severity);
+        LoggerHolder::getInstance().setSeverity(severity);
     }
     
     // Update daemon settings in singleton
@@ -104,13 +108,9 @@ QByteArray DataProviderDaemonSettings::deserializeAndSetData(const QByteArray& d
 }
 
 void DataProviderDaemonSettings::init()
-{
-    LOG_D(__PRETTY_FUNCTION__);
-}
+{}
 
 void DataProviderDaemonSettings::clean()
-{
-    LOG_D(__PRETTY_FUNCTION__);
-}
+{}
 
 }

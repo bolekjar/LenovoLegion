@@ -20,7 +20,7 @@ SysFSDriverLegionFanMode::SysFSDriverLegionFanMode(QObject *parrent) : SysFsDriv
 
 void SysFSDriverLegionFanMode::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -49,14 +49,14 @@ void SysFSDriverLegionFanMode::handleKernelEvent(const KernelEvent::Event &event
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 
 
     if(event.m_driver == DRIVER_NAME)
     {
-        LOG_D(QString("Handling kernel event for driver: ") + m_name);
+        LOG_T(QString("Handling kernel event for driver: ") + m_name);
 
         if(event.m_action == "bind")
         {
@@ -73,7 +73,7 @@ void SysFSDriverLegionFanMode::handleKernelEvent(const KernelEvent::Event &event
     {
         if(event.m_driver == d)
         {
-            LOG_D(QString("Handling kernel event for dependency driver: ") + d);
+            LOG_T(QString("Handling kernel event for dependency driver: ") + d);
 
             if(event.m_action == "bind")
             {

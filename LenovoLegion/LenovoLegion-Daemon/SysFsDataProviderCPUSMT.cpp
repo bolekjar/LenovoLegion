@@ -27,7 +27,7 @@ QByteArray SysFsDataProviderCPUSMT::serializeAndGetData() const
     legion::messages::CPUSMT       cpuSmt;
     QByteArray                     byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverCPU::CPU::Smt smtControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverCPU::DRIVER_NAME));
@@ -63,7 +63,7 @@ QByteArray SysFsDataProviderCPUSMT::deserializeAndSetData(const QByteArray &data
 
     m_sysFsDriverManager->blockKernelEvent(SysFsDriverCPUXList::DRIVER_NAME,true);
     auto cleanup =  qScopeGuard([this] { m_sysFsDriverManager->blockKernelEvent(SysFsDriverCPUXList::DRIVER_NAME,false); });
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!cpuSmt.ParseFromArray(data.data(),data.size()))
     {

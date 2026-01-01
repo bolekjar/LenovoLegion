@@ -23,7 +23,7 @@ SysFSDriverLegionGameZone::SysFSDriverLegionGameZone(QObject *parrent) : SysFsDr
 
 void SysFSDriverLegionGameZone::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 
@@ -93,14 +93,14 @@ void SysFSDriverLegionGameZone::handleKernelEvent(const KernelEvent::Event &even
 
     if(m_blockKernelEvent)
     {
-        LOG_D(QString("Kernel event blocked for driver: ") + m_name);
+        LOG_T(QString("Kernel event blocked for driver: ") + m_name);
         return;
     }
 
 
     if(event.m_driver == DRIVER_NAME)
     {
-        LOG_D(QString("Handling kernel event for driver: ") + m_name);
+        LOG_T(QString("Handling kernel event for driver: ") + m_name);
 
         if(event.m_action == "bind")
         {

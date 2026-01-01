@@ -26,7 +26,7 @@ QByteArray SysFsDataProviderOtherGpuSwitch::serializeAndGetData() const
     legion::messages::GpuSwitchValue    gpuSwitchMsg;
     QByteArray                          byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
 
     try {
@@ -65,7 +65,7 @@ QByteArray SysFsDataProviderOtherGpuSwitch::deserializeAndSetData(const QByteArr
     SysFSDriverLegionGameZone::GameZone gameZone(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
     legion::messages::GpuSwitchValue    gpuSwitchMsg;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     if(!gpuSwitchMsg.ParseFromArray(data.data(),data.size()))
     {

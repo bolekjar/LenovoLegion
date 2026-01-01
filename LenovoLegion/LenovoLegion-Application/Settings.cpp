@@ -59,6 +59,12 @@ ApplicationSettings& ApplicationSettings::loadAppDebugLogging(bool& value)
     return *this;
 }
 
+ApplicationSettings& ApplicationSettings::loadAppTraceLogging(bool& value)
+{
+    value = m_settings.value("AppTraceLogging", false).toBool();
+    return *this;
+}
+
 ApplicationSettings& ApplicationSettings::loadSaveSettingsOnDaemonExit(bool& value)
 {
     value = m_settings.value("SaveSettingsOnDaemonExit", true).toBool();
@@ -98,6 +104,13 @@ ApplicationSettings& ApplicationSettings::saveAppDebugLogging(bool value)
     return *this;
 }
 
+ApplicationSettings& ApplicationSettings::saveAppTraceLogging(bool value)
+{
+    m_settings.setValue("AppTraceLogging", value);
+    emit settingChanged(SettingType::AppTraceLogging, value);
+    return *this;
+}
+
 ApplicationSettings& ApplicationSettings::saveSaveSettingsOnDaemonExit(bool value)
 {
     m_settings.setValue("SaveSettingsOnDaemonExit", value);
@@ -124,6 +137,7 @@ void ApplicationSettings::resetToDefaults()
     saveStartMinimized(false)
         .saveMinimizeToTray(false)
         .saveAppDebugLogging(false)
+        .saveAppTraceLogging(false)
         .saveSaveSettingsOnDaemonExit(true)
         .saveDaemonDebugLogging(false)
         .saveStylesheetTheme(ThemeType::NoTheme);

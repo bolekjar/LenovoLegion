@@ -22,7 +22,7 @@ SysFSDriverHWMon::SysFSDriverHWMon(QObject *parrent) : SysFsDriver(DRIVER_NAME,"
 
 void SysFSDriverHWMon::init()
 {
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     clean();
 

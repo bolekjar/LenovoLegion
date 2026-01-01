@@ -60,6 +60,8 @@ private:
     void loadSettings();
     void applyStartupSettings();
     void applyDebugLogging(bool enable);
+    void applyTraceLogging(bool enable);
+    void applyLogging(bool enableDebug, bool enableTrace);
     void applyTheme(ApplicationSettings::ThemeType theme);
 
     std::unique_ptr<MainWindow>      m_mainWindow;

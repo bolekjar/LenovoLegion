@@ -28,7 +28,7 @@ QByteArray SysFsDataProviderBattery::serializeAndGetData() const
     legion::messages::Battery          battery;
     QByteArray                         byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverPowerSuplyBattery0::PowerSuplyBattery0 batery0(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverPowerSuplyBattery0::DRIVER_NAME));

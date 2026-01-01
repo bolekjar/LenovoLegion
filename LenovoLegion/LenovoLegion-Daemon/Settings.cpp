@@ -466,6 +466,7 @@ SettingsLoaderDaemonSettings& SettingsLoaderDaemonSettings::loadDaemonSettings(l
     daemonSettings.set_apply_settings_on_start(m_settings.value("apply_settings_on_start", true).toBool());
     daemonSettings.set_save_settings_on_exit(m_settings.value("save_settings_on_exit", true).toBool());
     daemonSettings.set_debug_logging(m_settings.value("debug_logging", false).toBool());
+    daemonSettings.set_trace_logging(m_settings.value("trace_logging", false).toBool());
     // Note: save_now is not loaded - it's a command flag, not a persistent setting
     return *this;
 }
@@ -480,6 +481,7 @@ SettingsSaverDaemonSettings& SettingsSaverDaemonSettings::saveDaemonSettings(con
     m_settings.setValue("apply_settings_on_start", daemonSettings.apply_settings_on_start());
     m_settings.setValue("save_settings_on_exit", daemonSettings.save_settings_on_exit());
     m_settings.setValue("debug_logging", daemonSettings.debug_logging());
+    m_settings.setValue("trace_logging", daemonSettings.trace_logging());
     // Note: save_now is not saved - it's a command flag, not a persistent setting
     return *this;
 }

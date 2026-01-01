@@ -27,7 +27,7 @@ QByteArray SysFsDataProviderMachineInformation::serializeAndGetData() const
     legion::messages::MachineInformation   machineInfo;
     QByteArray                             byteArray;
 
-    LOG_D(__PRETTY_FUNCTION__);
+    LOG_T(__PRETTY_FUNCTION__);
 
     try {
         SysFsDriverLegionMachineInformation::MachineInformation info(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionMachineInformation::DRIVER_NAME));

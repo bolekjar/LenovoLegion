@@ -34,19 +34,19 @@ ProtocolProcessorBase::~ProtocolProcessorBase()
     disconnect(m_clientSocket, &QLocalSocket::readyRead,this,&ProtocolProcessorBase::readyReadHandlerSlot);
     disconnect(m_clientSocket, &QLocalSocket::disconnected,this, &ProtocolProcessorBase::disconnectedHandlerSlot);
 
-    LOG_D("ProtocolProcessorBase destroyed !");
+    LOG_T("ProtocolProcessorBase destroyed !");
 }
 
 void ProtocolProcessorBase::stop()
 {
-    LOG_D("ProtocolProcessorBase stopped !");
+    LOG_T("ProtocolProcessorBase stopped !");
 
     m_clientSocket->close();
 }
 
 void ProtocolProcessorBase::start()
 {
-    LOG_D("ProtocolProcessorBase started !");
+    LOG_T("ProtocolProcessorBase started !");
 
     connect(m_clientSocket, &QLocalSocket::readyRead,this,&ProtocolProcessorBase::readyReadHandlerSlot);
     connect(m_clientSocket, &QLocalSocket::disconnected,this, &ProtocolProcessorBase::disconnectedHandler);

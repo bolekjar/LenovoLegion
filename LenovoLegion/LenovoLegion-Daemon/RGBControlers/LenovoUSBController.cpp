@@ -85,7 +85,7 @@ std::string LenovoUSBController::getLocation() const
 
 void LenovoUSBController::setProfileDescription(uint8_t profile_id,const  std::vector<led_group>& led_groups)
 {
-    LOG_D(QString::asprintf("LenovoUSBController::setProfileDescription: Setting LED groups for profile %d", profile_id));
+    LOG_T(QString::asprintf("LenovoUSBController::setProfileDescription: Setting LED groups for profile %d", profile_id));
 
     ByteArray packet = serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::EffectChange,{.value1 = profile_id,
                                                                                       .value2 = {}
@@ -140,7 +140,7 @@ void LenovoUSBController::setProfileDescription(uint8_t profile_id,const  std::v
 
 void LenovoUSBController::setLedsDirectOn(uint8_t profile_id)
 {
-    LOG_D(QString::asprintf("LenovoUSBController::setLedsDirectOn: Setting direct LED control for profile %d", profile_id));
+    LOG_T(QString::asprintf("LenovoUSBController::setLedsDirectOn: Setting direct LED control for profile %d", profile_id));
 
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraStartStop, {.value1 = 0x01,
                                                                                           .value2 = profile_id
@@ -149,7 +149,7 @@ void LenovoUSBController::setLedsDirectOn(uint8_t profile_id)
 
 void LenovoUSBController::setLedsDirectOff(uint8_t profile_id)
 {
-    LOG_D(QString::asprintf("LenovoUSBController::setLedsDirectOff: Disabling direct LED control for profile %d", profile_id));
+    LOG_T(QString::asprintf("LenovoUSBController::setLedsDirectOff: Disabling direct LED control for profile %d", profile_id));
 
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraStartStop, {.value1 = 0x02,
                                                                                           .value2 = profile_id
@@ -158,7 +158,7 @@ void LenovoUSBController::setLedsDirectOff(uint8_t profile_id)
 
 void LenovoUSBController::setLedsDirect(const std::vector<RGBColor> &colors)
 {
-    LOG_D("LenovoUSBController::setLedsDirect: Setting direct LED colors");
+    LOG_T("LenovoUSBController::setLedsDirect: Setting direct LED colors");
 
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraSendBitmap,{},[this,&colors](){
         ByteArray payload;
@@ -183,7 +183,7 @@ void LenovoUSBController::setLedsDirect(const std::vector<RGBColor> &colors)
 
 uint8_t LenovoUSBController::getCurrentProfileId() const
 {
-    LOG_D("LenovoUSBController::getCurrentProfileId: Getting current profile ID");
+    LOG_T("LenovoUSBController::getCurrentProfileId: Getting current profile ID");
 
     // Retry up to 10 times if we get profile 0 (device may be in reset state)
     for(int attempt = 0; attempt < 10; ++attempt)
@@ -194,14 +194,14 @@ uint8_t LenovoUSBController::getCurrentProfileId() const
         {
             if(attempt > 0)
             {
-                LOG_D(QString::asprintf("getCurrentProfileId: Got valid profile after %d retries", attempt));
+                LOG_T(QString::asprintf("getCurrentProfileId: Got valid profile after %d retries", attempt));
             }
             return result[4];
         }
         
         if(attempt < 9)
         {
-            LOG_D("getCurrentProfileId: Got profile 0 (device may be in reset state), retrying...");
+            LOG_T("getCurrentProfileId: Got profile 0 (device may be in reset state), retrying...");
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
@@ -212,7 +212,7 @@ uint8_t LenovoUSBController::getCurrentProfileId() const
 
 uint8_t LenovoUSBController::getCurrentBrightness() const
 {
-    LOG_D("LenovoUSBController::getCurrentBrightness: Getting current brightness");
+    LOG_T("LenovoUSBController::getCurrentBrightness: Getting current brightness");
 
     ByteArray result = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::GetBrightness));
     return  result.size() >= 5 ? result[4] : 0;
@@ -220,7 +220,7 @@ uint8_t LenovoUSBController::getCurrentBrightness() const
 
 std::unordered_map<uint16_t, RGBColor> LenovoUSBController::getState() const
 {
-    LOG_D("LenovoUSBController::getState: Getting current LED state");
+    LOG_T("LenovoUSBController::getState: Getting current LED state");
 
     ByteArray result = getFeatureReport();
 
@@ -255,7 +255,7 @@ const LenovoUSBController::KeyMap& LenovoUSBController::getKeyMap() const
 
 bool LenovoUSBController::isCompatible()
 {
-    LOG_D("LenovoUSBController::isCompatibility: Getting device compatibility");
+    LOG_T("LenovoUSBController::isCompatibility: Getting device compatibility");
 
     ByteArray result = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::Compatibility));
 
@@ -264,7 +264,7 @@ bool LenovoUSBController::isCompatible()
 
 void LenovoUSBController::initilizeKeyMap()
 {
-    LOG_D("LenovoUSBController::initilizeKeyMap: Initializing key map");
+    LOG_T("LenovoUSBController::initilizeKeyMap: Initializing key map");
 
     ByteArray result = sendAndGetFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::KeyCount,{0x07,{}}));
 
@@ -391,7 +391,7 @@ std::string LenovoUSBController::getSerialString() const
 
 void LenovoUSBController::setBrightness(uint8_t brightness)
 {
-    LOG_D(QString::asprintf("LenovoUSBController::setBrightness: Setting brightness to %d", brightness));
+    LOG_T(QString::asprintf("LenovoUSBController::setBrightness: Setting brightness to %d", brightness));
 
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::Brightness, {.value1 = brightness,
                                                                                      .value2 = {}
@@ -400,7 +400,7 @@ void LenovoUSBController::setBrightness(uint8_t brightness)
 
 void LenovoUSBController::setProfile(uint8_t profile_id)
 {
-    LOG_D(QString::asprintf("LenovoUSBController::switchProfileTo: Switching to profile %d", profile_id));
+    LOG_T(QString::asprintf("LenovoUSBController::switchProfileTo: Switching to profile %d", profile_id));
 
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::ProfileChange, {.value1 = profile_id,
                                                                                         .value2 = {}
@@ -409,7 +409,7 @@ void LenovoUSBController::setProfile(uint8_t profile_id)
 
 void LenovoUSBController::setProfileDefault(uint8_t profile_id)
 {
-    LOG_D(QString::asprintf("LenovoUSBController::setProfileDefault: Setting profile %d as default", profile_id));
+    LOG_T(QString::asprintf("LenovoUSBController::setProfileDefault: Setting profile %d as default", profile_id));
 
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::ProfileDefault, {.value1 = profile_id,
                                                                                          .value2 = {}
@@ -418,6 +418,8 @@ void LenovoUSBController::setProfileDefault(uint8_t profile_id)
 
 std::vector<LenovoUSBController::led_group> LenovoUSBController::getProfileDescription(uint8_t profile_id) const
 {
+    LOG_T(QString::asprintf("LenovoUSBController::getProfileDescription: Getting profile description for profile %d", profile_id));
+
     // Retry up to 10 times if we get invalid profile data (device may be in reset state)
     for(int attempt = 0; attempt < 10; ++attempt)
     {
@@ -430,7 +432,7 @@ std::vector<LenovoUSBController::led_group> LenovoUSBController::getProfileDescr
         {
             if(attempt < 9)
             {
-                LOG_D(QString::asprintf("getProfileDescription: Got invalid profile data (profile=%d), retrying... (attempt %d/10)", response.size() >= 5 ? response[4] : -1, attempt + 1));
+                LOG_T(QString::asprintf("getProfileDescription: Got invalid profile data (profile=%d), retrying... (attempt %d/10)", response.size() >= 5 ? response[4] : -1, attempt + 1));
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             continue;
@@ -449,7 +451,7 @@ std::vector<LenovoUSBController::led_group> LenovoUSBController::getProfileDescr
                       ,response[2]);    // size
 
 
-        LOG_D(QString::asprintf("LenovoUSBController::getProfileDescription: Received profile settings for profile %d, operation: %X, size: %X", header.m_profile, header.m_operation, header.m_size));
+        LOG_T(QString::asprintf("LenovoUSBController::getProfileDescription: Received profile settings for profile %d, operation: %X, size: %X", header.m_profile, header.m_operation, header.m_size));
 
         /*
          * Parse Data
@@ -550,7 +552,7 @@ std::vector<LenovoUSBController::led_group> LenovoUSBController::getProfileDescr
 
 void LenovoUSBController::sendFeatureReport(const ByteArray& packet) const
 {
-    LOG_D(QString::asprintf("LenovoUSBController::sendFeatureReport: Sending packet: %s", convertBytesArrayToHex(packet).c_str()));
+    LOG_T(QString::asprintf("LenovoUSBController::sendFeatureReport: Sending packet: %s", convertBytesArrayToHex(packet).c_str()));
 
     int ret = hid_send_feature_report(m_dev, packet.data(), packet.size());
     if(ret < 0)
@@ -584,7 +586,7 @@ LenovoUSBController::ByteArray LenovoUSBController::getFeatureReport() const
 
     response.resize(ret);
 
-    LOG_D(QString::asprintf("LenovoUSBController::getFeatureReport: Getting size=%d, packet: %s",ret, convertBytesArrayToHex(response).c_str()));
+    LOG_T(QString::asprintf("LenovoUSBController::getFeatureReport: Getting size=%d, packet: %s",ret, convertBytesArrayToHex(response).c_str()));
 
     return response;
 }
