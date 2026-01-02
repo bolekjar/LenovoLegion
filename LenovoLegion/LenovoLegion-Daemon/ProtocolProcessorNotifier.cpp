@@ -69,7 +69,7 @@ void ProtocolProcessorNotifier::disconnectedHandler()
 
 void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent &event)
 {
-    LOG_D("ProtocolProcessorNotifier: kernelEventHandler m_driverName=" + event.m_driverName + ", event.m_action=" + QString::number(static_cast<int>(event.m_action)) + ", m_DriverSpecificAction=" + QString(event.m_DriverSpecificEventType.data()) + ", m_DriverSpecificValue=" + event.m_DriverSpecificEventValue.data());
+    LOG_T("ProtocolProcessorNotifier: kernelEventHandler m_driverName=" + event.m_driverName + ", event.m_action=" + QString::number(static_cast<int>(event.m_action)) + ", m_DriverSpecificAction=" + QString(event.m_DriverSpecificEventType.data()) + ", m_DriverSpecificValue=" + event.m_DriverSpecificEventValue.data());
 
     if(!isRunning())
     {
@@ -146,7 +146,7 @@ void ProtocolProcessorNotifier::kernelEventHandler(const LenovoLegionDaemon::Sys
 
 void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon::SysFsDriverManager::ModuleSubsystemEvent &event)
 {
-    LOG_D("ProtocolProcessorNotifier: moduleSubsystemHandler " + event.m_moduleName + " " + QString::number(static_cast<int>(event.m_action)));
+    LOG_T("ProtocolProcessorNotifier: moduleSubsystemHandler " + event.m_moduleName + " " + QString::number(static_cast<int>(event.m_action)));
 
     legion::messages::Notification msg;
 
@@ -195,7 +195,7 @@ void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon:
 
 void ProtocolProcessorNotifier::dataRequestedHandler(const quint8 forDataTypeProvider, const std::vector<std::string> &params)
 {
-    LOG_D("ProtocolProcessorNotifier: dataRequestedHandler forDataTypeProvider=" + QString::number(forDataTypeProvider) + ", params size=" + QString::number(params.size()));
+    LOG_T("ProtocolProcessorNotifier: dataRequestedHandler forDataTypeProvider=" + QString::number(forDataTypeProvider) + ", params size=" + QString::number(params.size()));
 
     if(!isRunning())
     {

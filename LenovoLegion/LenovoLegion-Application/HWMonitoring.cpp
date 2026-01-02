@@ -6,14 +6,16 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 #include "HWMonitoring.h"
+#include "ui_HWMonitoring.h"
+
 #include "GPUDetails.h"
 #include "CPUDetails.h"
-#include "ui_HWMonitoring.h"
 #include "Utils.h"
 #include "DataProvider.h"
-
-
 #include "MainWindow.h"
+
+#include <Core/LoggerHolder.h>
+
 
 #include "../LenovoLegion-Daemon/SysFsDataProviderHWMon.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUTopology.h"
@@ -117,160 +119,164 @@ HWMonitoring::HWMonitoring(DataProvider *dataProvider,QWidget *parent)
 
 void HWMonitoring::refresh()
 {
-    const legion::messages::HardwareMonitor data        = m_dataProvider->getDataMessage<legion::messages::HardwareMonitor>(LenovoLegionDaemon::SysFsDataProviderHWMon::dataType);
-    const legion::messages::NvidiaNvml      nvidiaData  = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(LenovoLegionDaemon::DataProviderNvidiaNvml::dataType);
+    try {
+        const legion::messages::HardwareMonitor data        = m_dataProvider->getDataMessage<legion::messages::HardwareMonitor>(LenovoLegionDaemon::SysFsDataProviderHWMon::dataType);
+        const legion::messages::NvidiaNvml      nvidiaData  = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(LenovoLegionDaemon::DataProviderNvidiaNvml::dataType);
 
 
-    /*
-     * HW monitoring
-     */
-    ui->widget_CPUTemp->refresh(data.legion().temp1_temp() / 1000,0,10,' ',QString("CPU Temperature: %1 °C\n"\
-                                                                                   "CPU Temperature min: 30 °C\n"\
-                                                                                   "CPU Temperature max: 100 °C\n").arg(data.legion().temp1_temp() / 1000));
+        /*
+         * HW monitoring
+         */
+        ui->widget_CPUTemp->refresh(data.legion().temp1_temp() / 1000,0,10,' ',QString("CPU Temperature: %1 °C\n"\
+                                                                                       "CPU Temperature min: 30 °C\n"\
+                                                                                       "CPU Temperature max: 100 °C\n").arg(data.legion().temp1_temp() / 1000));
 
-    {
-
-        quint64 diff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_lastRefreshTime).count();
-
-        if(diff < (MainWindow::TIMER_EVENT_IN_MS * 1200) && diff > (MainWindow::TIMER_EVENT_IN_MS * 800))
         {
-            ui->widget_CPUPower->refresh((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff ,
-                                         0,10,' ',
-                                         QString("CPU Power : %1 W\n"
-                                                 "CPU Power min: 0 W\n"
-                                                 "CPU Power max: 250 W\n").arg((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff));
+
+            quint64 diff = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_lastRefreshTime).count();
+
+            if(diff < (MainWindow::TIMER_EVENT_IN_MS * 1200) && diff > (MainWindow::TIMER_EVENT_IN_MS * 800))
+            {
+                ui->widget_CPUPower->refresh((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff ,
+                                             0,10,' ',
+                                             QString("CPU Power : %1 W\n"
+                                                     "CPU Power min: 0 W\n"
+                                                     "CPU Power max: 250 W\n").arg((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff));
+            }
+            else
+            {
+                ui->widget_CPUPower->refresh(ui->widget_CPUPower->getValue() ,
+                                             0,10,' ',
+                                             QString("CPU Power : %1 W\n"
+                                                     "CPU Power min: 0 W\n"
+                                                     "CPU Power max: 250 W\n").arg(ui->widget_CPUPower->getValue()));
+            }
+        }
+
+        ui->widget_GPUTemp->refresh(data.legion().temp2_temp() / 1000,0,10,' ',QString("GPU Temperature: %1 °C\n"\
+                                                                                           "GPU Temperature min: 30 °C\n"\
+                                                                                           "GPU Temperature max: 100 °C\n").arg(data.legion().temp2_temp() / 1000));
+
+        ui->widget_GPUClock->refresh(nvidiaData.hardware_monitor().power().value() / 1000,0,10,' ',QString("Power: %1 W\n"\
+                                                                                                         "Power min: %2 W\n"\
+                                                                                                         "Power max: %3 W\n").arg(nvidiaData.hardware_monitor().power().value() / 1000)
+                                                                                                                             .arg(nvidiaData.hardware_monitor().power().min_value() / 1000)
+                                                                                                                             .arg(m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000));
+
+        ui->widget_CPUFanSpeed->refresh(data.legion().fan1_speed(),0,10,' ',QString("CPU FAN Speed: %1 RPM\n"\
+                                                                                          "CPU FAN Speed min: 0 RPM\n"\
+                                                                                          "CPU FAN Speed max: %2 RPM\n").arg(data.legion().fan1_speed()).arg((data.legion().fan1_speed_max())));
+        ui->widget_GPUFanSpeed->refresh(data.legion().fan2_speed(),0,10,' ',QString("GPU FAN Speed: %1 RPM\n"\
+                                                                                          "GPU FAN Speed min: 0 RPM\n"\
+                                                                                          "GPU FAN Speed max: %2 RPM\n").arg(data.legion().fan2_speed()).arg(data.legion().fan2_speed_max()));
+
+
+
+        /*
+         * CPU Frequency stats
+         */
+        struct Stats {
+            int averageFreq             = 0;
+            int avareqePCoreFreq        = 0;
+            int avareqeACoreFreq        = 0;
+            int averageFreqCount        = 0;
+            int avareqePCoreFreqCount   = 0;
+            int avareqeACoreFreqCount   = 0;
+        } l_stats;
+
+        if(m_windowFreqInfoByCore->isVisible())
+        {
+            /*
+         * Render CPU Frequency Performance
+         */
+            forAllCpuPerformanceCores([this,&data,&l_stats](const int i)
+                                      {
+                                          dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setBaseFreq(data.cpux_freq().at(i).cpu_base_freq() / 1000);
+                                          dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setMinFreq(data.cpux_freq().at(i).cpu_info_min_freq() / 1000);
+                                          dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setMaxFreq(data.cpux_freq().at(i).cpu_info_max_freq() / 1000);
+
+                                          dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setScalingMinFreq(data.cpux_freq().at(i).cpu_scaling_min_freq() / 1000);
+                                          dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setScalingMaxFreq(data.cpux_freq().at(i).cpu_scaling_max_freq() / 1000);
+                                          dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setScalingCurFreq(data.cpux_freq().at(i).cpu_scaling_cur_freq() / 1000);
+
+
+                                          l_stats.avareqePCoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqePCoreFreqCount;
+                                          l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
+                                          return true;
+                                      });
+
+
+            /*
+         * Render CPU Frequency Efficiency
+         */
+            forAllCpuEfficientCores([this,&data,&l_stats](const int i)
+                                    {
+                                        dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setBaseFreq(data.cpux_freq().at(i).cpu_base_freq() / 1000);
+                                        dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setMinFreq(data.cpux_freq().at(i).cpu_info_min_freq() / 1000);
+                                        dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setMaxFreq(data.cpux_freq().at(i).cpu_info_max_freq() / 1000);
+
+                                        dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setScalingMinFreq(data.cpux_freq().at(i).cpu_scaling_min_freq() / 1000);
+                                        dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setScalingMaxFreq(data.cpux_freq().at(i).cpu_scaling_max_freq() / 1000);
+                                        dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setScalingCurFreq(data.cpux_freq().at(i).cpu_scaling_cur_freq() / 1000);
+
+                                        l_stats.avareqeACoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqeACoreFreqCount;
+                                        l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
+                                        return true;
+                                    });
         }
         else
         {
-            ui->widget_CPUPower->refresh(ui->widget_CPUPower->getValue() ,
-                                         0,10,' ',
-                                         QString("CPU Power : %1 W\n"
-                                                 "CPU Power min: 0 W\n"
-                                                 "CPU Power max: 250 W\n").arg(ui->widget_CPUPower->getValue()));
+            forAllCpuPerformanceCores([&data,&l_stats](const int i)
+                                      {
+                                          l_stats.avareqePCoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqePCoreFreqCount;
+                                          l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
+                                          return true;
+                                      });
+            forAllCpuEfficientCores([&data,&l_stats](const int i)
+                                    {
+                                        l_stats.avareqeACoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqeACoreFreqCount;
+                                        l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
+                                        return true;
+                                    });
         }
-    }
 
-    ui->widget_GPUTemp->refresh(data.legion().temp2_temp() / 1000,0,10,' ',QString("GPU Temperature: %1 °C\n"\
-                                                                                       "GPU Temperature min: 30 °C\n"\
-                                                                                       "GPU Temperature max: 100 °C\n").arg(data.legion().temp2_temp() / 1000));
-
-    ui->widget_GPUClock->refresh(nvidiaData.hardware_monitor().power().value() / 1000,0,10,' ',QString("Power: %1 W\n"\
-                                                                                                     "Power min: %2 W\n"\
-                                                                                                     "Power max: %3 W\n").arg(nvidiaData.hardware_monitor().power().value() / 1000)
-                                                                                                                         .arg(nvidiaData.hardware_monitor().power().min_value() / 1000)
-                                                                                                                         .arg(m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000));
-
-    ui->widget_CPUFanSpeed->refresh(data.legion().fan1_speed(),0,10,' ',QString("CPU FAN Speed: %1 RPM\n"\
-                                                                                      "CPU FAN Speed min: 0 RPM\n"\
-                                                                                      "CPU FAN Speed max: %2 RPM\n").arg(data.legion().fan1_speed()).arg((data.legion().fan1_speed_max())));
-    ui->widget_GPUFanSpeed->refresh(data.legion().fan2_speed(),0,10,' ',QString("GPU FAN Speed: %1 RPM\n"\
-                                                                                      "GPU FAN Speed min: 0 RPM\n"\
-                                                                                      "GPU FAN Speed max: %2 RPM\n").arg(data.legion().fan2_speed()).arg(data.legion().fan2_speed_max()));
-
-
-
-    /*
-     * CPU Frequency stats
-     */
-    struct Stats {
-        int averageFreq             = 0;
-        int avareqePCoreFreq        = 0;
-        int avareqeACoreFreq        = 0;
-        int averageFreqCount        = 0;
-        int avareqePCoreFreqCount   = 0;
-        int avareqeACoreFreqCount   = 0;
-    } l_stats;
-
-    if(m_windowFreqInfoByCore->isVisible())
-    {
-        /*
-     * Render CPU Frequency Performance
-     */
-        forAllCpuPerformanceCores([this,&data,&l_stats](const int i)
-                                  {
-                                      dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setBaseFreq(data.cpux_freq().at(i).cpu_base_freq() / 1000);
-                                      dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setMinFreq(data.cpux_freq().at(i).cpu_info_min_freq() / 1000);
-                                      dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setMaxFreq(data.cpux_freq().at(i).cpu_info_max_freq() / 1000);
-
-                                      dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setScalingMinFreq(data.cpux_freq().at(i).cpu_scaling_min_freq() / 1000);
-                                      dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setScalingMaxFreq(data.cpux_freq().at(i).cpu_scaling_max_freq() / 1000);
-                                      dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getPerforamnceWidget(i))->setScalingCurFreq(data.cpux_freq().at(i).cpu_scaling_cur_freq() / 1000);
-
-
-                                      l_stats.avareqePCoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqePCoreFreqCount;
-                                      l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
-                                      return true;
-                                  });
-
+        if(m_windowGPUDetails->isVisible())
+        {
+            /*
+             * GPU Details
+             */
+            m_windowGPUDetails->refresh(nvidiaData);
+        }
 
         /*
-     * Render CPU Frequency Efficiency
-     */
-        forAllCpuEfficientCores([this,&data,&l_stats](const int i)
-                                {
-                                    dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setBaseFreq(data.cpux_freq().at(i).cpu_base_freq() / 1000);
-                                    dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setMinFreq(data.cpux_freq().at(i).cpu_info_min_freq() / 1000);
-                                    dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setMaxFreq(data.cpux_freq().at(i).cpu_info_max_freq() / 1000);
-
-                                    dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setScalingMinFreq(data.cpux_freq().at(i).cpu_scaling_min_freq() / 1000);
-                                    dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setScalingMaxFreq(data.cpux_freq().at(i).cpu_scaling_max_freq() / 1000);
-                                    dynamic_cast<ThreadFrequency*>(m_windowFreqInfoByCore->getEfficiencyWidget(i))->setScalingCurFreq(data.cpux_freq().at(i).cpu_scaling_cur_freq() / 1000);
-
-                                    l_stats.avareqeACoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqeACoreFreqCount;
-                                    l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
-                                    return true;
-                                });
-    }
-    else
-    {
-        forAllCpuPerformanceCores([&data,&l_stats](const int i)
-                                  {
-                                      l_stats.avareqePCoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqePCoreFreqCount;
-                                      l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
-                                      return true;
-                                  });
-        forAllCpuEfficientCores([&data,&l_stats](const int i)
-                                {
-                                    l_stats.avareqeACoreFreq += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.avareqeACoreFreqCount;
-                                    l_stats.averageFreq      += data.cpux_freq().at(i).cpu_scaling_cur_freq();++l_stats.averageFreqCount;
-                                    return true;
-                                });
-    }
-
-    if(m_windowGPUDetails->isVisible())
-    {
-        /*
-         * GPU Details
+         * Render CPU Frequency Avg
          */
-        m_windowGPUDetails->refresh(nvidiaData);
+        ui->widget_CPUAvgFreq->refresh(l_stats.averageFreqCount == 0 ? 0 : (l_stats.averageFreq/l_stats.averageFreqCount/1000),4,10,QChar('0'),
+                                          QString("CPU Average Frequency: %1 MHz\n"\
+                                                  "CPU Min Frequency: %2 MHz\n"\
+                                                  "CPU Max Frequency: %3 MHz\n"\
+                                                  "CPU Scale Min Frequency: %4 MHz\n"\
+                                                  "CPU Scale Max Frequency: %5 MHz\n").arg(l_stats.averageFreqCount == 0 ? 0 : (l_stats.averageFreq/l_stats.averageFreqCount/1000)).arg(ui->widget_CPUAvgFreq->getMinValue()).arg(ui->widget_CPUAvgFreq->getMaxValue()).arg(ui->widget_CPUAvgFreq->getScaleMin()).arg(ui->widget_CPUAvgFreq->getScaleMax()));
+        ui->widget_PCoresAvgFreq->refresh(l_stats.avareqePCoreFreqCount == 0 ? 0 : (l_stats.avareqePCoreFreq/l_stats.avareqePCoreFreqCount/1000),4,10,QChar('0'),
+                                          QString("P-Core Average Frequency: %1 MHz\n"\
+                                                  "P-Core Min Frequency: %2 MHz\n"\
+                                                  "P-Core Max Frequency: %3 MHz\n"
+                                                  "P-Core Scale Min Frequency: %4 MHz\n"
+                                                  "P-Core Scale Maxn Frequency: %5 MHz\n").arg(l_stats.avareqePCoreFreqCount == 0 ? 0 : (l_stats.avareqePCoreFreq/l_stats.avareqePCoreFreqCount/1000)).arg(ui->widget_PCoresAvgFreq->getMinValue()).arg(ui->widget_PCoresAvgFreq->getMaxValue()).arg((ui->widget_PCoresAvgFreq->getScaleMin())).arg(ui->widget_PCoresAvgFreq->getScaleMax()));
+        ui->widget_ECoresAvgFreq->refresh(l_stats.avareqeACoreFreqCount == 0 ? 0 : (l_stats.avareqeACoreFreq/l_stats.avareqeACoreFreqCount/1000),4,10,QChar('0'),
+                                          QString("E-Core Average Frequency: %1 MHz\n"\
+                                                  "E-Core Min Frequency: %2 MHz\n"\
+                                                  "E-Core Max Frequency: %3 MHz\n"
+                                                  "E-Core Scale Min Frequency: %4 MHz\n"
+                                                  "E-Core Scale Max Frequency: %5 MHz\n").arg(l_stats.avareqeACoreFreqCount == 0 ? 0 : (l_stats.avareqeACoreFreq/l_stats.avareqeACoreFreqCount/1000)).arg(ui->widget_ECoresAvgFreq->getMinValue()).arg(ui->widget_ECoresAvgFreq->getMaxValue()).arg(ui->widget_ECoresAvgFreq->getScaleMin()).arg(ui->widget_ECoresAvgFreq->getScaleMax())
+                                            );
+
+        m_hwMonitoringData = m_dataProvider->getDataMessage<legion::messages::HardwareMonitor>(LenovoLegionDaemon::SysFsDataProviderHWMon::dataType);
+        m_nvidiaNvmlData = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(LenovoLegionDaemon::DataProviderNvidiaNvml::dataType);
+        m_lastRefreshTime  = std::chrono::steady_clock::now();
+    } catch(ProtocolProcessor::exception_T &ex) {
+        LOG_W(QString("HWMonitoring refresh error: ").append(ex.what()));
     }
-
-    /*
-     * Render CPU Frequency Avg
-     */
-    ui->widget_CPUAvgFreq->refresh(l_stats.averageFreqCount == 0 ? 0 : (l_stats.averageFreq/l_stats.averageFreqCount/1000),4,10,QChar('0'),
-                                      QString("CPU Average Frequency: %1 MHz\n"\
-                                              "CPU Min Frequency: %2 MHz\n"\
-                                              "CPU Max Frequency: %3 MHz\n"\
-                                              "CPU Scale Min Frequency: %4 MHz\n"\
-                                              "CPU Scale Max Frequency: %5 MHz\n").arg(l_stats.averageFreqCount == 0 ? 0 : (l_stats.averageFreq/l_stats.averageFreqCount/1000)).arg(ui->widget_CPUAvgFreq->getMinValue()).arg(ui->widget_CPUAvgFreq->getMaxValue()).arg(ui->widget_CPUAvgFreq->getScaleMin()).arg(ui->widget_CPUAvgFreq->getScaleMax()));
-    ui->widget_PCoresAvgFreq->refresh(l_stats.avareqePCoreFreqCount == 0 ? 0 : (l_stats.avareqePCoreFreq/l_stats.avareqePCoreFreqCount/1000),4,10,QChar('0'),
-                                      QString("P-Core Average Frequency: %1 MHz\n"\
-                                              "P-Core Min Frequency: %2 MHz\n"\
-                                              "P-Core Max Frequency: %3 MHz\n"
-                                              "P-Core Scale Min Frequency: %4 MHz\n"
-                                              "P-Core Scale Maxn Frequency: %5 MHz\n").arg(l_stats.avareqePCoreFreqCount == 0 ? 0 : (l_stats.avareqePCoreFreq/l_stats.avareqePCoreFreqCount/1000)).arg(ui->widget_PCoresAvgFreq->getMinValue()).arg(ui->widget_PCoresAvgFreq->getMaxValue()).arg((ui->widget_PCoresAvgFreq->getScaleMin())).arg(ui->widget_PCoresAvgFreq->getScaleMax()));
-    ui->widget_ECoresAvgFreq->refresh(l_stats.avareqeACoreFreqCount == 0 ? 0 : (l_stats.avareqeACoreFreq/l_stats.avareqeACoreFreqCount/1000),4,10,QChar('0'),
-                                      QString("E-Core Average Frequency: %1 MHz\n"\
-                                              "E-Core Min Frequency: %2 MHz\n"\
-                                              "E-Core Max Frequency: %3 MHz\n"
-                                              "E-Core Scale Min Frequency: %4 MHz\n"
-                                              "E-Core Scale Max Frequency: %5 MHz\n").arg(l_stats.avareqeACoreFreqCount == 0 ? 0 : (l_stats.avareqeACoreFreq/l_stats.avareqeACoreFreqCount/1000)).arg(ui->widget_ECoresAvgFreq->getMinValue()).arg(ui->widget_ECoresAvgFreq->getMaxValue()).arg(ui->widget_ECoresAvgFreq->getScaleMin()).arg(ui->widget_ECoresAvgFreq->getScaleMax())
-                                        );
-
-    m_hwMonitoringData = m_dataProvider->getDataMessage<legion::messages::HardwareMonitor>(LenovoLegionDaemon::SysFsDataProviderHWMon::dataType);
-    m_nvidiaNvmlData = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(LenovoLegionDaemon::DataProviderNvidiaNvml::dataType);
-    m_lastRefreshTime  = std::chrono::steady_clock::now();
 }
 
 HWMonitoring::~HWMonitoring()

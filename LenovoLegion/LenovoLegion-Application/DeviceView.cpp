@@ -5,14 +5,17 @@
  * Author(s):
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
+#include "DeviceView.h"
+#include "Core/LoggerHolder.h"
+#include "ProtocolProcessorBase.h"
+#include "RGBControllerKeyNames.h"
+
 #include <QPainter>
 #include <QResizeEvent>
 #include <QStyleOption>
 #include <QtCore/qmath.h>
 #include <QDebug>
 #include <QMouseEvent>
-#include "DeviceView.h"
-#include "RGBControllerKeyNames.h"
 
 #define MAX_COLS    20
 #define PAD_LED     0.1f
@@ -28,7 +31,8 @@ namespace LenovoLegionGui {
 DeviceView::DeviceView(QWidget *parent) :
     QWidget(parent),
     initSize(128,128),
-    mouseDown(false)
+    mouseDown(false),
+    m_timerId(-1)
 {
     controller = NULL;
     numerical_labels = false;
@@ -37,7 +41,7 @@ DeviceView::DeviceView(QWidget *parent) :
 
     size = width();
 
-    startTimer(50);
+    m_timerId = startTimer(50);
 }
 
 DeviceView::~DeviceView()
@@ -604,6 +608,15 @@ void DeviceView::markLeds(const  QMap<int,QColor> &leds)
     update();
 }
 
+void DeviceView::cleanup()
+{
+    if(m_timerId != -1)
+    {
+        killTimer(m_timerId);
+        m_timerId = -1;
+    }
+}
+
 QSize DeviceView::sizeHint () const
 {
     return QSize(height() - 1, height() - 1);
@@ -881,10 +894,15 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
 
 void DeviceView::timerEvent(QTimerEvent *)
 {
-    if(controller && isVisible())
+    try {
+        if(controller && isVisible())
+        {
+            led_colors = controller->GetStateForAllLeds();
+            update();
+        }
+    } catch(const ProtocolProcessorBase::exception_T &ex)
     {
-        led_colors = controller->GetStateForAllLeds();
-        update();
+        LOG_W(QString::asprintf("DeviceView: Caught exception while updating LED colors: %s", ex.what()));
     }
 }
 

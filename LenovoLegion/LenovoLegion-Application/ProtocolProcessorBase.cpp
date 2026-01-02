@@ -41,7 +41,7 @@ void ProtocolProcessorBase::timerEvent(QTimerEvent *timerId)
     {
         if(!m_socket->isOpen())
         {
-            LOG_D(QString("Connecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+            LOG_T(QString("Connecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
 
             m_socket->connectToServer(SOCKET_NAME);
         }
@@ -50,11 +50,21 @@ void ProtocolProcessorBase::timerEvent(QTimerEvent *timerId)
 
 void ProtocolProcessorBase::sendMessage(const LenovoLegionDaemon::MessageHeader &message,const QByteArray& data)
 {
+    if(!isConnected())
+    {
+        THROW_EXCEPTION(exception_T, ERROR_CODES::NOT_CONNECTED,"Socket is not connected !");
+    }
+
     m_socket->write(LenovoLegionDaemon::ProtocolParser::parseMessage(message,data));
 }
 
 LenovoLegionDaemon::MessageHeader ProtocolProcessorBase::receiveMessage(QByteArray &data,int timeout)
 {
+    if(!isConnected())
+    {
+        THROW_EXCEPTION(exception_T, ERROR_CODES::NOT_CONNECTED,"Socket is not connected !");
+    }
+
     if(m_socket->waitForReadyRead(timeout))
     {
         LenovoLegionDaemon::MessageHeader message;
@@ -87,17 +97,16 @@ LenovoLegionDaemon::MessageHeader ProtocolProcessorBase::receiveMessageDataReady
 
 void ProtocolProcessorBase::onConnected()
 {
-
     LOG_T(QString("Connected to daemon socket ( ").append(SOCKET_NAME).append(" )"));
     emit connected();
 }
 
 void ProtocolProcessorBase::onDisconnected()
 {
+    m_socket->close();
+
     LOG_T(QString("Disconnected from daemon socket ( ").append(SOCKET_NAME).append(" )"));
     emit disconnected();
-
-    m_socket->close();
 }
 
 void ProtocolProcessorBase::waitForExit()
@@ -149,7 +158,7 @@ bool ProtocolProcessorBase::isConnected()
 
 void ProtocolProcessorBase::reconnect()
 {
-    LOG_T(QString("Reconnecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
+    LOG_D(QString("Reconnecting to daemon socket ( ").append(SOCKET_NAME).append(" )"));
     
     if (m_socket->isOpen()) {
         m_socket->close();

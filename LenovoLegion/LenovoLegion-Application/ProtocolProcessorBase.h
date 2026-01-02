@@ -25,7 +25,8 @@ class ProtocolProcessorBase : public QObject
 public:
 
     enum ERROR_CODES : int {
-        TIMEOUT_ERROR     = -1
+        TIMEOUT_ERROR     = -1,
+        NOT_CONNECTED     = -2
     };
 
 

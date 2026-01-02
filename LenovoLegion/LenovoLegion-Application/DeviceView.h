@@ -34,6 +34,7 @@ public:
     void setNumericalLabels(bool enable);
     void setPerLED(bool per_led_mode);
     void markLeds(const QMap<int,QColor> &leds);
+    void cleanup();
 
 protected:
     void mousePressEvent(QMouseEvent *event)    override;
@@ -72,6 +73,8 @@ private:
     bool                                numerical_labels;
 
     LenovoLegionDaemon::RGBControllerInterface* controller;
+
+    int                                 m_timerId;
 
     QColor posColor(const QPoint &point);
     void InitDeviceView();

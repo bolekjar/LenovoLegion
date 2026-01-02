@@ -199,6 +199,11 @@ void OpenRGBDevicePage::dataProviderEvent(const legion::messages::Notification &
     }
 }
 
+void OpenRGBDevicePage::cleanup()
+{
+    ui->DeviceViewBox->cleanup();
+}
+
 void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int value)
 {
     /*-----------------------------------------------------*\

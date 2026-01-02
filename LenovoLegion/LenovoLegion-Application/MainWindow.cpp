@@ -60,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
              */
             Utils::Layout::forAllLayoutsDo(*ui->toolBar_HBoxLayout,[](QLayoutItem& layout)
             {
+                dynamic_cast<ToolBarWidget *>(layout.widget())->blockSignals(true);
                 dynamic_cast<ToolBarWidget *>(layout.widget())->cleanup();
             });
 
@@ -218,47 +219,53 @@ void MainWindow::daemonNotification(const legion::messages::Notification &msg)
     break;
     case legion::messages::Notification::Action::Notification_Action_UPDATE_RGB_CONTROLER_SCREENSHOT_DATA:
     {
-            QScreen *screen = QGuiApplication::primaryScreen();
+            if(ui->label_DaemonStatus->text() == DAEMON_CONNECTION_STATUS_CONNECTED.data())
+            {
+                QScreen *screen = QGuiApplication::primaryScreen();
 
-            if (screen) {
+                if (screen) {
+                    // Adjust contrast
+                    float contrast = 1.5;  //1.0 = no change, >1.0 = more contrast, <1.0 = less contrast
 
-                // Adjust contrast
-                float contrast = 1.5;  //1.0 = no change, >1.0 = more contrast, <1.0 = less contrast
-
-                QPixmap screenshot = screen->grabWindow(0).scaled(msg.rgb_controler_screen_shot_data_params().width(),msg.rgb_controler_screen_shot_data_params().height(), Qt::IgnoreAspectRatio);
-
-
-                std::vector<LenovoLegionDaemon::RGBColor> colors;
+                    QPixmap screenshot = screen->grabWindow(0).scaled(msg.rgb_controler_screen_shot_data_params().width(),msg.rgb_controler_screen_shot_data_params().height(), Qt::IgnoreAspectRatio);
 
 
-                colors.resize(msg.rgb_controler_screen_shot_data_params().width() * msg.rgb_controler_screen_shot_data_params().height());
+                    std::vector<LenovoLegionDaemon::RGBColor> colors;
 
 
-                for(uint32_t y = 0; y < msg.rgb_controler_screen_shot_data_params().height(); y++)
-                {
-                    for (uint32_t x = 0; x < msg.rgb_controler_screen_shot_data_params().width(); ++x) {
+                    colors.resize(msg.rgb_controler_screen_shot_data_params().width() * msg.rgb_controler_screen_shot_data_params().height());
 
-                        QColor color = screenshot.toImage().pixelColor(x,y);
 
-                        colors[x + (y * msg.rgb_controler_screen_shot_data_params().width())] = ToRGBColor(
-                            qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
-                            qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
-                            qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
-                            );
+                    for(uint32_t y = 0; y < msg.rgb_controler_screen_shot_data_params().height(); y++)
+                    {
+                        for (uint32_t x = 0; x < msg.rgb_controler_screen_shot_data_params().width(); ++x) {
 
+                            QColor color = screenshot.toImage().pixelColor(x,y);
+
+                            colors[x + (y * msg.rgb_controler_screen_shot_data_params().width())] = ToRGBColor(
+                                qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
+                                qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
+                                qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
+                                );
+
+                        }
                     }
-                }
 
-                legion::messages::RGBControllerSetRequest response;
+                    legion::messages::RGBControllerSetRequest response;
 
-                response.set_set_request_flags( legion::messages::RGBControllerSetRequest::SET_REQUEST_CAPTURE_DATA);
+                    response.set_set_request_flags( legion::messages::RGBControllerSetRequest::SET_REQUEST_CAPTURE_DATA);
 
-                for(const auto& color : colors)
-                {
-                    response.add_capture_data_colors(color);
-                }
+                    for(const auto& color : colors)
+                    {
+                        response.add_capture_data_colors(color);
+                    }
 
-                m_dataProviderManager->dataProvider()->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,response);
+                    try {
+                        m_dataProviderManager->dataProvider()->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,response);
+                    } catch (const ProtocolProcessorBase::exception_T &ex) {
+                        LOG_W(QString::asprintf("MainWindow: Caught exception while sending screenshot data to daemon: %s", ex.what()));
+                    }
+            }
 
         }
         return;
@@ -277,6 +284,14 @@ void MainWindow::daemonNotification(const legion::messages::Notification &msg)
 
 void MainWindow::clientDisconnected()
 {
+    LOG_D("MainWindow: Client disconnected from daemon");
+
+    if(m_timerId != -1)
+    {
+        killTimer(m_timerId);
+        m_timerId = -1;
+    }
+
     /*
      * Set status
      */
@@ -291,7 +306,14 @@ void MainWindow::clientDisconnected()
 
 void MainWindow::clientConnected()
 {
-     /*
+    LOG_D("MainWindow: Client connected to daemon");
+
+    if(m_timerId == -1)
+    {
+       m_timerId = startTimer(TIMER_EVENT_IN_MS);
+    }
+
+    /*
      * Set status
      */
     ui->label_DaemonStatus->setText(DAEMON_CONNECTION_STATUS_CONNECTED.data());
@@ -327,6 +349,15 @@ void MainWindow::initializeUI()
 
 void MainWindow::clearUI()
 {
+
+    /*
+     * Cleanup existing widgets
+     */
+    Utils::Layout::forAllLayoutsDo(*ui->toolBar_HBoxLayout,[](QLayoutItem& layout)
+                                   {
+                                       dynamic_cast<ToolBarWidget *>(layout.widget())->blockSignals(true);
+                                       dynamic_cast<ToolBarWidget *>(layout.widget())->cleanup();
+                                   });
 
     /*
      * Remove all widgets from toolBar HBoxLayout

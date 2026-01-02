@@ -64,6 +64,13 @@ void ToolBarKeyboardWidget::dataProviderEvent(const legion::messages::Notificati
 
 void ToolBarKeyboardWidget::cleanup()
 {
+    Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_ToolBarKeyboard,[](QLayoutItem &item){
+        OpenRGBDevicePage* rgbDevice = dynamic_cast<OpenRGBDevicePage *>(item.widget());
+        if(rgbDevice)
+        {
+            rgbDevice->cleanup();
+        }
+    });
 
     ToolBarWidget::cleanup();
 }

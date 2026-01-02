@@ -33,6 +33,7 @@ public:
     ~OpenRGBDevicePage();
 
     void dataProviderEvent(const legion::messages::Notification &notification);
+    void cleanup();
 
 private:
     void SetDevice(unsigned char red, unsigned char green, unsigned char blue);

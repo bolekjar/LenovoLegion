@@ -88,6 +88,7 @@ public:
 
 private:
     void readActiveProfileSettings();
+    void startStopDirectControlModeTimerIfNeeded();
 
 
     /*
