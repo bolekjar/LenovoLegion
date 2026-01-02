@@ -31,6 +31,7 @@ SOURCES +=               \
         ProtocolProcessorBase.cpp \
         ProtocolProcessorNotifier.cpp \
         RGBController.cpp \
+        RGBKeyboardDevice.cpp \
         Settings.cpp \
         TaskList.cpp \
         ThreadControl.cpp \
@@ -44,7 +45,6 @@ SOURCES +=               \
         ToolBarSettingsWidget.cpp \
         ToolBarWidget.cpp \
         Utils.cpp \
-        OpenRGBDevicePage.cpp \
         QTooltipedSlider.cpp \
         ColorWheel.cpp \
         DeviceView.cpp \
@@ -74,6 +74,7 @@ HEADERS +=          \
         ProtocolProcessorBase.h \
         ProtocolProcessorNotifier.h \
         RGBController.h \
+        RGBKeyboardDevice.h \
         Settings.h \
         TaskList.h \
         ThreadControl.h \
@@ -87,7 +88,6 @@ HEADERS +=          \
         ToolBarSettingsWidget.h \
         ToolBarWidget.h \
         Utils.h \
-        OpenRGBDevicePage.h \
         QTooltipedSlider.h \
         ColorWheel.h \
         DeviceView.h \
@@ -150,6 +150,7 @@ FORMS +=           \
     OtherControl.ui \
     PowerControl.ui \
     PowerProfileControl.ui \
+    RGBKeyboardDevice.ui \
     ThreadControl.ui \
     ThreadFrequency.ui \
     ThreadFrequencyControl.ui \
@@ -158,8 +159,7 @@ FORMS +=           \
     ToolBarInformationWidget.ui \
     ToolBarKeyboardWidget.ui \
     ToolBarProfilesWidget.ui \
-    ToolBarSettingsWidget.ui \
-    OpenRGBDevicePage.ui
+    ToolBarSettingsWidget.ui
 
 INCLUDEPATH += $${CUDA_PATH}/include
 LIBS += -l$${PROJECT_LIBS_NAME}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OpenRGBDevicePage</class>
- <widget class="QFrame" name="OpenRGBDevicePage">
+ <class>RGBKeyboardDevice</class>
+ <widget class="QFrame" name="RGBKeyboardDevice">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -96,10 +96,17 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="ModeLabel">
+              <item row="5" column="0">
+               <widget class="QLabel" name="SpeedLabel">
                 <property name="text">
-                 <string>Mode:</string>
+                 <string>Speed:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1" colspan="3">
+               <widget class="LenovoLegionGui::QTooltipedSlider" name="SpeedSlider">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
                 </property>
                </widget>
               </item>
@@ -109,9 +116,6 @@
                  <string>Dir:</string>
                 </property>
                </widget>
-              </item>
-              <item row="1" column="1" colspan="3">
-               <widget class="QComboBox" name="LEDBox"/>
               </item>
               <item row="3" column="1">
                <widget class="QRadioButton" name="PerLEDCheck">
@@ -134,32 +138,15 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="SpeedLabel">
+              <item row="2" column="0">
+               <widget class="QLabel" name="ModeLabel">
                 <property name="text">
-                 <string>Speed:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1" colspan="3">
-               <widget class="LenovoLegionGui::QTooltipedSlider" name="SpeedSlider">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
+                 <string>Mode:</string>
                 </property>
                </widget>
               </item>
               <item row="0" column="1" colspan="3">
                <widget class="QComboBox" name="ZoneBox"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="ZoneLabel">
-                <property name="text">
-                 <string>Zone:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="1" colspan="3">
-               <widget class="QComboBox" name="DirectionBox"/>
               </item>
               <item row="3" column="2">
                <widget class="QRadioButton" name="ModeSpecificCheck">
@@ -168,17 +155,54 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1" colspan="3">
-               <widget class="QComboBox" name="ModeBox"/>
-              </item>
-              <item row="4" column="0" colspan="2">
-               <widget class="QLabel" name="label_modeSpecificColor">
+              <item row="0" column="0">
+               <widget class="QLabel" name="ZoneLabel">
                 <property name="text">
-                 <string>Mode-Specific Color:</string>
+                 <string>Zone:</string>
                 </property>
                </widget>
               </item>
-              <item row="4" column="2" colspan="2">
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_modeSpecificColor">
+                <property name="text">
+                 <string>Mode-Specific:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1" colspan="3">
+               <widget class="QComboBox" name="LEDBox"/>
+              </item>
+              <item row="2" column="1" colspan="3">
+               <widget class="QComboBox" name="ModeBox"/>
+              </item>
+              <item row="6" column="1" colspan="3">
+               <widget class="QComboBox" name="DirectionBox"/>
+              </item>
+              <item row="4" column="3">
+               <layout class="QHBoxLayout" name="horizontalLayout_7">
+                <item>
+                 <widget class="QLabel" name="label_modeSpecificColorCount">
+                  <property name="text">
+                   <string>Colors:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="spinBox_modeSpecificColorCount">
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                  <property name="showGroupSeparator" stdset="0">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="4" column="1" colspan="2">
                <widget class="QComboBox" name="comboBox_modeSpecificColor"/>
               </item>
              </layout>

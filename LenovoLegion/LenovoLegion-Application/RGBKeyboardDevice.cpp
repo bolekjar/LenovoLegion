@@ -6,9 +6,9 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 
-#include "OpenRGBDevicePage.h"
+#include "RGBKeyboardDevice.h"
 #include "RGBControllerKeyNames.h"
-#include "ui_OpenRGBDevicePage.h"
+#include "ui_RGBKeyboardDevice.h"
 
 
 #include <Core/LoggerHolder.h>
@@ -22,7 +22,7 @@
 namespace LenovoLegionGui {
 
 
-QString OpenRGBDevicePage::ModeDescription(const LenovoLegionDaemon::mode& m)
+QString RGBKeyboardDevice::ModeDescription(const LenovoLegionDaemon::mode& m)
 {
     /*-----------------------------------------------------------------*\
     | List of common mode names can be found on the OpenRGB Wiki:       |
@@ -54,9 +54,9 @@ QString OpenRGBDevicePage::ModeDescription(const LenovoLegionDaemon::mode& m)
     return "";
 }
 
-OpenRGBDevicePage::OpenRGBDevicePage(RGBController *dev, QWidget *parent) :
+RGBKeyboardDevice::RGBKeyboardDevice(RGBController *dev, QWidget *parent) :
     QFrame(parent),
-    ui(new Ui::OpenRGBDevicePage)
+    ui(new Ui::RGBKeyboardDevice)
 {
     ui->setupUi(this);
 
@@ -106,7 +106,7 @@ OpenRGBDevicePage::OpenRGBDevicePage(RGBController *dev, QWidget *parent) :
     ui->DeviceViewBox->setController(device.get());
     ui->DeviceViewBoxFrame->hide();
 
-    connect(ui->DeviceViewBox, &DeviceView::selectionChanged, this, &OpenRGBDevicePage::on_DeviceViewBox_selectionChanged);
+    connect(ui->DeviceViewBox, &DeviceView::selectionChanged, this, &RGBKeyboardDevice::on_DeviceViewBox_selectionChanged);
 
     /*-----------------------------------------------------*\
      | The profile selection  box                           |
@@ -162,12 +162,12 @@ OpenRGBDevicePage::OpenRGBDevicePage(RGBController *dev, QWidget *parent) :
     updateColorUi();
 }
 
-OpenRGBDevicePage::~OpenRGBDevicePage()
+RGBKeyboardDevice::~RGBKeyboardDevice()
 {
     delete ui;
 }
 
-void OpenRGBDevicePage::dataProviderEvent(const legion::messages::Notification &notification)
+void RGBKeyboardDevice::dataProviderEvent(const legion::messages::Notification &notification)
 {
     if(notification.has_action())
     {
@@ -199,12 +199,12 @@ void OpenRGBDevicePage::dataProviderEvent(const legion::messages::Notification &
     }
 }
 
-void OpenRGBDevicePage::cleanup()
+void RGBKeyboardDevice::cleanup()
 {
     ui->DeviceViewBox->cleanup();
 }
 
-void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int value)
+void RGBKeyboardDevice::on_BrightnessSlider_valueChanged(int value)
 {
     /*-----------------------------------------------------*\
     | Set device brightness                                 |
@@ -214,7 +214,7 @@ void OpenRGBDevicePage::on_BrightnessSlider_valueChanged(int value)
     device->ApplyPendingChanges();
 }
 
-void OpenRGBDevicePage::UpdateInterface()
+void RGBKeyboardDevice::UpdateInterface()
 {
     /*-----------------------------------------------------*\
     | Update mode user interface elements                   |
@@ -231,7 +231,7 @@ void OpenRGBDevicePage::UpdateInterface()
     repaint();
 }
 
-void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
+void RGBKeyboardDevice::UpdateModeUi(unsigned int selectColorMode, unsigned int selectModeColorIdx)
 {
 
     /*-----------------------------------------------------*\
@@ -246,6 +246,7 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     ui->SpeedSlider->blockSignals(true);
     ui->DirectionBox->blockSignals(true);
     ui->comboBox_modeSpecificColor->blockSignals(true);
+    ui->spinBox_modeSpecificColorCount->blockSignals(true);
 
 
     ui->pushButton_AddEffects->blockSignals(true);
@@ -265,6 +266,7 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     ui->SpeedSlider->setValue(0);
     ui->DirectionBox->clear();
     ui->comboBox_modeSpecificColor->clear();
+    ui->spinBox_modeSpecificColorCount->setValue(0);
 
     /*
      *
@@ -279,6 +281,7 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     ui->DirectionBox->setEnabled(false);
     ui->comboBox_modeSpecificColor->setEnabled(false);
     ui->pushButton_AddEffects->setEnabled(false);
+     ui->spinBox_modeSpecificColorCount->setEnabled(false);
 
 
 
@@ -375,15 +378,27 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
             break;
         case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
         {
-            for(unsigned int i = 0; i < mode.colors.size();++i)
+            ui->spinBox_modeSpecificColorCount->setMinimum(0);
+            ui->spinBox_modeSpecificColorCount->setMaximum(mode.colors.size());
+
+            if(selectModeColorIdx <= mode.colors.size())
             {
-                ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",i),QVariant(QColor(QRgb(mode.colors.at(i)))));
+                for(unsigned int i = 0; i < selectModeColorIdx;++i)
+                {
+                    ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",i),QVariant(QColor(QRgb(mode.colors.at(i)))));
+                }
+
+                ui->spinBox_modeSpecificColorCount->setValue(selectModeColorIdx);
+            }
+            else
+            {
+                ui->spinBox_modeSpecificColorCount->setValue(0);
             }
 
             ui->comboBox_modeSpecificColor->setEnabled(true);
-            ui->comboBox_modeSpecificColor->setCurrentIndex(0);
-            on_comboBox_modeSpecificColor_currentIndexChanged(0);
+            ui->spinBox_modeSpecificColorCount->setEnabled(true);
             ui->comboBox_modeSpecificColor->blockSignals(false);
+            ui->spinBox_modeSpecificColorCount->blockSignals(false);
             ui->ColorFrame->setVisible(true);
         }
             break;
@@ -486,7 +501,7 @@ void OpenRGBDevicePage::UpdateModeUi(unsigned int selectColorMode)
     ShowDeviceView();
 }
 
-void OpenRGBDevicePage::SetDevice(unsigned char red, unsigned char green, unsigned char blue)
+void RGBKeyboardDevice::SetDevice(unsigned char red, unsigned char green, unsigned char blue)
 {
     current_color.setRgb(red, green, blue);
 
@@ -496,7 +511,7 @@ void OpenRGBDevicePage::SetDevice(unsigned char red, unsigned char green, unsign
     colorChanged();
 }
 
-void OpenRGBDevicePage::UpdateProfileUi()
+void RGBKeyboardDevice::UpdateProfileUi()
 {
     ui->ProfileBox->blockSignals(true);
     ui->ProfileBox->setVisible(false);
@@ -522,7 +537,7 @@ void OpenRGBDevicePage::UpdateProfileUi()
     }
 }
 
-void OpenRGBDevicePage::UpdateBrightnessUi()
+void RGBKeyboardDevice::UpdateBrightnessUi()
 {
     ui->BrightnessSlider->blockSignals(true);
     ui->BrightnessSlider->setVisible(false);
@@ -541,7 +556,7 @@ void OpenRGBDevicePage::UpdateBrightnessUi()
     }
 }
 
-void OpenRGBDevicePage::on_SwatchBox_swatchChanged(const QColor color)
+void RGBKeyboardDevice::on_SwatchBox_swatchChanged(const QColor color)
 {
     /*-----------------------------------------------------*\
     | Store the swatch color to the current color QColor    |
@@ -554,7 +569,7 @@ void OpenRGBDevicePage::on_SwatchBox_swatchChanged(const QColor color)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_ColorWheelBox_colorChanged(const QColor color)
+void RGBKeyboardDevice::on_ColorWheelBox_colorChanged(const QColor color)
 {
     /*-----------------------------------------------------*\
     | Store the wheel color to the current color QColor     |
@@ -567,7 +582,7 @@ void OpenRGBDevicePage::on_ColorWheelBox_colorChanged(const QColor color)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_RedSpinBox_valueChanged(int red)
+void RGBKeyboardDevice::on_RedSpinBox_valueChanged(int red)
 {
     /*-----------------------------------------------------*\
     | Update the current color QColor red channel           |
@@ -580,7 +595,7 @@ void OpenRGBDevicePage::on_RedSpinBox_valueChanged(int red)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_HueSpinBox_valueChanged(int hue)
+void RGBKeyboardDevice::on_HueSpinBox_valueChanged(int hue)
 {
     /*-----------------------------------------------------*\
     | Read the saturation and value box values              |
@@ -599,7 +614,7 @@ void OpenRGBDevicePage::on_HueSpinBox_valueChanged(int hue)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_GreenSpinBox_valueChanged(int green)
+void RGBKeyboardDevice::on_GreenSpinBox_valueChanged(int green)
 {
     /*-----------------------------------------------------*\
     | Update the current color QColor green channel         |
@@ -612,7 +627,7 @@ void OpenRGBDevicePage::on_GreenSpinBox_valueChanged(int green)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_SatSpinBox_valueChanged(int sat)
+void RGBKeyboardDevice::on_SatSpinBox_valueChanged(int sat)
 {
     /*-----------------------------------------------------*\
     | Read the hue and value box values                     |
@@ -631,7 +646,7 @@ void OpenRGBDevicePage::on_SatSpinBox_valueChanged(int sat)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_BlueSpinBox_valueChanged(int blue)
+void RGBKeyboardDevice::on_BlueSpinBox_valueChanged(int blue)
 {
     /*-----------------------------------------------------*\
     | Update the current color QColor blue channel          |
@@ -644,7 +659,7 @@ void OpenRGBDevicePage::on_BlueSpinBox_valueChanged(int blue)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_ValSpinBox_valueChanged(int val)
+void RGBKeyboardDevice::on_ValSpinBox_valueChanged(int val)
 {
     /*-----------------------------------------------------*\
     | Read the hue and saturation box values                |
@@ -663,7 +678,7 @@ void OpenRGBDevicePage::on_ValSpinBox_valueChanged(int val)
     colorChanged();
 }
 
-void OpenRGBDevicePage::on_HexLineEdit_textChanged(const QString &arg1)
+void RGBKeyboardDevice::on_HexLineEdit_textChanged(const QString &arg1)
 {
     /*-----------------------------------------------------*\
     | Make an editable copy of the string                   |
@@ -707,7 +722,7 @@ void OpenRGBDevicePage::on_HexLineEdit_textChanged(const QString &arg1)
     UpdateHex = true;
 }
 
-void OpenRGBDevicePage::on_DeviceViewBox_selectionChanged(QVector<int> indices)
+void RGBKeyboardDevice::on_DeviceViewBox_selectionChanged(QVector<int> indices)
 {
     ui->LEDBox->blockSignals(true);
     ui->pushButton_AddEffects->blockSignals(true);
@@ -736,7 +751,7 @@ void OpenRGBDevicePage::on_DeviceViewBox_selectionChanged(QVector<int> indices)
     }
 }
 
-void OpenRGBDevicePage::ShowDeviceView()
+void RGBKeyboardDevice::ShowDeviceView()
 {
     /*-----------------------------------------------------*\
      * Show device view                                     *
@@ -744,7 +759,7 @@ void OpenRGBDevicePage::ShowDeviceView()
     ui->DeviceViewBoxFrame->show();
 }
 
-void OpenRGBDevicePage::HideDeviceView()
+void RGBKeyboardDevice::HideDeviceView()
 {
     /*-----------------------------------------------------*\
     | Hide device view                                      |
@@ -752,7 +767,7 @@ void OpenRGBDevicePage::HideDeviceView()
     ui->DeviceViewBoxFrame->hide();
 }
 
-bool OpenRGBDevicePage::eventFilter(QObject *watched, QEvent *event)
+bool RGBKeyboardDevice::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->listWidgetEffects->viewport()) {
         if (event->type() == QEvent::MouseMove) {
@@ -777,7 +792,7 @@ bool OpenRGBDevicePage::eventFilter(QObject *watched, QEvent *event)
     return QObject::eventFilter(watched, event);
 }
 
-void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned int selectModeColorIdx)
+void RGBKeyboardDevice::UpdateEffectUi(unsigned int selectEffectIndx, unsigned int selectModeColorIdx)
 {
     ui->listWidgetEffects->blockSignals(true);
     ui->SelectedEffectsBox->blockSignals(true);
@@ -885,7 +900,7 @@ void OpenRGBDevicePage::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     }
 }
 
-void OpenRGBDevicePage::on_pushButton_AddEffects_clicked()
+void RGBKeyboardDevice::on_pushButton_AddEffects_clicked()
 {
     device->AddEffect([this](){
         LenovoLegionDaemon::led_group_effect effect;
@@ -929,7 +944,7 @@ void OpenRGBDevicePage::on_pushButton_AddEffects_clicked()
     UpdateEffectUi();
 }
 
-void OpenRGBDevicePage::colorChanged()
+void RGBKeyboardDevice::colorChanged()
 {
     updateColorUi();
 
@@ -949,7 +964,7 @@ void OpenRGBDevicePage::colorChanged()
     }
 }
 
-void OpenRGBDevicePage::updateColorUi()
+void RGBKeyboardDevice::updateColorUi()
 {
     /*-----------------------------------------------------*\
     | Update colorwheel                                     |
@@ -1012,7 +1027,7 @@ void OpenRGBDevicePage::updateColorUi()
     }
 }
 
-void OpenRGBDevicePage::on_ProfileBox_currentIndexChanged(int index)
+void RGBKeyboardDevice::on_ProfileBox_currentIndexChanged(int index)
 {
     /*-----------------------------------------------------*\
     | Change device profile                                    |
@@ -1024,7 +1039,7 @@ void OpenRGBDevicePage::on_ProfileBox_currentIndexChanged(int index)
     UpdateInterface();
 }
 
-void OpenRGBDevicePage::on_pushButtonToggleLEDView_clicked()
+void RGBKeyboardDevice::on_pushButtonToggleLEDView_clicked()
 {
     if(!ui->DeviceViewBoxFrame->isHidden())
     {
@@ -1036,19 +1051,19 @@ void OpenRGBDevicePage::on_pushButtonToggleLEDView_clicked()
     }
 }
 
-void OpenRGBDevicePage::on_listWidgetEffects_currentRowChanged(int currentRow)
+void RGBKeyboardDevice::on_listWidgetEffects_currentRowChanged(int currentRow)
 {
     UpdateEffectUi(currentRow);
 }
 
-void OpenRGBDevicePage::on_pushButton_EffectsClearAll_clicked()
+void RGBKeyboardDevice::on_pushButton_EffectsClearAll_clicked()
 {
     device->ClearEffects();
     device->ApplyPendingChanges();
     UpdateEffectUi();
 }
 
-void OpenRGBDevicePage::on_ModeBox_currentIndexChanged(int)
+void RGBKeyboardDevice::on_ModeBox_currentIndexChanged(int)
 {
     ui->DeviceViewBox->clearSelection();
     ui->DeviceViewBox->setSelectionColor(ToRGBColor(0,0,0));
@@ -1056,40 +1071,40 @@ void OpenRGBDevicePage::on_ModeBox_currentIndexChanged(int)
     UpdateModeUi();
 }
 
-void OpenRGBDevicePage::on_PerLEDCheck_clicked()
+void RGBKeyboardDevice::on_PerLEDCheck_clicked()
 {
     UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_PER_LED);
 }
 
-void OpenRGBDevicePage::on_ModeSpecificCheck_clicked()
+void RGBKeyboardDevice::on_ModeSpecificCheck_clicked()
 {
     UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC);
 }
 
-void OpenRGBDevicePage::on_RandomCheck_clicked()
+void RGBKeyboardDevice::on_RandomCheck_clicked()
 {
     UpdateModeUi(LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR);
 }
 
-void OpenRGBDevicePage::on_comboBox_modeSpecificColor_currentIndexChanged(int index)
+void RGBKeyboardDevice::on_comboBox_modeSpecificColor_currentIndexChanged(int index)
 {
     current_color = ui->comboBox_modeSpecificColor->itemData(index).value<QColor>();
     updateColorUi();
 }
 
-void OpenRGBDevicePage::on_comboBox_EffectsColors_currentIndexChanged(int index)
+void RGBKeyboardDevice::on_comboBox_EffectsColors_currentIndexChanged(int index)
 {
     UpdateEffectUi(ui->listWidgetEffects->currentRow(), index);
 }
 
-void OpenRGBDevicePage::on_pushButton_EffectsDefault_clicked()
+void RGBKeyboardDevice::on_pushButton_EffectsDefault_clicked()
 {
     device->ResetEffectsToDefault();
     device->ApplyPendingChanges();
     UpdateEffectUi();
 }
 
-void OpenRGBDevicePage::on_listWidgetEffects_itemEntered(QListWidgetItem *item)
+void RGBKeyboardDevice::on_listWidgetEffects_itemEntered(QListWidgetItem *item)
 {
     auto effect = device->GetEffect(ui->listWidgetEffects->row(item));
 
@@ -1116,12 +1131,18 @@ void OpenRGBDevicePage::on_listWidgetEffects_itemEntered(QListWidgetItem *item)
     }());
 }
 
-void OpenRGBDevicePage::on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *item)
+void RGBKeyboardDevice::on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *item)
 {
     device->RemoveEffect(ui->listWidgetEffects->row(item));
     device->ApplyPendingChanges();
     UpdateEffectUi();
 }
+
+void RGBKeyboardDevice::on_spinBox_modeSpecificColorCount_valueChanged(int value)
+{
+    UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC, value);
+}
+
 
 
 

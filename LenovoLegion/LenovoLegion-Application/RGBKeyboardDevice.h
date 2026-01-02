@@ -18,19 +18,19 @@
 
 namespace Ui
 {
-    class OpenRGBDevicePage;
+    class RGBKeyboardDevice;
 }
 
     class QListWidgetItem;
 namespace LenovoLegionGui {
 
-class OpenRGBDevicePage : public QFrame
+class RGBKeyboardDevice : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit OpenRGBDevicePage(RGBController *dev, QWidget *parent = nullptr);
-    ~OpenRGBDevicePage();
+    explicit RGBKeyboardDevice(RGBController *dev, QWidget *parent = nullptr);
+    ~RGBKeyboardDevice();
 
     void dataProviderEvent(const legion::messages::Notification &notification);
     void cleanup();
@@ -44,7 +44,7 @@ private:
      */
     void UpdateProfileUi();
     void UpdateBrightnessUi();
-    void UpdateModeUi(unsigned int selectColorMode = std::numeric_limits<unsigned int>::max());
+    void UpdateModeUi(unsigned int selectColorMode = std::numeric_limits<unsigned int>::max(), unsigned int selectModeColorIdx = std::numeric_limits<unsigned int>::max());
     void UpdateEffectUi(unsigned int selectEffectIndx = 0, unsigned int selectModeColorIdx = 0);
 
     void ShowDeviceView();
@@ -103,12 +103,13 @@ private slots:
 
 
     void on_comboBox_modeSpecificColor_currentIndexChanged(int index);
+    void on_spinBox_modeSpecificColorCount_valueChanged(int value);
+
     void on_PerLEDCheck_clicked();
     void on_RandomCheck_clicked();
 
-
 private:
-    Ui::OpenRGBDevicePage *ui;
+    Ui::RGBKeyboardDevice *ui;
     std::unique_ptr<RGBController> device;
 
     bool UpdateHex          = true;

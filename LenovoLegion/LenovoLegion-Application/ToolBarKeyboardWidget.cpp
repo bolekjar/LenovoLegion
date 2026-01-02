@@ -8,7 +8,7 @@
 
 
 #include "RGBController.h"
-#include "OpenRGBDevicePage.h"
+#include "RGBKeyboardDevice.h"
 
 
 namespace LenovoLegionGui {
@@ -24,7 +24,7 @@ ToolBarKeyboardWidget::ToolBarKeyboardWidget(DataProvider* dataProvider,QWidget 
      */
     m_defaultActionsMap["add"].push_back([this]() {
         try {
-            ui->verticalLayout_ToolBarKeyboard->addWidget(new OpenRGBDevicePage(new RGBController(m_dataProvider),this));
+            ui->verticalLayout_ToolBarKeyboard->addWidget(new RGBKeyboardDevice(new RGBController(m_dataProvider),this));
         }
         catch(RGBController::exception_T &ex)
         {
@@ -53,7 +53,7 @@ void ToolBarKeyboardWidget::timerEvent(QTimerEvent *event)
 void ToolBarKeyboardWidget::dataProviderEvent(const legion::messages::Notification &notification)
 {
     Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_ToolBarKeyboard,[&notification](QLayoutItem &item){
-        OpenRGBDevicePage* rgbDevice = dynamic_cast<OpenRGBDevicePage *>(item.widget());
+        RGBKeyboardDevice* rgbDevice = dynamic_cast<RGBKeyboardDevice *>(item.widget());
 
         if(rgbDevice)
         {
@@ -65,7 +65,7 @@ void ToolBarKeyboardWidget::dataProviderEvent(const legion::messages::Notificati
 void ToolBarKeyboardWidget::cleanup()
 {
     Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_ToolBarKeyboard,[](QLayoutItem &item){
-        OpenRGBDevicePage* rgbDevice = dynamic_cast<OpenRGBDevicePage *>(item.widget());
+        RGBKeyboardDevice* rgbDevice = dynamic_cast<RGBKeyboardDevice *>(item.widget());
         if(rgbDevice)
         {
             rgbDevice->cleanup();
