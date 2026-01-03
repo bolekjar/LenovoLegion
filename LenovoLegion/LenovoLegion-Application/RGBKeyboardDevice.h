@@ -21,7 +21,7 @@ namespace Ui
     class RGBKeyboardDevice;
 }
 
-    class QListWidgetItem;
+class QTableWidgetItem;
 namespace LenovoLegionGui {
 
 class RGBKeyboardDevice : public QFrame
@@ -87,9 +87,8 @@ private slots:
     /*
      * Add/Remove effects event handlers
      */
-    void on_listWidgetEffects_currentRowChanged(int currentRow);
-    void on_listWidgetEffects_itemEntered(QListWidgetItem *item);
-    void on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *item);
+    void on_tableWidgetEffects_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
+    void on_tableWidgetEffects_cellEntered(int row, int column);
     void on_comboBox_EffectsColors_currentIndexChanged(int index);
     void on_pushButton_EffectsClearAll_clicked();
     void on_pushButton_AddEffects_clicked();

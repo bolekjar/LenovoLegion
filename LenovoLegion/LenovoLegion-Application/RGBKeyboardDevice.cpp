@@ -87,13 +87,18 @@ RGBKeyboardDevice::RGBKeyboardDevice(RGBController *dev, QWidget *parent) :
     ui->SpeedEffectsComboBox->view()->window()->setWindowFlags( Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::NoDropShadowWindowHint);
     ui->SpeedEffectsComboBox->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
 
-
     /*
      * Detect mouse tracking for QListWidget (effects list)
      */
-    ui->listWidgetEffects->setMouseTracking(true);
-    ui->listWidgetEffects->viewport()->setMouseTracking(true);
-    ui->listWidgetEffects->viewport()->installEventFilter(this);
+    ui->tableWidgetEffects->setMouseTracking(true);
+    ui->tableWidgetEffects->viewport()->setMouseTracking(true);
+    ui->tableWidgetEffects->viewport()->installEventFilter(this);
+    
+    /*
+     * Prevent deselection when clicking on already selected item
+     */
+    ui->tableWidgetEffects->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->tableWidgetEffects->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     /*-----------------------------------------------------*\
     | Store device pointer                                  |
@@ -766,23 +771,28 @@ void RGBKeyboardDevice::HideDeviceView()
 
 bool RGBKeyboardDevice::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->listWidgetEffects->viewport()) {
+    if (watched == ui->tableWidgetEffects->viewport()) {
         if (event->type() == QEvent::MouseMove) {
             QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(event);
 
-            if (mouseEvent && !ui->listWidgetEffects->itemAt(mouseEvent->pos())) {
+            if (mouseEvent && !ui->tableWidgetEffects->itemAt(mouseEvent->pos())) {
                 ui->DeviceViewBox->markLeds({});
             }
         }
         else if (event->type() == QEvent::Leave) {
             ui->DeviceViewBox->markLeds({});
         }
-        else if (event->type() == QEvent::MouseButtonDblClick) {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            QListWidgetItem* item = ui->listWidgetEffects->itemAt(mouseEvent->pos());
-            if (item) {
-                on_listWidgetEffects_itemDoubleClicked(item);
-                return true;
+        else if(event->type() == QEvent::MouseButtonPress) {
+            QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(event);
+
+            if (mouseEvent) {
+                QModelIndex index = ui->tableWidgetEffects->indexAt(mouseEvent->pos());
+                if (index.isValid() && index.column() == 1) {
+                    device->RemoveEffect(static_cast<unsigned int>(index.row()));
+                    device->ApplyPendingChanges();
+                    UpdateEffectUi();
+                    return true; // Event handled
+                }
             }
         }
     }
@@ -791,7 +801,7 @@ bool RGBKeyboardDevice::eventFilter(QObject *watched, QEvent *event)
 
 void RGBKeyboardDevice::UpdateEffectUi(unsigned int selectEffectIndx, unsigned int selectModeColorIdx)
 {
-    ui->listWidgetEffects->blockSignals(true);
+    ui->tableWidgetEffects->blockSignals(true);
     ui->SelectedEffectsBox->blockSignals(true);
     ui->LEDEffectsBox->blockSignals(true);
     ui->DirectionEffectsBox->blockSignals(true);
@@ -803,7 +813,7 @@ void RGBKeyboardDevice::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->PerLEDEffectsCheck->blockSignals(true);
 
 
-    ui->listWidgetEffects->setEnabled(false);
+    ui->tableWidgetEffects->setEnabled(false);
     ui->SelectedEffectsBox->setEnabled(false);
     ui->LEDEffectsBox->setEnabled(false);
     ui->DirectionEffectsBox->setEnabled(false);
@@ -814,7 +824,9 @@ void RGBKeyboardDevice::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     ui->ModeSpecificEffectsCheck->setEnabled(false);
     ui->PerLEDEffectsCheck->setEnabled(false);
 
-    ui->listWidgetEffects->clear();
+    ui->tableWidgetEffects->clear();
+    ui->tableWidgetEffects->setColumnCount(2);
+    ui->tableWidgetEffects->setRowCount(0);
     ui->SelectedEffectsBox->clear();
     ui->LEDEffectsBox->clear();
     ui->DirectionEffectsBox->clear();
@@ -832,8 +844,14 @@ void RGBKeyboardDevice::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
     const auto& effects = device->GetEffects();
     for (size_t i = 0; i < effects.size(); ++i)
     {
-        ui->listWidgetEffects->addItem(QString::number(i) + " - " + device->GetModeByModeValue(effects.at(i).m_mode).name.c_str());
+        ui->tableWidgetEffects->insertRow(i);
+        ui->tableWidgetEffects->setItem(i,0,new QTableWidgetItem(QString::number(i) + " - " + device->GetModeByModeValue(effects.at(i).m_mode).name.c_str()));
+        ui->tableWidgetEffects->setItem(i,1,new QTableWidgetItem("Remove"));
     }
+    // First column stretches, others fit content
+    ui->tableWidgetEffects->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tableWidgetEffects->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
 
     if(selectEffectIndx < effects.size())
     {
@@ -885,10 +903,10 @@ void RGBKeyboardDevice::UpdateEffectUi(unsigned int selectEffectIndx, unsigned i
         ui->comboBox_EffectsColors->blockSignals(false);
     }
 
-    if(ui->listWidgetEffects->count() > 0 )
+    if(ui->tableWidgetEffects->rowCount() > 0 )
     {
-        ui->listWidgetEffects->setEnabled(true);
-        ui->listWidgetEffects->blockSignals(false);
+        ui->tableWidgetEffects->setEnabled(true);
+        ui->tableWidgetEffects->blockSignals(false);
     }
 
     if(ui->LEDEffectsBox->count() > 0 )
@@ -1048,11 +1066,6 @@ void RGBKeyboardDevice::on_pushButtonToggleLEDView_clicked()
     }
 }
 
-void RGBKeyboardDevice::on_listWidgetEffects_currentRowChanged(int currentRow)
-{
-    UpdateEffectUi(currentRow);
-}
-
 void RGBKeyboardDevice::on_pushButton_EffectsClearAll_clicked()
 {
     device->ClearEffects();
@@ -1123,46 +1136,12 @@ void RGBKeyboardDevice::on_comboBox_modeSpecificColor_currentIndexChanged(int in
 
 void RGBKeyboardDevice::on_comboBox_EffectsColors_currentIndexChanged(int index)
 {
-    UpdateEffectUi(ui->listWidgetEffects->currentRow(), index);
+    UpdateEffectUi(ui->tableWidgetEffects->currentRow(), index);
 }
 
 void RGBKeyboardDevice::on_pushButton_EffectsDefault_clicked()
 {
     device->ResetEffectsToDefault();
-    device->ApplyPendingChanges();
-    UpdateEffectUi();
-}
-
-void RGBKeyboardDevice::on_listWidgetEffects_itemEntered(QListWidgetItem *item)
-{
-    auto effect = device->GetEffect(ui->listWidgetEffects->row(item));
-
-    ui->DeviceViewBox->markLeds([&effect,this](){
-        QMap<int,QColor> indices;
-        for (const auto& led_effect : effect.m_leds)
-        {
-            auto ledsIdx = device->GetLedsIndexesByDeviceSpecificValue(led_effect.value);
-
-            for (auto idx : ledsIdx) {
-                int colorIdx = ui->comboBox_modeSpecificColor->currentIndex();
-
-                if(colorIdx > 0 && static_cast<size_t>(colorIdx) < effect.m_colors.size())
-                {
-                    indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[colorIdx]),RGBGetGValue(effect.m_colors[colorIdx]),RGBGetBValue(effect.m_colors[colorIdx]));
-                }
-                else
-                {
-                    indices[idx] = QColor::fromRgb(53,87,0xBB);
-                }
-            }
-        }
-        return indices;
-    }());
-}
-
-void RGBKeyboardDevice::on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *item)
-{
-    device->RemoveEffect(ui->listWidgetEffects->row(item));
     device->ApplyPendingChanges();
     UpdateEffectUi();
 }
@@ -1206,6 +1185,37 @@ void RGBKeyboardDevice::on_spinBox_modeSpecificColorCount_valueChanged(int value
 }
 
 
+void RGBKeyboardDevice::on_tableWidgetEffects_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *)
+{
+    UpdateEffectUi(ui->tableWidgetEffects->row(current));
+}
 
+void RGBKeyboardDevice::on_tableWidgetEffects_cellEntered(int row,int)
+{
+    auto effect = device->GetEffect(row);
+
+    ui->DeviceViewBox->markLeds([&effect,this](){
+        QMap<int,QColor> indices;
+        for (const auto& led_effect : effect.m_leds)
+        {
+            auto ledsIdx = device->GetLedsIndexesByDeviceSpecificValue(led_effect.value);
+
+            for (auto idx : ledsIdx) {
+                int colorIdx = ui->comboBox_modeSpecificColor->currentIndex();
+
+                if(colorIdx > 0 && static_cast<size_t>(colorIdx) < effect.m_colors.size())
+                {
+                    indices[idx] = QColor::fromRgb(RGBGetRValue(effect.m_colors[colorIdx]),RGBGetGValue(effect.m_colors[colorIdx]),RGBGetBValue(effect.m_colors[colorIdx]));
+                }
+                else
+                {
+                    indices[idx] = QColor::fromRgb(53,87,0xBB);
+                }
+            }
+        }
+        return indices;
+    }());
+
+}
 
 }

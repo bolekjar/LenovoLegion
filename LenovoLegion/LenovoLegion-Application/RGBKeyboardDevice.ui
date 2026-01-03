@@ -531,16 +531,42 @@ QWidget {
              </layout>
             </item>
             <item>
-             <widget class="QListWidget" name="listWidgetEffects">
-              <property name="mouseTracking">
-               <bool>true</bool>
+             <widget class="QTableWidget" name="tableWidgetEffects">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
               <property name="editTriggers">
                <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
               </property>
+              <property name="showGrid">
+               <bool>false</bool>
+              </property>
+              <property name="gridStyle">
+               <enum>Qt::PenStyle::NoPen</enum>
+              </property>
+              <property name="columnCount">
+               <number>2</number>
+              </property>
               <property name="supportedDragActions">
                <set>Qt::DropAction::IgnoreAction</set>
               </property>
+              <attribute name="horizontalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderHighlightSections">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderHighlightSections">
+               <bool>false</bool>
+              </attribute>
+              <column/>
+              <column/>
              </widget>
             </item>
            </layout>

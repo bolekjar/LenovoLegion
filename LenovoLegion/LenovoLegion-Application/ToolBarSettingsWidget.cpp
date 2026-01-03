@@ -743,9 +743,8 @@ QToolTip {
 QScrollBar:vertical {
     border: none;
     background: #f5f5f5;
-    width: 14px;
-    margin: 0px 0 0px 0;
-    border-radius: 7px;
+    width: 18px;
+    border-radius: 9px;
 }
 
 QScrollBar::handle:vertical {
@@ -779,9 +778,8 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 QScrollBar:horizontal {
     border: none;
     background: #f5f5f5;
-    height: 14px;
-    margin: 0px 0 0px 0;
-    border-radius: 7px;
+    height: 18px;
+    border-radius: 9px;
 }
 
 QScrollBar::handle:horizontal {
@@ -1397,6 +1395,162 @@ QLabel:disabled {
     background-color: #686868;
 }
 
+/* ===== QTableWidget ===== */
+QTableWidget {
+    background-color: #ffffff;
+    border: 2px solid #007acc;
+    border-radius: 12px;
+    gridline-color: #e0e0e0;
+    selection-background-color: transparent;
+    selection-color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    padding: 5px;
+}
+
+QTableWidget::item {
+    padding: 8px;
+    border: none;
+    background-color: #ffffff;
+    color: #2d2d30;
+    border-radius: 12px;
+}
+
+QTableWidget::item:selected {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #007acc, stop:1 #0096ff);
+    color: #ffffff;
+    font-weight: bold;
+    border-radius: 12px;
+}
+
+QTableWidget::item:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #f0f0f0, stop:1 #e8e8e8);
+    color: #007acc;
+    border-radius: 12px;
+}
+
+QTableWidget::item:selected:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #00a8ff, stop:1 #00c8ff);
+    color: #ffffff;
+    border-radius: 12px;
+}
+
+QHeaderView::section {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #007acc, stop:1 #0096ff);
+    color: #ffffff;
+    padding: 8px 12px;
+    border: 1px solid #005a9e;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+QHeaderView::section:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #00a8ff, stop:1 #00c8ff);
+}
+
+QHeaderView::section:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #005a9e, stop:1 #007acc);
+}
+
+QTableCornerButton::section {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #007acc, stop:1 #0096ff);
+    border: 1px solid #005a9e;
+    border-radius: 6px;
+}
+
+QTableWidget QScrollBar:vertical {
+    border: none;
+    background: #f5f5f5;
+    width: 18px;
+    margin: 5px 5px 5px 5px;
+    border-radius: 9px;
+}
+
+QTableWidget QScrollBar::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #007acc, stop:1 #0096ff);
+    min-height: 30px;
+    border-radius: 9px;
+    margin: 2px;
+}
+
+QTableWidget QScrollBar::handle:vertical:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #00a8ff, stop:1 #00c8ff);
+}
+
+QTableWidget QScrollBar::handle:vertical:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #005a9e, stop:1 #007acc);
+}
+
+QTableWidget QScrollBar::add-line:vertical, QTableWidget QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QTableWidget QScrollBar:horizontal {
+    border: none;
+    background: #f5f5f5;
+    height: 18px;
+    margin: 5px 5px 5px 5px;
+    border-radius: 9px;
+}
+
+QTableWidget QScrollBar::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #007acc, stop:1 #0096ff);
+    min-width: 30px;
+    border-radius: 9px;
+    margin: 2px;
+}
+
+QTableWidget QScrollBar::handle:horizontal:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #00a8ff, stop:1 #00c8ff);
+}
+
+QTableWidget QScrollBar::handle:horizontal:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #005a9e, stop:1 #007acc);
+}
+
+QTableWidget QScrollBar::add-line:horizontal {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+QTableWidget QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+}
+
+QTableWidget QScrollBar::left-arrow:horizontal, QTableWidget QScrollBar::right-arrow:horizontal {
+    border: none;
+    width: 0px;
+    height: 0px;
+    background: none;
+}
+
+QTableWidget QScrollBar::add-page:horizontal, QTableWidget QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
 /* ===== QListWidget ===== */
 QListWidget {
     background-color: #dadada;
@@ -1872,9 +2026,8 @@ QToolTip {
 QScrollBar:vertical {
     border: none;
     background: #707070;
-    width: 14px;
-    margin: 0px 0 0px 0;
-    border-radius: 7px;
+    width: 18px;
+    border-radius: 9px;
 }
 
 QScrollBar::handle:vertical {
@@ -1884,7 +2037,6 @@ QScrollBar::handle:vertical {
     border-radius: 7px;
     margin: 2px;
 }
-
 QScrollBar::handle:vertical:hover {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                                 stop:0 #4d8a5a, stop:1 #66a876);
@@ -1908,9 +2060,8 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 QScrollBar:horizontal {
     border: none;
     background: #707070;
-    height: 14px;
-    margin: 0px 0 0px 0;
-    border-radius: 7px;
+    height: 18px;
+    border-radius: 9px;
 }
 
 QScrollBar::handle:horizontal {
@@ -2527,6 +2678,161 @@ QLabel:disabled {
     background-color: #686868;
 }
 
+/* ===== QTableWidget ===== */
+QTableWidget {
+    background-color: #808080;
+    border: 2px solid #3c6844;
+    border-radius: 12px;
+    gridline-color: #606060;
+    selection-background-color: transparent;
+    selection-color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    padding: 5px;
+}
+
+QTableWidget::item {
+    padding: 8px;
+    border: none;
+    background-color: #808080;
+    border-radius: 12px;
+    color: #e0e0e0;
+}
+
+QTableWidget::item:selected {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #3c6844, stop:1 #3f7950);
+    color: #ffffff;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+QTableWidget::item:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #686868, stop:1 #606060);
+    color: #4d8a5a;
+}
+
+QTableWidget::item:selected:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #4d8a5a, stop:1 #66a876);
+    border-radius: 12px;
+    color: #ffffff;
+}
+
+QHeaderView::section {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #3c6844, stop:1 #3f7950);
+    color: #ffffff;
+    padding: 8px 12px;
+    border: 1px solid #2d4f33;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+QHeaderView::section:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #4d8a5a, stop:1 #66a876);
+}
+
+QHeaderView::section:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #2d4f33, stop:1 #3c6844);
+}
+
+QTableCornerButton::section {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #3c6844, stop:1 #3f7950);
+    border: 1px solid #2d4f33;
+    border-radius: 6px;
+}
+
+QTableWidget QScrollBar:vertical {
+    border: none;
+    background: #707070;
+    width: 18px;
+    margin: 5px 5px 5px 5px;
+    border-radius: 9px;
+}
+
+QTableWidget QScrollBar::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #3c6844, stop:1 #3f7950);
+    min-height: 30px;
+    border-radius: 9px;
+    margin: 2px;
+}
+
+QTableWidget QScrollBar::handle:vertical:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #4d8a5a, stop:1 #66a876);
+}
+
+QTableWidget QScrollBar::handle:vertical:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #2d4f33, stop:1 #3c6844);
+}
+
+QTableWidget QScrollBar::add-line:vertical, QTableWidget QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QTableWidget QScrollBar:horizontal {
+    border: none;
+    background: #707070;
+    height: 18px;
+    margin: 5px 5px 5px 5px;
+    border-radius: 9px;
+}
+
+QTableWidget QScrollBar::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #3c6844, stop:1 #3f7950);
+    min-width: 30px;
+    border-radius: 9px;
+    margin: 2px;
+}
+
+QTableWidget QScrollBar::handle:horizontal:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #4d8a5a, stop:1 #66a876);
+}
+
+QTableWidget QScrollBar::handle:horizontal:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #2d4f33, stop:1 #3c6844);
+}
+
+QTableWidget QScrollBar::add-line:horizontal {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+QTableWidget QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+}
+
+QTableWidget QScrollBar::left-arrow:horizontal, QTableWidget QScrollBar::right-arrow:horizontal {
+    border: none;
+    width: 0px;
+    height: 0px;
+    background: none;
+}
+
+QTableWidget QScrollBar::add-page:horizontal, QTableWidget QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
 /* ===== QListWidget ===== */
 QListWidget {
     background-color: #808080;
@@ -2998,9 +3304,8 @@ QToolTip {
 QScrollBar:vertical {
     border: none;
     background: #1e1e1e;
-    width: 14px;
-    margin: 0px 0 0px 0;
-    border-radius: 7px;
+    width: 18px;
+    border-radius: 9px;
 }
 
 QScrollBar::handle:vertical {
@@ -3034,9 +3339,8 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 QScrollBar:horizontal {
     border: none;
     background: #1e1e1e;
-    height: 14px;
-    margin: 0px 0 0px 0;
-    border-radius: 7px;
+    height: 18px;
+    border-radius: 9px;
 }
 
 QScrollBar::handle:horizontal {
@@ -3648,6 +3952,162 @@ QLabel[frameShape="1"] {
 QLabel:disabled {
     color: #a0a0a0;
     background-color: #686868;
+}
+
+/* ===== QTableWidget ===== */
+QTableWidget {
+    background-color: #2d2d30;
+    border: 2px solid #ff8800;
+    border-radius: 12px;
+    gridline-color: #3e3e42;
+    selection-background-color: transparent;
+    selection-color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    padding: 5px;
+}
+
+QTableWidget::item {
+    padding: 8px;
+    border: none;
+    background-color: #2d2d30;
+    border-radius: 12px;
+    color: #e0e0e0;
+}
+
+QTableWidget::item:selected {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #ff8800, stop:1 #cc6600);
+    color: #ffffff;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+QTableWidget::item:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #3e3e42, stop:1 #353538);
+    color: #ffaa33;
+    border-radius: 12px;
+}
+
+QTableWidget::item:selected:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #ffaa33, stop:1 #ff8800);
+    color: #ffffff;
+    border-radius: 12px;
+}
+
+QHeaderView::section {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #ff8800, stop:1 #cc6600);
+    color: #ffffff;
+    padding: 8px 12px;
+    border: 1px solid #aa5500;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+QHeaderView::section:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #ffaa33, stop:1 #ff8800);
+}
+
+QHeaderView::section:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #cc6600, stop:1 #aa5500);
+}
+
+QTableCornerButton::section {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #ff8800, stop:1 #cc6600);
+    border: 1px solid #aa5500;
+    border-radius: 6px;
+}
+
+QTableWidget QScrollBar:vertical {
+    border: none;
+    background: #1e1e1e;
+    width: 18px;
+    margin: 5px 5px 5px 5px;
+    border-radius: 9px;
+}
+
+QTableWidget QScrollBar::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #ff8800, stop:1 #cc6600);
+    min-height: 30px;
+    border-radius: 9px;
+    margin: 2px;
+}
+
+QTableWidget QScrollBar::handle:vertical:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #ffaa33, stop:1 #ff8800);
+}
+
+QTableWidget QScrollBar::handle:vertical:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #cc6600, stop:1 #aa5500);
+}
+
+QTableWidget QScrollBar::add-line:vertical, QTableWidget QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+QTableWidget QScrollBar::add-page:vertical, QTableWidget QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QTableWidget QScrollBar:horizontal {
+    border: none;
+    background: #1e1e1e;
+    height: 18px;
+    margin: 5px 5px 5px 5px;
+    border-radius: 9px;
+}
+
+QTableWidget QScrollBar::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #ff8800, stop:1 #cc6600);
+    min-width: 30px;
+    border-radius: 9px;
+    margin: 2px;
+}
+
+QTableWidget QScrollBar::handle:horizontal:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #ffaa33, stop:1 #ff8800);
+}
+
+QTableWidget QScrollBar::handle:horizontal:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #cc6600, stop:1 #aa5500);
+}
+
+QTableWidget QScrollBar::add-line:horizontal {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+QTableWidget QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+}
+
+QTableWidget QScrollBar::left-arrow:horizontal, QTableWidget QScrollBar::right-arrow:horizontal {
+    border: none;
+    width: 0px;
+    height: 0px;
+    background: none;
+}
+
+QTableWidget QScrollBar::add-page:horizontal, QTableWidget QScrollBar::sub-page:horizontal {
+    background: none;
 }
 
 /* ===== QListWidget ===== */
