@@ -231,7 +231,7 @@ void RGBKeyboardDevice::UpdateInterface()
     repaint();
 }
 
-void RGBKeyboardDevice::UpdateModeUi(unsigned int selectColorMode, unsigned int selectModeColorIdx)
+void RGBKeyboardDevice::UpdateModeUi()
 {
 
     /*-----------------------------------------------------*\
@@ -266,6 +266,9 @@ void RGBKeyboardDevice::UpdateModeUi(unsigned int selectColorMode, unsigned int 
     ui->SpeedSlider->setValue(0);
     ui->DirectionBox->clear();
     ui->comboBox_modeSpecificColor->clear();
+
+    ui->spinBox_modeSpecificColorCount->setMinimum(0);
+    ui->spinBox_modeSpecificColorCount->setMaximum(0);
     ui->spinBox_modeSpecificColorCount->setValue(0);
 
     /*
@@ -295,14 +298,14 @@ void RGBKeyboardDevice::UpdateModeUi(unsigned int selectColorMode, unsigned int 
     \*-----------------------------------------------------*/
     auto mode = device->GetModeByIdx(ui->ModeBox->currentIndex());
 
-    unsigned int  effective_color_mode      = (selectColorMode < LenovoLegionDaemon::MODE_COLORS_MAX) ? selectColorMode : mode.color_mode;
+    unsigned int  effective_color_mode      = mode.color_mode;
     bool supports_per_led                   = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_PER_LED_COLOR;
     bool supports_mode_specific             = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_MODE_SPECIFIC_COLOR;
     bool supports_random                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR;
     bool supports_speed                     = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_SPEED;
     bool supports_dir_lr                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_LR;
     bool supports_dir_ud                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_UD;
-    bool supports_spin_lr                    = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_SPINLR;
+    bool supports_spin_lr                   = mode.flags & LenovoLegionDaemon::MODE_FLAG_HAS_DIRECTION_SPINLR;
 
     bool per_led                = effective_color_mode == LenovoLegionDaemon::MODE_COLORS_PER_LED;
     bool mode_specific          = effective_color_mode == LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC;
@@ -378,28 +381,22 @@ void RGBKeyboardDevice::UpdateModeUi(unsigned int selectColorMode, unsigned int 
             break;
         case LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC:
         {
-            ui->spinBox_modeSpecificColorCount->setMinimum(0);
-            ui->spinBox_modeSpecificColorCount->setMaximum(mode.colors.size());
-
-            if(selectModeColorIdx <= mode.colors.size())
+            if(mode.colors.size() > 0)
             {
-                for(unsigned int i = 0; i < selectModeColorIdx;++i)
-                {
-                    ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",i),QVariant(QColor(QRgb(mode.colors.at(i)))));
-                }
+                ui->spinBox_modeSpecificColorCount->setMinimum(1);
+                ui->spinBox_modeSpecificColorCount->setMaximum(mode.colors.size());
 
-                ui->spinBox_modeSpecificColorCount->setValue(selectModeColorIdx);
-            }
-            else
-            {
-                ui->spinBox_modeSpecificColorCount->setValue(0);
-            }
+                ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",1),QVariant(QColor(QRgb(mode.colors.at(0)))));
 
-            ui->comboBox_modeSpecificColor->setEnabled(true);
-            ui->spinBox_modeSpecificColorCount->setEnabled(true);
-            ui->comboBox_modeSpecificColor->blockSignals(false);
-            ui->spinBox_modeSpecificColorCount->blockSignals(false);
-            ui->ColorFrame->setVisible(true);
+                ui->comboBox_modeSpecificColor->setEnabled(true);
+                ui->spinBox_modeSpecificColorCount->setEnabled(true);
+                ui->spinBox_modeSpecificColorCount->setValue(1);
+                ui->comboBox_modeSpecificColor->setCurrentIndex(0);
+                on_comboBox_modeSpecificColor_currentIndexChanged(0);
+                ui->comboBox_modeSpecificColor->blockSignals(false);
+                ui->spinBox_modeSpecificColorCount->blockSignals(false);
+                ui->ColorFrame->setVisible(true);
+            }
         }
             break;
     }
@@ -1073,18 +1070,50 @@ void RGBKeyboardDevice::on_ModeBox_currentIndexChanged(int)
 
 void RGBKeyboardDevice::on_PerLEDCheck_clicked()
 {
-    UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_PER_LED);
+    ui->ColorFrame->setVisible(true);
 }
 
 void RGBKeyboardDevice::on_ModeSpecificCheck_clicked()
 {
-    UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC);
+
+    ui->spinBox_modeSpecificColorCount->blockSignals(true);
+    ui->comboBox_modeSpecificColor->blockSignals(true);
+
+    ui->comboBox_modeSpecificColor->clear();
+    ui->spinBox_modeSpecificColorCount->setMinimum(0);
+    ui->spinBox_modeSpecificColorCount->setMaximum(0);
+    ui->spinBox_modeSpecificColorCount->setValue(0);
+
+    ui->spinBox_modeSpecificColorCount->setEnabled(false);
+    ui->comboBox_modeSpecificColor->setEnabled(false);
+
+
+    auto mode = device->GetModeByIdx(ui->ModeBox->currentIndex());
+    if(mode.colors.size() > 0)
+    {
+        ui->spinBox_modeSpecificColorCount->setMinimum(1);
+        ui->spinBox_modeSpecificColorCount->setMaximum(mode.colors.size());
+
+        ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",1),QVariant(QColor(QRgb(mode.colors.at(0)))));
+
+
+        ui->comboBox_modeSpecificColor->setEnabled(true);
+        ui->spinBox_modeSpecificColorCount->setEnabled(true);
+
+
+        ui->spinBox_modeSpecificColorCount->setValue(1);
+        ui->comboBox_modeSpecificColor->setCurrentIndex(0);
+        on_comboBox_modeSpecificColor_currentIndexChanged(0);
+
+        ui->comboBox_modeSpecificColor->blockSignals(false);
+        ui->spinBox_modeSpecificColorCount->blockSignals(false);
+        ui->ColorFrame->setVisible(true);
+
+    }
 }
 
 void RGBKeyboardDevice::on_RandomCheck_clicked()
-{
-    UpdateModeUi(LenovoLegionDaemon::MODE_FLAG_HAS_RANDOM_COLOR);
-}
+{}
 
 void RGBKeyboardDevice::on_comboBox_modeSpecificColor_currentIndexChanged(int index)
 {
@@ -1140,7 +1169,40 @@ void RGBKeyboardDevice::on_listWidgetEffects_itemDoubleClicked(QListWidgetItem *
 
 void RGBKeyboardDevice::on_spinBox_modeSpecificColorCount_valueChanged(int value)
 {
-    UpdateModeUi(LenovoLegionDaemon::MODE_COLORS_MODE_SPECIFIC, value);
+    ui->spinBox_modeSpecificColorCount->blockSignals(true);
+    ui->comboBox_modeSpecificColor->blockSignals(true);
+
+    /*
+     * Save current index and colors
+     */
+    const std::vector<QVariant> colors = [this]{
+        std::vector<QVariant> colors;
+
+        for (int i = 0; i < ui->comboBox_modeSpecificColor->count(); ++i)
+        {
+            colors.push_back(ui->comboBox_modeSpecificColor->itemData(i).value<QColor>());
+        }
+
+        return colors;
+    }();
+
+
+    ui->comboBox_modeSpecificColor->clear();
+
+    auto mode = device->GetModeByIdx(ui->ModeBox->currentIndex());
+    for(unsigned int i = 0; i < std::min(static_cast<size_t>(value),mode.colors.size()) ; ++i)
+    {
+        ui->comboBox_modeSpecificColor->addItem(QString::asprintf("Mode Color %u",i + 1),i < colors.size() ? colors[i] : QVariant(QColor(QRgb(mode.colors.at(i)))));
+    }
+
+
+    ui->comboBox_modeSpecificColor->setCurrentIndex(ui->comboBox_modeSpecificColor->count() - 1);
+    on_comboBox_modeSpecificColor_currentIndexChanged(ui->comboBox_modeSpecificColor->count() - 1);
+
+    ui->spinBox_modeSpecificColorCount->blockSignals(false);
+    ui->comboBox_modeSpecificColor->blockSignals(false);
+
+
 }
 
 

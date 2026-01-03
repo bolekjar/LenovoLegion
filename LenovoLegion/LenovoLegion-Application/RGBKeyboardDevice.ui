@@ -183,7 +183,7 @@
                 <item>
                  <widget class="QLabel" name="label_modeSpecificColorCount">
                   <property name="text">
-                   <string>Colors:</string>
+                   <string>Colors count:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

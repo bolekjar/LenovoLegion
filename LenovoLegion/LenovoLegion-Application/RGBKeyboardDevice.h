@@ -44,7 +44,7 @@ private:
      */
     void UpdateProfileUi();
     void UpdateBrightnessUi();
-    void UpdateModeUi(unsigned int selectColorMode = std::numeric_limits<unsigned int>::max(), unsigned int selectModeColorIdx = std::numeric_limits<unsigned int>::max());
+    void UpdateModeUi();
     void UpdateEffectUi(unsigned int selectEffectIndx = 0, unsigned int selectModeColorIdx = 0);
 
     void ShowDeviceView();
