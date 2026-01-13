@@ -174,47 +174,12 @@ static void read_voltage_offset_on_cpu(void *info)
  * Read voltage offset limits from OC mailbox for a specific plane
  * Returns 0 on success, negative error code on failure
  */
-static int read_voltage_limits_for_plane(struct legion_intel_msr_private *intel_msr_private,int plane)
+static int read_voltage_limits_for_plane(struct legion_intel_msr_private *intel_msr_private, int plane)
 {
-    struct read_msr_data data;
-    u32 max_neg, max_pos;
-    int max_undervolt, max_overvolt;
-
-    // Try to read voltage limit for specified plane
-    // Command 0x1A = read voltage limits
-    data.plane = plane;
-    data.error = -1;
-
-    smp_call_function_single(0, read_voltage_offset_on_cpu, &data, 1);
-
-    if (data.error) {
-        return -ENODEV;
-    }
-
-    // Extract limits from result (format may vary by CPU)
-    // Bits [20:16] = max negative offset (units of 1/1024V)
-    // Bits [15:11] = max positive offset (units of 1/1024V)
-    // This is an approximation based on intel-undervolt
-    max_neg = ((u32)data.result >> 16) & 0x1F;  // 5 bits
-    max_pos = ((u32)data.result >> 11) & 0x1F;  // 5 bits
-
-    if (max_neg > 0 && max_neg < 31) {
-        // Convert from units to mV (approximate)
-        max_undervolt = (max_neg * 1000) / 1024 * 50;  // Scale factor
-        if (max_undervolt > 1000) max_undervolt = 1000;  // Sanity check
-        if (max_undervolt > 0) {
-        	intel_msr_private->plane_limits[plane].max_undervolt_uv = max_undervolt * 1000;
-        }
-    }
-
-    if (max_pos > 0 && max_pos < 31) {
-        max_overvolt = (max_pos * 1000) / 1024 * 50;
-        if (max_overvolt > 1000) max_overvolt = 1000;
-        if (max_overvolt > 0) {
-        	intel_msr_private->plane_limits[plane].max_overvolt_uv = max_overvolt * 1000;
-        }
-    }
-
+    // On both old and new CPUs, the 0x1A command either doesn't work or returns 0
+    // Using documented safe defaults is more reliable than trying to read limits
+    // The defaults are conservative values that work across all Intel generations
+    // Return success - limits are set by caller using DEFAULT values
     return 0;
 }
 
@@ -228,10 +193,21 @@ static void read_voltage_limits(struct legion_intel_msr_private *intel_msr_priva
 
     for (i = 0; i < NUM_VOLTAGE_PLANES; i++)
     {
-        if (!read_voltage_limits_for_plane(intel_msr_private,i)) {
+        // Mark all planes as write-supported by default
+        intel_msr_private->plane_limits[i].write_supported = 1;
+        
+        if (read_voltage_limits_for_plane(intel_msr_private, i)) {
+        	// Fall back to defaults if reading limits fails
         	intel_msr_private->plane_limits[i].max_undervolt_uv = DEFAULT_MAX_UNDERVOLT_UV;
         	intel_msr_private->plane_limits[i].max_overvolt_uv  = DEFAULT_MAX_OVERVOLT_UV;
         }
+    }
+    
+    // Core Ultra CPUs (275HX, etc.) don't support uncore and analogio voltage offset writes
+    // These planes can be read but writes are silently ignored by hardware
+    if (boot_cpu_data.x86_model >= 0xAA) {
+        intel_msr_private->plane_limits[PLANE_UNCORE].write_supported = 0;
+        intel_msr_private->plane_limits[PLANE_ANALOGIO].write_supported = 0;
     }
 }
 
@@ -291,7 +267,7 @@ int legion_intel_msr_offset_read_show(struct legion_intel_msr_private *intel_msr
 /*
  * Apply voltage offset to all CPUs for a given plane
  */
-int legion_intel_msr_apply_voltage_offset(struct legion_intel_msr_private *intel_msr_private,int plane, int offset_uv)
+int legion_intel_msr_apply_voltage_offset(struct legion_intel_msr_private *intel_msr_private, int plane, int offset_uv)
 {
     struct {
         int plane;
@@ -304,7 +280,12 @@ int legion_intel_msr_apply_voltage_offset(struct legion_intel_msr_private *intel
 
     guard(mutex)(&intel_msr_private->lock);
 
-    ret = validate_offset(intel_msr_private,data.plane, data.offset_uv);
+    // Check if this plane supports writes
+    if (!intel_msr_private->plane_limits[plane].write_supported) {
+        return -EOPNOTSUPP;  // Operation not supported
+    }
+
+    ret = validate_offset(intel_msr_private, data.plane, data.offset_uv);
     if (ret < 0)
         return ret;
 

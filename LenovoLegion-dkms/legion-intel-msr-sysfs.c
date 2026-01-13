@@ -323,6 +323,64 @@ static ssize_t uncore_max_overvolt_show(struct device *dev,struct device_attribu
     return sprintf(buf, "%d\n", priv->intel_msr_private.plane_limits[PLANE_UNCORE].max_undervolt_uv);;
 }
 
+/*
+ * Show which voltage planes support write operations
+ */
+static ssize_t cpu_offset_ctrl_supported_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct legion_data *priv = dev_get_drvdata(dev);
+
+	if (!priv) {
+		return -ENODEV;
+	}
+
+    return sprintf(buf, "%d\n", priv->intel_msr_private.plane_limits[PLANE_CPU].write_supported);
+}
+
+static ssize_t cache_offset_ctrl_supported_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct legion_data *priv = dev_get_drvdata(dev);
+
+	if (!priv) {
+		return -ENODEV;
+	}
+
+    return sprintf(buf, "%d\n", priv->intel_msr_private.plane_limits[PLANE_CACHE].write_supported);
+}
+
+static ssize_t gpu_offset_ctrl_supported_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct legion_data *priv = dev_get_drvdata(dev);
+
+	if (!priv) {
+		return -ENODEV;
+	}
+
+    return sprintf(buf, "%d\n", priv->intel_msr_private.plane_limits[PLANE_GPU].write_supported);
+}
+
+static ssize_t uncore_offset_ctrl_supported_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct legion_data *priv = dev_get_drvdata(dev);
+
+	if (!priv) {
+		return -ENODEV;
+	}
+
+    return sprintf(buf, "%d\n", priv->intel_msr_private.plane_limits[PLANE_UNCORE].write_supported);
+}
+
+static ssize_t analogio_offset_ctrl_supported_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct legion_data *priv = dev_get_drvdata(dev);
+
+	if (!priv) {
+		return -ENODEV;
+	}
+
+    return sprintf(buf, "%d\n", priv->intel_msr_private.plane_limits[PLANE_ANALOGIO].write_supported);
+}
+
 static ssize_t analogio_max_undervolt_show(struct device *dev,struct device_attribute *attr, char *buf)
 {
 	struct legion_data *priv = dev_get_drvdata(dev);
@@ -374,6 +432,12 @@ static DEVICE_ATTR_RO(uncore_max_overvolt);
 static DEVICE_ATTR_RO(analogio_max_undervolt);
 static DEVICE_ATTR_RO(analogio_max_overvolt);
 
+static DEVICE_ATTR_RO(cpu_offset_ctrl_supported);
+static DEVICE_ATTR_RO(cache_offset_ctrl_supported);
+static DEVICE_ATTR_RO(gpu_offset_ctrl_supported);
+static DEVICE_ATTR_RO(uncore_offset_ctrl_supported);
+static DEVICE_ATTR_RO(analogio_offset_ctrl_supported);
+
 
 static struct attribute *legion_intel_msr_sysfs_attributes[]  = {
 	    &dev_attr_cpu_offset.attr,
@@ -392,6 +456,12 @@ static struct attribute *legion_intel_msr_sysfs_attributes[]  = {
 	    &dev_attr_uncore_max_overvolt.attr,
 	    &dev_attr_analogio_max_undervolt.attr,
 	    &dev_attr_analogio_max_overvolt.attr,
+
+	    &dev_attr_cpu_offset_ctrl_supported.attr,
+	    &dev_attr_cache_offset_ctrl_supported.attr,
+	    &dev_attr_gpu_offset_ctrl_supported.attr,
+	    &dev_attr_uncore_offset_ctrl_supported.attr,
+	    &dev_attr_analogio_offset_ctrl_supported.attr,
 
 		NULL
 };

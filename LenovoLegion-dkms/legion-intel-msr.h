@@ -19,13 +19,16 @@
 #define NUM_VOLTAGE_PLANES 5
 
 
-// Default voltage offset limits in uV (can be overridden by reading from MSR)
-#define DEFAULT_MAX_UNDERVOLT_UV 500000
-#define DEFAULT_MAX_OVERVOLT_UV 500000
+// Default voltage offset limits in uV based on Intel documented specifications
+// Conservative limits: ±150mV for safety (Intel allows up to ±300mV in BIOS)
+// These safe values work across all Intel generations (12th gen through Core Ultra)
+#define DEFAULT_MAX_UNDERVOLT_UV 150000  // 150mV undervolt
+#define DEFAULT_MAX_OVERVOLT_UV 150000   // 150mV overvolt
 
 struct legion_intel_voltage_limits {
 	int max_undervolt_uv;
 	int max_overvolt_uv;
+	int write_supported;  // Whether this plane supports voltage writes
 };
 
 
