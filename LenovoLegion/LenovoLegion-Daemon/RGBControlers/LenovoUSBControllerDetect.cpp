@@ -16,13 +16,6 @@ namespace LenovoLegionDaemon {
 #define ITE_VID                                 0x048D
 
 
-/*-----------------------------------------------------*\
-| Product ID                                            |
-\*-----------------------------------------------------*/
-#define LENOVO_PID                              0xC900
-#define LENOVO_PID_MASK                         0xFF00
-
-
 RGBController * DetectLenovoLegionUSBControllersGen9(const hid_device_info& info, const std::string& name)
 {
     hid_device* dev = hid_open_path(info.path);
@@ -38,6 +31,8 @@ RGBController * DetectLenovoLegionUSBControllersGen9(const hid_device_info& info
     return nullptr;
 }
 
-REGISTER_HID_DETECTOR("Lenovo Laptop",   DetectLenovoLegionUSBControllersGen9, ITE_VID, LENOVO_PID, LENOVO_PID_MASK);
+REGISTER_HID_DETECTOR("Lenovo Laptop",   DetectLenovoLegionUSBControllersGen9, ITE_VID, 0xC900, 0xFF00);
+REGISTER_HID_DETECTOR("Lenovo Laptop",   DetectLenovoLegionUSBControllersGen9, ITE_VID, 0xC197, 0xFFFF); //TODO
+
 
 }
