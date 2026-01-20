@@ -16,7 +16,6 @@
 #include "../LenovoLegion-PrepareBuild/FanControl.pb.h"
 #include "../LenovoLegion-PrepareBuild/CpuPower.pb.h"
 #include "../LenovoLegion-PrepareBuild/GPUPower.pb.h"
-#include "../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.h"
 #include "../LenovoLegion-PrepareBuild/NvidiaNvml.pb.h"
 #include "../LenovoLegion-PrepareBuild/CpuIntelMSR.pb.h"
 #include "../LenovoLegion-PrepareBuild/DaemonSettings.pb.h"
