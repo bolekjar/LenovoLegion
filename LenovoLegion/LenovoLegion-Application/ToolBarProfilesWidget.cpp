@@ -15,7 +15,6 @@
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUSMT.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUPower.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderGPUPower.h"
-#include "../LenovoLegion-Daemon/SysFsDataProviderCPUPowerRapl.h"
 #include "../LenovoLegion-Daemon/DataProviderNvidiaNvml.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderIntelMSR.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderOther.h"
@@ -204,10 +203,6 @@ void ToolBarProfilesWidget::onSaveProfile()
             LenovoLegionDaemon::SysFsDataProviderCPUSMT::dataType);
         profile.saveCPUSMT(cpuSmt);
         
-        auto cpuPowerRapl = m_dataProvider->getDataMessage<legion::messages::CPUPowerRapl>(
-            LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType);
-        profile.saveCPUPowerRapl(cpuPowerRapl);
-        
         auto nvidiaNvml = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(
             LenovoLegionDaemon::DataProviderNvidiaNvml::dataType);
         profile.saveNvidiaNvml(nvidiaNvml);
@@ -313,11 +308,7 @@ void ToolBarProfilesWidget::onLoadProfile()
         legion::messages::CPUSMT cpuSmt;
         profile.loadCPUSMT(cpuSmt);
         m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUSMT::dataType, cpuSmt);
-        
-        legion::messages::CPUPowerRapl cpuPowerRapl;
-        profile.loadCPUPowerRapl(cpuPowerRapl);
-        m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType, cpuPowerRapl);
-        
+              
         legion::messages::CPUPower cpuPower;
         profile.loadCPUPower(cpuPower);
         m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUPower::dataType, cpuPower);

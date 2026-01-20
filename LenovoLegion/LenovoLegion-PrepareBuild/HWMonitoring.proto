@@ -4,20 +4,20 @@ package legion.messages;
 
 message HardwareMonitor
 {
-    message Legion {
-        uint32 fan1_speed       = 1;
-        uint32 fan2_speed       = 2;
-        uint32 fan1_speed_min   = 3;
-        uint32 fan2_speed_min   = 4;
-        uint32 fan1_speed_max   = 5;
-        uint32 fan2_speed_max   = 6;
-        string fan1_label       = 7;
-        string fan2_label       = 8;
+    message Fan {
+        uint32 fan_speed       = 1;
+        uint32 fan_speed_min   = 2;
+        uint32 fan_speed_max   = 3;
+        string fan_label       = 4;
+    }
 
-        uint32 temp1_temp       = 9;
-        uint32 temp2_temp       = 10;
-        string temp1_label      = 11;
-        string temp2_label      = 12;
+    message Legion {
+        uint32 temp1_temp       = 1;
+        uint32 temp2_temp       = 2;
+        string temp1_label      = 3;
+        string temp2_label      = 4;
+
+        repeated Fan fans       = 5;
     }
 
     message IntelPowerRapl {

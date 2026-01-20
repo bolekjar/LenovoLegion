@@ -27,10 +27,8 @@
 #include "SysFSDriverHWMon.h"
 #include "SysFSDriverLegionFanMode.h"
 #include "SysFSDriverLegionGameZone.h"
-#include "SysFsDriverLegionEc.h"
 #include "SysFsDriverLegionOther.h"
 #include "SysFsDriverLegionEvents.h"
-#include "SysFSDriverLegionRaplMMIO.h"
 #include "SysFSDriverLegionIntelMSR.h"
 #include "SysFsDriverCPUInfo.h"
 #include "SysFsDriverLegionMachineInformation.h"
@@ -50,7 +48,6 @@
 #include "SysFsDataProviderCPUFrequency.h"
 #include "SysFsDataProviderCPUOptions.h"
 #include "SysFsDataProviderCPUSMT.h"
-#include "SysFsDataProviderCPUPowerRapl.h"
 #include "SysFsDataProviderIntelMSR.h"
 #include "SysFsDataProviderCPUInfo.h"
 #include "SysFsDataProviderMachineInformation.h"
@@ -61,7 +58,6 @@
 #include "DataProviderDaemonSettings.h"
 #include "DataProviderRGBController.h"
 
-#include "Computer.h"
 #include "DaemonSettingsManager.h"
 
 
@@ -93,7 +89,6 @@ Application::Application(int &argc, char *argv[]) :
      */
     m_sysFsDriverManager->addDriver(new SysFSDriverLegionFanMode(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFSDriverLegionGameZone(m_sysFsDriverManager));
-    m_sysFsDriverManager->addDriver(new SysFsDriverLegionEc(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverLegionOther(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFSDriverHWMon(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverCPU(m_sysFsDriverManager));
@@ -104,7 +99,6 @@ Application::Application(int &argc, char *argv[]) :
     m_sysFsDriverManager->addDriver(new SysFsDriverIntelPowercapRapl(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverPowerSuplyBattery0(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverLegionEvents(m_sysFsDriverManager));
-    m_sysFsDriverManager->addDriver(new SysFSDriverLegionRaplMMIO(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFSDriverLegionIntelMSR(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverCPUInfo(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverLegionMachineInformation(m_sysFsDriverManager));
@@ -128,7 +122,6 @@ Application::Application(int &argc, char *argv[]) :
     m_dataProviderManager->addDataProvider(new SysFsDataProviderCPUFrequency(m_sysFsDriverManager,m_dataProviderManager));
     m_dataProviderManager->addDataProvider(new SysFsDataProviderCPUOptions(m_sysFsDriverManager,m_dataProviderManager));
     m_dataProviderManager->addDataProvider(new SysFsDataProviderCPUSMT(m_sysFsDriverManager,m_dataProviderManager));
-    m_dataProviderManager->addDataProvider(new SysFsDataProviderCPUPowerRapl(m_sysFsDriverManager,m_dataProviderManager));
     m_dataProviderManager->addDataProvider(new SysFsDataProviderIntelMSR(m_sysFsDriverManager,m_dataProviderManager));
     m_dataProviderManager->addDataProvider(new SysFsDataProviderCPUInfo(m_sysFsDriverManager,m_dataProviderManager));
     m_dataProviderManager->addDataProvider(new SysFsDataProviderMachineInformation(m_sysFsDriverManager,m_dataProviderManager));
@@ -182,14 +175,6 @@ void Application::appInitImpl(std::unique_ptr<ApplicationModulesHandler_T>)
      */
     connect(m_sysFsDriverManager,&SysFsDriverManager::kernelEvent,m_dataProviderManager,&DataProviderManager::kernelEventHandler);
 
-
-    /*
-     * Init Computer
-     */
-    {
-        Computer computer(*m_sysFsDriverManager,this);
-        computer.initComputer();
-    }
 
     /*
      * Load settings

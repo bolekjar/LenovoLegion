@@ -30,16 +30,38 @@ void SysFSDriverLegionFanMode::init()
     {
         LOG_D(QString("Found Legion Fan Mode fan curve driver in path: ") + fanCurvePath.c_str());
 
+
+
         m_descriptor["cpu_fan_default"] = std::filesystem::path(fanCurvePath).append("cpu_fan_default");
-        m_descriptor["cpusen_fan_default"] = std::filesystem::path(fanCurvePath).append("cpusen_fan_default");
-        m_descriptor["cpusen_sensor_default"] = std::filesystem::path(fanCurvePath).append("cpusen_sensor_default");
         m_descriptor["cpu_sensor_default"] = std::filesystem::path(fanCurvePath).append("cpu_sensor_default");
-        m_descriptor["current_value"] = std::filesystem::path(fanCurvePath).append("current_value");
-        m_descriptor["display_name"] = std::filesystem::path(fanCurvePath).append("display_name");
-        m_descriptor["gpu2_fan_default"] = std::filesystem::path(fanCurvePath).append("gpu2_fan_default");
-        m_descriptor["gpu2_sensor_default"] = std::filesystem::path(fanCurvePath).append("gpu2_sensor_default");
         m_descriptor["gpu_fan_default"] = std::filesystem::path(fanCurvePath).append("gpu_fan_default");
         m_descriptor["gpu_sensor_default"] = std::filesystem::path(fanCurvePath).append("gpu_sensor_default");
+
+        m_descriptor["current_value"] = std::filesystem::path(fanCurvePath).append("current_value");
+        m_descriptor["display_name"] = std::filesystem::path(fanCurvePath).append("display_name");
+
+
+        /*
+         * Optional values for cpusen fan mode
+         */
+
+        if(std::filesystem::exists(std::filesystem::path(fanCurvePath).append("cpusen_fan_default")) &&
+           std::filesystem::exists(std::filesystem::path(fanCurvePath).append("cpusen_sensor_default")))
+        {
+            LOG_D(QString("Found Legion Fan Mode cpusen fan mode support in path: ") + fanCurvePath.c_str());
+
+            m_descriptor["cpusen_fan_default"]  = std::filesystem::path(fanCurvePath).append("cpusen_fan_default");
+            m_descriptor["cpusen_sensor_default"] = std::filesystem::path(fanCurvePath).append("cpusen_sensor_default");
+        }
+
+        if(std::filesystem::exists(std::filesystem::path(fanCurvePath).append("sys_fan_default")) &&
+            std::filesystem::exists(std::filesystem::path(fanCurvePath).append("sys_sensor_default")))
+        {
+            LOG_D(QString("Found Legion Fan Mode sys fan mode support in path: ") + fanCurvePath.c_str());
+
+            m_descriptor["sys_fan_default"] = std::filesystem::path(fanCurvePath).append("sys_fan_default");
+            m_descriptor["sys_sensor_default"] = std::filesystem::path(fanCurvePath).append("sys_sensor_default");
+        }
     }
 }
 

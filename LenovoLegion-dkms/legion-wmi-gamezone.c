@@ -11,6 +11,7 @@
 #include "legion-wmi-gamezone-sysfs.h"
 #include "legion-wmi-other.h"
 #include "legion-wmi-fm.h"
+#include "legion-hwmon.h"
 
 #include <linux/acpi.h>
 #include <linux/dmi.h>
@@ -108,19 +109,16 @@ int legion_wmi_gz_get_string(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD
 }
 
 /**
- * legion_wmi_gz_mode_call() - Call method for lenovo-wmi-other driver notifier.
+ * legion_wmi_gz_call() - Call method for lenovo-wmi-other driver notifier.
  *
  * @nb: The notifier_block registered to lenovo-wmi-other driver.
  * @cmd: The event type.
- * @data: Thermal mode enum pointer pointer for returning the thermal mode.
  *
- * For LEGION_WMI_GZ_GET_THERMAL_MODE, retrieve the current thermal mode.
  *
  * Return: Notifier_block status.
  */
-static int legion_wmi_gz_mode_call(struct notifier_block *nb, unsigned long cmd,void *data)
+static int legion_wmi_gz_call(struct lenovo_wmi_gz_priv *priv, unsigned long cmd,void *data)
 {
-	struct lenovo_wmi_gz_priv *priv = container_of(nb, struct lenovo_wmi_gz_priv, mode_nb);
 	switch (cmd) {
 	case LEGION_WMI_GZ_GET_THERMAL_MODE: {
 		enum thermal_mode **mode = data;
@@ -148,9 +146,30 @@ static int legion_wmi_gz_mode_call(struct notifier_block *nb, unsigned long cmd,
 		}
 	}
 		return NOTIFY_OK;
+	case LEGION_WMI_GZ_GET_SMARTFAN_VERSION: {
+		int **version = data ;
+		scoped_guard(spinlock, &priv->gz_mode_lock) {
+			**version = priv->preloaded_values.IsSupportSmartFan;
+		}
+	}
+		return NOTIFY_OK;
+
 	default:
 		return NOTIFY_DONE;
 	}
+}
+
+
+static int legion_wmi_other_gz_call(struct notifier_block *nb, unsigned long cmd,void *data){
+	return legion_wmi_gz_call(container_of(nb, struct lenovo_wmi_gz_priv, other_nb),cmd,data);
+}
+
+static int legion_wmi_fm_gz_call(struct notifier_block *nb, unsigned long cmd,void *data){
+	return legion_wmi_gz_call(container_of(nb, struct lenovo_wmi_gz_priv, fm_nb),cmd,data);
+}
+
+static int legion_wmi_hwmon_gz_call(struct notifier_block *nb, unsigned long cmd,void *data){
+	return legion_wmi_gz_call(container_of(nb, struct lenovo_wmi_gz_priv, hwmon_nb),cmd,data);
 }
 
 /**
@@ -251,7 +270,7 @@ static int legion_wmi_gz_event_call(struct notifier_block *nb, unsigned long cmd
 #else
 		platform_profile_notify();
 #endif
-		return NOTIFY_STOP;
+		return NOTIFY_OK;
 	}
 	case LEGION_WMI_EVENT_POWER_CHARGE_MODE:
 	{
@@ -269,7 +288,7 @@ static int legion_wmi_gz_event_call(struct notifier_block *nb, unsigned long cmd
 #else
 		platform_profile_notify();
 #endif
-		return NOTIFY_STOP;
+		return NOTIFY_OK;
 	}
 	default:
 		return NOTIFY_DONE;
@@ -522,8 +541,8 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 	priv->preloaded_values.GetFanCount = -1;
 	priv->preloaded_values.GetFanMaxSpeed = -1;
 
-	priv->current_mode_on_ac 		=  LEGION_WMI_GZ_THERMAL_MODE_BALANCED;
-	priv->current_mode_on_battery 	=  LEGION_WMI_GZ_THERMAL_MODE_BALANCED;
+	priv->current_mode_on_ac 		=  DEFAULT_THERMAL_MODE;
+	priv->current_mode_on_battery 	=  DEFAULT_THERMAL_MODE;
 	priv->wdev = wdev;
 
 
@@ -543,7 +562,7 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 		return ret;
 
 	/* Set initial balanced mode - if this fails, device may not support it */
-	ret = legion_wmi_gz_thermal_mode_set(wdev,LEGION_WMI_GZ_THERMAL_MODE_BALANCED);
+	ret = legion_wmi_gz_thermal_mode_set(wdev,DEFAULT_THERMAL_MODE);
 	if (ret) {
 		dev_warn(&wdev->dev, "Failed to set initial thermal mode: %d\n", ret);
 		/* Continue anyway as this is not fatal */
@@ -577,13 +596,18 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 	if (ret)
 		return ret;
 
-	priv->mode_nb.notifier_call = legion_wmi_gz_mode_call;
-	ret = devm_lenovo_wmi_other_register_notifier(&wdev->dev, &priv->mode_nb);
+	priv->other_nb.notifier_call = legion_wmi_other_gz_call;
+	ret = devm_lenovo_wmi_other_register_notifier(&wdev->dev, &priv->other_nb);
 	if (ret)
 		return ret;
 
-	priv->mode_fm_nb.notifier_call = legion_wmi_gz_mode_call;
-	ret = devm_lenovo_wmi_fm_register_notifier(&wdev->dev, &priv->mode_nb);
+	priv->fm_nb.notifier_call = legion_wmi_fm_gz_call;
+	ret = devm_lenovo_wmi_fm_register_notifier(&wdev->dev, &priv->fm_nb);
+	if (ret)
+		return ret;
+
+	priv->hwmon_nb.notifier_call = legion_wmi_hwmon_gz_call;
+	ret = legion_hwmon_gz_register_notifier(&wdev->dev, &priv->hwmon_nb);
 	if (ret)
 		return ret;
 
@@ -609,13 +633,25 @@ static void legion_wmi_gz_remove(struct wmi_device *wdev)
 static struct wmi_driver lenovo_wmi_gz_driver = {
 	.driver = {
 		.name = "legion_wmi_gamezone",
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
 	},
 	.id_table = legion_wmi_gz_id_table,
 	.probe  = legion_wmi_gz_probe,
 	.remove = legion_wmi_gz_remove,
 	.no_singleton = true,
 };
+
+/**
+ * legion_wmi_gz_match() - Match rule for the master driver.
+ * @dev: Pointer to the capability data 01 parent device.
+ * @data: Unused void pointer for passing match criteria.
+ *
+ * Return: int.
+ */
+int legion_wmi_gz_match(struct device *dev, void *data)
+{
+	return dev->driver == &lenovo_wmi_gz_driver.driver;
+}
 
 
 int  legion_wmi_gamezone_driver_init(struct device *parent){

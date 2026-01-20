@@ -59,15 +59,36 @@ static int legion_wmi_ftable_component_bind(struct device *ftable_dev,
 	if (!priv || !priv->list || !fm_priv || !(*fm_priv))
 	        return -ENODEV;
 
-	(*fm_priv)->fan_max_speed = 0;
-	(*fm_priv)->ft_list = priv->list;
 
-	for (int idx = 0; idx < priv->list->count; idx++) {
-		(*fm_priv)->fan_max_speed = max((*fm_priv)->fan_max_speed,
-										 priv->list->data[idx].fanTableData[
-																		  sizeof(priv->list->data[idx].fanTableData)/sizeof(priv->list->data[idx].fanTableData[0]) - 1
-																		  ]);
+	/*
+	 * Initialize
+	 */
+	for (int i = 0; i < FAN_MAX;++i)
+	{
+		(*fm_priv)->fan_max_speeds[i].fan_id 	= -1;
+		(*fm_priv)->fan_max_speeds[i].max_speed =  0;
+		(*fm_priv)->fan_max_speeds[i].sensor_id = -1;
 	}
+
+	(*fm_priv)->ft_list = priv->list;
+	for (int idx = 0; idx < priv->list->count; idx++) {
+
+		for (int i = 0; i < FAN_MAX;++i)
+		{
+			if((*fm_priv)->fan_max_speeds[i].fan_id 	==  priv->list->data[idx].fanId && (*fm_priv)->fan_max_speeds[i].sensor_id  ==  priv->list->data[idx].sensorId)
+			{
+				(*fm_priv)->fan_max_speeds[i].max_speed = max((*fm_priv)->fan_max_speeds[i].max_speed,priv->list->data[idx].fanTableData[sizeof(priv->list->data[idx].fanTableData)/sizeof(priv->list->data[idx].fanTableData[0]) - 1]);
+				break;
+			}  else if ((*fm_priv)->fan_max_speeds[i].fan_id  == -1 && (*fm_priv)->fan_max_speeds[i].sensor_id == -1)
+			{
+				(*fm_priv)->fan_max_speeds[i].fan_id    = priv->list->data[idx].fanId;
+				(*fm_priv)->fan_max_speeds[i].sensor_id = priv->list->data[idx].sensorId;
+				(*fm_priv)->fan_max_speeds[i].max_speed = priv->list->data[idx].fanTableData[sizeof(priv->list->data[idx].fanTableData)/sizeof(priv->list->data[idx].fanTableData[0]) - 1];
+				break;
+			}
+		}
+	}
+
 	return 0;
 }
 

@@ -7,12 +7,10 @@
  */
 #include "ProtocolProcessorNotifier.h"
 #include "ProtocolParser.h"
-#include "Computer.h"
 #include "SysFsDriverManager.h"
 
 #include <Core/LoggerHolder.h>
 
-#include "SysFsDriverACPIPlatformProfile.h"
 #include "SysFsDriverPowerSuplyBattery0.h"
 #include "SysFsDriverCPUXList.h"
 #include "SysFsDriverLegion.h"
@@ -163,8 +161,6 @@ void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon:
 
         if(event.m_action == SysFsDriverManager::ModuleSubsystemEvent::Action::ADD)
         {
-            Computer(*m_sysfsDriverManager,this).initComputer();
-
             msg.set_action(legion::messages::Notification::LENOVO_DRIVER_ADDED);
         }
     }

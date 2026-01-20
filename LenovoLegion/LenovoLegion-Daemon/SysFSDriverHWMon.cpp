@@ -47,17 +47,24 @@ void SysFSDriverHWMon::init()
             {
                 LOG_D(QString("Found Legion HWMon driver in path: ") + entry.path().c_str());
 
+                /*
+                 * Fans
+                 */
+                for(const auto& entry : std::filesystem::directory_iterator(std::filesystem::path(entry)))
+                {
+                    if(entry.is_regular_file() && entry.path().filename().begin()->string().find("fan") != std::string::npos)
+                    {
+                        qsizetype fanCount = 0;
+                        char name[64] = {0};
 
-                m_descriptor["fan1Speed"] = std::filesystem::path(entry).append("fan1_input");
-                m_descriptor["fan1Label"] = std::filesystem::path(entry).append("fan1_label");
-                m_descriptor["fan1MaxSpeed"] = std::filesystem::path(entry).append("fan1_max");
-                m_descriptor["fan1MinSpeed"] = std::filesystem::path(entry).append("fan1_min");
+                        sscanf(entry.path().filename().string().c_str(),"fan%llu_%s",&fanCount,name);
 
+                        m_descriptorsInVector.resize(std::max(fanCount,m_descriptorsInVector.size()));
+                        m_descriptorsInVector[fanCount - 1]["fan_" + QString(name)] = entry.path();
 
-                m_descriptor["fan2Speed"] = std::filesystem::path(entry).append("fan2_input");
-                m_descriptor["fan2Label"] = std::filesystem::path(entry).append("fan2_label");
-                m_descriptor["fan2MaxSpeed"] = std::filesystem::path(entry).append("fan2_max");
-                m_descriptor["fan2MinSpeed"] = std::filesystem::path(entry).append("fan2_min");
+                        LOG_T(QString("Legion HWMon Fan(") + entry.path().filename().string().c_str() + ")driver file: " + entry.path().c_str());
+                    }
+                }
 
                 m_descriptor["temp1"] = std::filesystem::path(entry).append("temp1_input");
                 m_descriptor["temp1Label"] = std::filesystem::path(entry).append("temp1_label");
@@ -70,5 +77,4 @@ void SysFSDriverHWMon::init()
 
     }
 }
-
 }

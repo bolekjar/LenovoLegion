@@ -17,7 +17,6 @@
 #include "SysFsDataProviderCPUSMT.h"
 #include "SysFsDataProviderCPUPower.h"
 #include "SysFsDataProviderGPUPower.h"
-#include "SysFsDataProviderCPUPowerRapl.h"
 #include "DataProviderNvidiaNvml.h"
 #include "SysFsDataProviderIntelMSR.h"
 #include "SysFsDataProviderOther.h"
@@ -79,7 +78,6 @@ void DaemonSettingsManager::loadAllSettings(DataProviderManager* dataProviderMan
     
     loadFanOption(dataProviderManager);
     loadCPUSMT(dataProviderManager);
-    loadCPUPowerRapl(dataProviderManager);
     loadNvidiaNvml(dataProviderManager);
     loadIntelMSR(dataProviderManager);
     loadOther(dataProviderManager);
@@ -99,7 +97,6 @@ void DaemonSettingsManager::saveAllSettings(DataProviderManager* dataProviderMan
     saveCPUSMT(dataProviderManager);
     saveCPUPower(dataProviderManager);
     saveGPUPower(dataProviderManager);
-    saveCPUPowerRapl(dataProviderManager);
     saveNvidiaNvml(dataProviderManager);
     saveIntelMSR(dataProviderManager);
     saveOther(dataProviderManager);
@@ -452,43 +449,6 @@ void DaemonSettingsManager::saveGPUPower(DataProviderManager* dataProviderManage
         }
     } catch(...) {
         LOG_W("DaemonSettingsManager::saveGPUPower - failed");
-    }
-}
-
-void DaemonSettingsManager::loadCPUPowerRapl(DataProviderManager* dataProviderManager)
-{
-    LOG_T("DaemonSettingsManager::loadCPUPowerRapl");
-    try {
-        legion::messages::CPUPowerRapl rapl;
-        SettingsLoaderCPUPowerRapl().loadCPUPowerRapl(rapl);
-        // Skip if no fields are set
-        if(rapl.ByteSizeLong() == 0) {
-            LOG_D("DaemonSettingsManager::loadCPUPowerRapl - no saved data, skipping");
-            return;
-        }
-        QByteArray data;
-        data.resize(rapl.ByteSizeLong());
-        if(rapl.SerializeToArray(data.data(),data.size()))
-        {
-            dataProviderManager->getDataProvider(SysFsDataProviderCPUPowerRapl::dataType).deserializeAndSetData(data);
-        }
-    } catch(...) {
-        LOG_W("DaemonSettingsManager::loadCPUPowerRapl - failed");
-    }
-}
-
-void DaemonSettingsManager::saveCPUPowerRapl(DataProviderManager* dataProviderManager)
-{
-    LOG_T("DaemonSettingsManager::saveCPUPowerRapl");
-    try {
-        auto data = dataProviderManager->getDataProvider(SysFsDataProviderCPUPowerRapl::dataType).serializeAndGetData();
-        legion::messages::CPUPowerRapl rapl;
-        if(rapl.ParseFromArray(data.data(), data.size()))
-        {
-            SettingsSaverCPUPowerRapl().saveCPUPowerRapl(rapl);
-        }
-    } catch(...) {
-        LOG_W("DaemonSettingsManager::saveCPUPowerRapl - failed");
     }
 }
 

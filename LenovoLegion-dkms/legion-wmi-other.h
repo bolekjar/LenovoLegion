@@ -97,6 +97,7 @@ enum CapabilityID
 	//HwMon
 	CpuCurrentFanSpeed 									= 0x04030001,
     GpuCurrentFanSpeed 									= 0x04030002,
+	SysCurrentFanSpeed 									= 0x04030004,
     CpuCurrentTemperature 								= 0x05040000,
     GpuCurrentTemperature 								= 0x05050000
 };
@@ -108,11 +109,15 @@ struct legion_wmi_other_priv {
 	struct wmi_device 				*wdev;
 
 	struct notifier_block 			hwmon_nb;    /* hwmon*/
+	struct notifier_block 			dkms_nb;     /* dkms*/
 
 	//SysFs
 	struct device *fw_attr_dev;
 	struct kset   *fw_attr_kset;
 	int ida_id;
+
+	/* Completion to signal when binding is done */
+	struct completion bind_complete;
 };
 
 struct device;

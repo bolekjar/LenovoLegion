@@ -49,7 +49,6 @@ public:
     void loadCPUSMT(DataProviderManager* dataProviderManager);
     void loadCPUPower(DataProviderManager* dataProviderManager);
     void loadGPUPower(DataProviderManager* dataProviderManager);
-    void loadCPUPowerRapl(DataProviderManager* dataProviderManager);
     void loadNvidiaNvml(DataProviderManager* dataProviderManager);
     void loadIntelMSR(DataProviderManager* dataProviderManager);
     void loadOther(DataProviderManager* dataProviderManager);
@@ -64,7 +63,6 @@ public:
     void saveCPUSMT(DataProviderManager* dataProviderManager);
     void saveCPUPower(DataProviderManager* dataProviderManager);
     void saveGPUPower(DataProviderManager* dataProviderManager);
-    void saveCPUPowerRapl(DataProviderManager* dataProviderManager);
     void saveNvidiaNvml(DataProviderManager* dataProviderManager);
     void saveIntelMSR(DataProviderManager* dataProviderManager);
     void saveOther(DataProviderManager* dataProviderManager);

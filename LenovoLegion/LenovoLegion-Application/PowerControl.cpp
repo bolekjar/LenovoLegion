@@ -13,7 +13,6 @@
 
 #include "../LenovoLegion-Daemon/SysFsDataProviderCPUPower.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderGPUPower.h"
-#include "../LenovoLegion-Daemon/SysFsDataProviderCPUPowerRapl.h"
 #include "../LenovoLegion-Daemon/SysFsDataProviderPowerProfile.h"
 
 
@@ -68,7 +67,6 @@ PowerControl::PowerControl(DataProvider *dataProvider,QWidget *parent)
      */
     m_cpuControlData    = m_dataProvider->getDataMessage<legion::messages::CPUPower> (LenovoLegionDaemon::SysFsDataProviderCPUPower::dataType);
     m_gpuControlData    = m_dataProvider->getDataMessage<legion::messages::GPUPower> (LenovoLegionDaemon::SysFsDataProviderGPUPower::dataType);
-    m_cpuRaplData       = m_dataProvider->getDataMessage<legion::messages::CPUPowerRapl> (LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType);
     m_powerProfileData  = m_dataProvider->getDataMessage<legion::messages::PowerProfile> (LenovoLegionDaemon::SysFsDataProviderPowerProfile::dataType);
 
 
@@ -81,8 +79,6 @@ PowerControl::PowerControl(DataProvider *dataProvider,QWidget *parent)
        !m_gpuControlData.has_gpu_configurable_tgp()     ||
        !m_gpuControlData.has_gpu_power_boost()          ||
        !m_gpuControlData.has_gpu_temperature_limit()    ||
-       !m_cpuRaplData.has_ltp_limit()                   ||
-       !m_cpuRaplData.has_stp_limit()                   ||
        !m_powerProfileData.has_thermal_mode()
        )
     {
@@ -176,7 +172,6 @@ void PowerControl::refresh()
 void PowerControl::on_pushButton_CPUPowerControlApply_clicked()
 {
     legion::messages::CPUPower cpuPower;
-    legion::messages::CPUPowerRapl cpuPowerRapl;
 
     cpuPower.mutable_cpu_clp_limit()->set_current_value((quint8)ui->horizontalSlider_CrossLPowerLimitPowerControl->value());
     cpuPower.mutable_cpu_ltp_limit()->set_current_value((quint8)ui->horizontalSlider_LTPowerLimitPowerControl->value());
@@ -187,18 +182,10 @@ void PowerControl::on_pushButton_CPUPowerControlApply_clicked()
     cpuPower.mutable_cpu_pl1_tau()->set_current_value((quint8)ui->comboBox_PL1TauPowerControl->currentText().toUShort());
 
 
-    cpuPowerRapl.mutable_ltp_limit()->set_power_limit_uw((quint32)(ui->horizontalSlider_LTPowerLimitPowerControl->value() * 1000000));
-    cpuPowerRapl.mutable_ltp_limit()->set_time_window_us((quint32)(ui->comboBox_PL1TauPowerControl->currentText().toUShort() * 1000000));
-    cpuPowerRapl.mutable_stp_limit()->set_power_limit_uw((quint32)(ui->horizontalSlider_STPowerLimitPowerControl->value() * 1000000));
-
-
-
     //CPU Power Control Apply
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUPower::dataType,cpuPower);
-    m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType,cpuPowerRapl);
 
     m_cpuControlData = m_dataProvider->getDataMessage<legion::messages::CPUPower> (LenovoLegionDaemon::SysFsDataProviderCPUPower::dataType);
-    m_cpuRaplData    = m_dataProvider->getDataMessage<legion::messages::CPUPowerRapl> (LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType);
 
 
     renderCpuControlData();
@@ -347,7 +334,7 @@ void PowerControl::markChangesCpuControlData()
     }
 
 
-    if(static_cast<uint32_t>(ui->horizontalSlider_LTPowerLimitPowerControl->value()) != (m_cpuRaplData.ltp_limit().power_limit_uw() / 1000000))
+    if(static_cast<uint32_t>(ui->horizontalSlider_LTPowerLimitPowerControl->value()) != (m_cpuControlData.cpu_ltp_limit().current_value()))
     {
         ui->label_LTPowerLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
@@ -355,7 +342,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_LTPowerLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
-    if(static_cast<uint32_t>(ui->horizontalSlider_STPowerLimitPowerControl->value()) != (m_cpuRaplData.stp_limit().power_limit_uw() / 1000000))
+    if(static_cast<uint32_t>(ui->horizontalSlider_STPowerLimitPowerControl->value()) != (m_cpuControlData.cpu_stp_limit().current_value()))
     {
         ui->label_STPowerLimitPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
@@ -379,7 +366,7 @@ void PowerControl::markChangesCpuControlData()
         ui->label_CPUTempLimitPowerControl->setStyleSheet(QString("QLabel { }"));
     }
 
-    if(static_cast<uint32_t>(ui->comboBox_PL1TauPowerControl->currentText().toUShort()) != ((m_cpuRaplData.ltp_limit().time_window_us() + 1000000 )/ 1000000))
+    if(static_cast<uint32_t>(ui->comboBox_PL1TauPowerControl->currentText().toUShort()) != ((m_cpuControlData.cpu_pl1_tau().current_value())))
     {
         ui->label_PL1TauPowerControl->setStyleSheet(QString("QLabel {  color : ").append(MainWindow::VALUE_CHANGE_COLOR).append("; }"));
     }
@@ -443,8 +430,6 @@ void PowerControl::renderCpuControlData()
 {
     if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
     {
-        legion::messages::CPUPowerRapl cpuPowerRapl;
-
         ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().current_value());
         ui->lcdNumber_LTPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_ltp_limit().current_value()));
 
@@ -460,24 +445,14 @@ void PowerControl::renderCpuControlData()
         ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().current_value());
         ui->lcdNumber_PowerTargetInACPowerControl->display(static_cast<int>(m_cpuControlData.gpu_total_onac().current_value()));
 
+        ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number((m_cpuControlData.gpu_to_cpu_dynamic_boost().current_value()))));
         ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number((m_cpuControlData.cpu_pl1_tau().current_value()))));
 
 
         ui->groupBox_CPUPowerControl->setEnabled(true);
-
-
-        cpuPowerRapl.mutable_ltp_limit()->set_power_limit_uw((quint32)(ui->horizontalSlider_LTPowerLimitPowerControl->value() * 1000000));
-        cpuPowerRapl.mutable_ltp_limit()->set_time_window_us((quint32)(ui->comboBox_PL1TauPowerControl->currentText().toUShort() * 1000000));
-        cpuPowerRapl.mutable_stp_limit()->set_power_limit_uw((quint32)(ui->horizontalSlider_STPowerLimitPowerControl->value() * 1000000));
-
-        m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType,cpuPowerRapl);
-
-        m_cpuRaplData = m_dataProvider->getDataMessage<legion::messages::CPUPowerRapl> (LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType);
     }
     else
     {
-        legion::messages::CPUPowerRapl cpuPowerRapl;
-
         ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
         ui->lcdNumber_LTPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
 
@@ -493,17 +468,11 @@ void PowerControl::renderCpuControlData()
         ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
         ui->lcdNumber_PowerTargetInACPowerControl->display(static_cast<int>(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
 
+
+        ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
         ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
 
         ui->groupBox_CPUPowerControl->setEnabled(false);
-
-        cpuPowerRapl.mutable_ltp_limit()->set_power_limit_uw((quint32)(ui->horizontalSlider_LTPowerLimitPowerControl->value() * 1000000));
-        cpuPowerRapl.mutable_ltp_limit()->set_time_window_us((quint32)(ui->comboBox_PL1TauPowerControl->currentText().toUShort() * 1000000));
-        cpuPowerRapl.mutable_stp_limit()->set_power_limit_uw((quint32)(ui->horizontalSlider_STPowerLimitPowerControl->value() * 1000000));
-
-        m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType,cpuPowerRapl);
-
-        m_cpuRaplData = m_dataProvider->getDataMessage<legion::messages::CPUPowerRapl> (LenovoLegionDaemon::SysFsDataProviderCPUPowerRapl::dataType);
     }
 
     ui->comboBox_PresetConfiguration->setCurrentText("NONE");

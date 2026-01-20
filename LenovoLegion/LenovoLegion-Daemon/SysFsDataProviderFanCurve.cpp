@@ -90,21 +90,6 @@ QByteArray SysFsDataProviderFanCurve::serializeAndGetData() const
             }
         },fanCurveMsg.mutable_cpu_default());
 
-
-
-        setValuesSteps(fanCurve.m_cpusen_fan_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
-            for (const auto& val : values) {
-                defaultValues.add_fan(val.toUInt());
-            }
-        },fanCurveMsg.mutable_cpusen_default());
-        setValuesSteps(fanCurve.m_cpusen_sensor_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
-            for (const auto& val : values) {
-                defaultValues.add_sensors(val.toUInt());
-            }
-        },fanCurveMsg.mutable_cpusen_default());
-
-
-
         setValuesSteps(fanCurve.m_gpu_fan_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
             for (const auto& val : values) {
                 defaultValues.add_fan(val.toUInt());
@@ -117,18 +102,38 @@ QByteArray SysFsDataProviderFanCurve::serializeAndGetData() const
         },fanCurveMsg.mutable_gpu_default());
 
 
-        setValuesSteps(fanCurve.m_gpu2_fan_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
-            for (const auto& val : values) {
-                defaultValues.add_fan(val.toUInt());
-            }
-        },fanCurveMsg.mutable_gpu_default());
-        setValuesSteps(fanCurve.m_gpu2_sensor_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
-            for (const auto& val : values) {
-                defaultValues.add_sensors(val.toUInt());
-            }
-        },fanCurveMsg.mutable_gpu2_default());
 
+        /*
+         * Optionaly
+         */
+        if(!fanCurve.m_cpusen_fan_default.empty() && !fanCurve.m_cpusen_sensor_default.empty())
+        {
+            setValuesSteps(fanCurve.m_cpusen_fan_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
+                for (const auto& val : values) {
+                    defaultValues.add_fan(val.toUInt());
+                }
+            },fanCurveMsg.mutable_cpusen_default());
+            setValuesSteps(fanCurve.m_cpusen_sensor_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
+                for (const auto& val : values) {
+                    defaultValues.add_sensors(val.toUInt());
+                }
+            },fanCurveMsg.mutable_cpusen_default());
+        }
 
+        if(!fanCurve.m_sys_fan_default.empty() && !fanCurve.m_sys_sensor_default.empty())
+        {
+            setValuesSteps(fanCurve.m_sys_fan_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
+                for (const auto& val : values) {
+                    defaultValues.add_fan(val.toUInt());
+                }
+            },fanCurveMsg.mutable_sys_default());
+            setValuesSteps(fanCurve.m_sys_sensor_default,[&](legion::messages::FanCurve::Default &defaultValues,const QList<QString>& values){
+                for (const auto& val : values) {
+                    defaultValues.add_sensors(val.toUInt());
+                }
+            },fanCurveMsg.mutable_sys_default());
+
+        }
 
     } catch(SysFsDriver::exception_T& ex)
     {

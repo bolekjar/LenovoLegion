@@ -194,6 +194,7 @@ void ToolBarHomeWidget::dataProviderEvent(const legion::messages::Notification &
     switch (event.action()) {
         case legion::messages::Notification::LENOVO_DRIVER_ADDED:
         {
+            Utils::Task::executeTasks(m_defaultActionsMap["refresh_hw_monitoring"]);
             Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });
@@ -201,6 +202,7 @@ void ToolBarHomeWidget::dataProviderEvent(const legion::messages::Notification &
         break;
         case legion::messages::Notification::LENOVO_DRIVER_REMOVED:
         {
+            Utils::Task::executeTasks(m_defaultActionsMap["refresh_hw_monitoring"]);
             Utils::Layout::forAllLayoutsDo(*ui->verticalLayout_PowerProfiles,[](QLayoutItem &item){
                 dynamic_cast<PowerProfileControl*>(item.widget())->refresh();
             });

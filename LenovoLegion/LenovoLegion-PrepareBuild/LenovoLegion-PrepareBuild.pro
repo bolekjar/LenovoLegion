@@ -19,7 +19,6 @@ DISTFILES += \
     ComputerInfo.proto \
     CpuIntelMSR.proto \
     CpuPower.proto \
-    CpuPowerRapl.proto \
     FanControl.proto \
     GPUPower.proto \
     HWMonitoring.proto \

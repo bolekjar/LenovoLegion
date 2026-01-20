@@ -106,7 +106,6 @@ HEADERS += \
         ../LenovoLegion-PrepareBuild/CPUFrequency.pb.h \
         ../LenovoLegion-PrepareBuild/CPUOptions.pb.h  \
         ../LenovoLegion-PrepareBuild/Notification.pb.h \
-        ../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.h \
         ../LenovoLegion-PrepareBuild/CpuIntelMSR.pb.h \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.h \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.h \
@@ -126,7 +125,6 @@ SOURCES += \
         ../LenovoLegion-PrepareBuild/CPUFrequency.pb.cc \
         ../LenovoLegion-PrepareBuild/CPUOptions.pb.cc \
         ../LenovoLegion-PrepareBuild/Notification.pb.cc \
-        ../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.cc \
         ../LenovoLegion-PrepareBuild/CpuIntelMSR.pb.cc \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.cc \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.cc \

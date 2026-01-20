@@ -38,13 +38,12 @@ FanControl::FanControl(DataProvider *dataProvider, QWidget *parent)
     m_hwMonitoringData         = m_dataProvider->getDataMessage<legion::messages::HardwareMonitor>(LenovoLegionDaemon::SysFsDataProviderHWMon::dataType);
 
 
-    if(!m_fanControlData.has_lock()                  ||
-       !m_fanControlData.has_full_speed()            ||
-       !m_fanCurveControlData.has_current_value()    ||
-       !m_powerProfileData.thermal_mode()       ||
-       !m_hwMonitoringData.legion().fan1_speed_max() ||
-       !m_hwMonitoringData.legion().fan2_speed_max()
-        )
+    if(!m_fanControlData.has_full_speed()             ||
+       !m_fanCurveControlData.has_current_value()     ||
+       !m_powerProfileData.thermal_mode()             ||
+       !(m_hwMonitoringData.legion().fans().size() > 0) ||
+       !(m_hwMonitoringData.legion().fans().size() > 0)
+       )
     {
         THROW_EXCEPTION(exception_T,ERROR_CODES::DATA_NOT_READY,"Fan control data not ready");
     }
@@ -84,20 +83,7 @@ void FanControl::on_checkBox_MaxFanSpeed_checkStateChanged(const Qt::CheckState 
 {
     legion::messages::FanOption data;
 
-    data.set_lock(m_fanControlData.lock());
     data.set_full_speed((arg1 == Qt::CheckState::Checked ? true : false));
-
-    m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderFanOption::dataType,data);
-    m_fanControlData = m_dataProvider->getDataMessage<legion::messages::FanOption>(LenovoLegionDaemon::SysFsDataProviderFanOption::dataType);
-    renderFanControlData();
-}
-
-void FanControl::on_checkBox_LockFanControl_checkStateChanged(const Qt::CheckState &arg1)
-{
-    legion::messages::FanOption data;
-
-    data.set_lock((arg1 == Qt::CheckState::Checked ? true : false));
-    data.set_full_speed(m_fanControlData.full_speed());
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderFanOption::dataType,data);
     m_fanControlData = m_dataProvider->getDataMessage<legion::messages::FanOption>(LenovoLegionDaemon::SysFsDataProviderFanOption::dataType);
@@ -252,12 +238,14 @@ void FanControl::renderFanCurveControlData()
         ui->groupBox_fanCurve->setEnabled(true);
         ui->pushButton_FanCurveApply->setEnabled(true);
         ui->pushButton_FanCurveCancel->setEnabled(true);
+        ui->checkBox_MaxFanSpeed->setEnabled(true);
     }
     else
     {
         ui->groupBox_fanCurve->setEnabled(false);
         ui->pushButton_FanCurveApply->setEnabled(false);
         ui->pushButton_FanCurveCancel->setEnabled(false);
+        ui->checkBox_MaxFanSpeed->setEnabled(false);
     }
 
 
@@ -273,143 +261,75 @@ void FanControl::renderFanCurveControlData()
     ui->verticalSlider_FanCurve9->setValue(m_localFanCurveControlData.current_value().point9());
     ui->verticalSlider_FanCurve10->setValue(m_localFanCurveControlData.current_value().point10());
 
-        ui->verticalSlider_FanCurve1->setToolTip(QString(
-"\
-CPU temp: %1 ℃\n\
-GPU temp: %2 ℃\n\
-CPU sensor temp: %3 ℃\n\
-CPU fan speed: %4 rpm\n\
-GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point1() - 1))
-                       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point1() - 1))
-                       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point1() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point1() - 1)))
-                       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point1() - 1))
-                       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point1() - 1)));
 
 
-        ui->verticalSlider_FanCurve2->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point2() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point2() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point2() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point2() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point2() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point2() - 1)));
-
-
-
-        ui->verticalSlider_FanCurve3->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point3() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point3() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point3() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point3() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point3() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point3() - 1)));
-
-
-        ui->verticalSlider_FanCurve4->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point4() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point4() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point4() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point4() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point4() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point4() - 1)));
-
-
-        ui->verticalSlider_FanCurve5->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point5() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point5() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point5() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point5() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point5() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point5() - 1)));
-
-
-
-        ui->verticalSlider_FanCurve6->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point6() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point6() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point6() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point6() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point6() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point6() - 1)));
-
-
-
-        ui->verticalSlider_FanCurve7->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point7() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point7() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point7() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point7() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point7() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point7() - 1)));
-
-
-        ui->verticalSlider_FanCurve8->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point8() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point8() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point8() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point8() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point8() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point8() - 1)));
-
-        ui->verticalSlider_FanCurve9->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point9() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point9() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point9() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point9() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point9() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point9() - 1)));
-
-
-        ui->verticalSlider_FanCurve10->setToolTip(QString(
- "\
- CPU temp: %1 ℃\n\
- GPU temp: %2 ℃\n\
- CPU sensor temp: %3 ℃\n\
- CPU fan speed: %4 rpm\n\
- GPU fan speed: %5 rpm").arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point10() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point10() - 1))
-       .arg(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point10() - 1) == 127 ? QString("N/A") : QString::number(m_fanCurveControlData.cpusen_default().at(m_powerProfileData.current_value()).sensors().at( m_localFanCurveControlData.current_value().point10() - 1)))
-       .arg(m_fanCurveControlData.cpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point10() - 1))
-       .arg(m_fanCurveControlData.gpu_default().at(m_powerProfileData.current_value()).fan().at( m_localFanCurveControlData.current_value().point10() - 1)));
-
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve1,0);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve2,1);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve3,2);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve4,3);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve5,4);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve6,5);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve7,6);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve8,7);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve9,8);
+    renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve10,9);
 }
 
 void FanControl::renderFanControlData()
 {
-    ui->checkBox_LockFanControl->setCheckState(m_fanControlData.lock() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
     ui->checkBox_MaxFanSpeed->setCheckState(m_fanControlData.full_speed() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+}
+
+void FanControl::renderToolTipsFanCurveControlData(QSlider &slider,const int index)
+{
+    QString toolTip;
+
+    /*
+     * Temperatures
+     */
+    auto def = m_localFanCurveControlData.cpu_default().at(m_powerProfileData.current_value());
+    toolTip += QString("CPU temp: %1 ℃\n").arg(def.sensors().at( index) == 127 ? QString("N/A") : QString::number(def.sensors().at( index)));
+
+
+    def = m_localFanCurveControlData.gpu_default().at(m_powerProfileData.current_value());
+    toolTip += QString("GPU temp: %1 ℃\n").arg(def.sensors().at( index) == 127 ? QString("N/A") : QString::number(def.sensors().at( index)));
+
+    if(m_localFanCurveControlData.sys_default().size() > 0)
+    {
+        auto def = m_localFanCurveControlData.sys_default().at(m_powerProfileData.current_value());
+        toolTip += QString("SYS temp: %1 ℃\n").arg(def.sensors().at( index) == 127 ? QString("N/A") : QString::number(def.sensors().at( index)));
+    }
+
+    if(m_localFanCurveControlData.cpusen_default().size() > 0)
+    {
+        auto def = m_localFanCurveControlData.cpusen_default().at(m_powerProfileData.current_value());
+        toolTip += QString("CPU sensor temp: %1 ℃\n").arg(def.sensors().at( index) == 127 ? QString("N/A") : QString::number(def.sensors().at( index)));
+    }
+
+
+    /*
+     * Speeds
+     */
+    def = m_localFanCurveControlData.cpu_default().at(m_powerProfileData.current_value());
+    toolTip += QString("CPU fan speed: %1 rpm\n").arg(def.fan().at( index));
+
+    def = m_localFanCurveControlData.gpu_default().at(m_powerProfileData.current_value());
+    toolTip += QString("GPU fan speed: %1 rpm\n").arg(def.fan().at( index));
+
+    if(m_localFanCurveControlData.sys_default().size() > 0)
+    {
+        def = m_localFanCurveControlData.sys_default().at(m_powerProfileData.current_value());
+        toolTip += QString("SYS fan speed: %1 rpm\n").arg(def.fan().at( index));
+    }
+
+    if(m_localFanCurveControlData.cpusen_default().size() > 0)
+    {
+        def = m_localFanCurveControlData.cpusen_default().at(m_powerProfileData.current_value());
+        toolTip += QString("CPU sensor fan speed: %1 rpm\n").arg(def.fan().at( index));
+    }
+
+    slider.setToolTip(toolTip);
+
 }
 
 void FanControl::markChangesFanCurveControlData()

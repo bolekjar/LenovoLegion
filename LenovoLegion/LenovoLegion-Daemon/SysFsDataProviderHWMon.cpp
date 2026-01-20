@@ -32,20 +32,17 @@ QByteArray SysFsDataProviderHWMon::serializeAndGetData() const
     LOG_T(__PRETTY_FUNCTION__);
 
     try {
-        SysFSDriverHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverHWMon::DRIVER_NAME));
+        SysFSDriverHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverHWMon::DRIVER_NAME),m_sysFsDriverManager->getDriverDescriptorsInVector(SysFSDriverHWMon::DRIVER_NAME));
 
+        for(const auto& fanDesc : hwMon.m_legion.m_fans)
+        {
+            auto fan = hardwareMonitoring.mutable_legion()->add_fans();
 
-        hardwareMonitoring.mutable_legion()->set_fan1_label(getData(hwMon.m_legion.m_fan1Label).toStdString());
-        hardwareMonitoring.mutable_legion()->set_fan2_label(getData(hwMon.m_legion.m_fan2Label).toStdString());
-
-        hardwareMonitoring.mutable_legion()->set_fan1_speed(getData(hwMon.m_legion.m_fan1Speed).toUInt());
-        hardwareMonitoring.mutable_legion()->set_fan2_speed(getData(hwMon.m_legion.m_fan2Speed).toUInt());
-
-        hardwareMonitoring.mutable_legion()->set_fan1_speed_min(getData(hwMon.m_legion.m_fan1SpeedMin).toUInt());
-        hardwareMonitoring.mutable_legion()->set_fan2_speed_min(getData(hwMon.m_legion.m_fan2SpeedMin).toUInt());
-
-        hardwareMonitoring.mutable_legion()->set_fan1_speed_max(getData(hwMon.m_legion.m_fan1SpeedMax).toUInt());
-        hardwareMonitoring.mutable_legion()->set_fan2_speed_max(getData(hwMon.m_legion.m_fan2SpeedMax).toUInt());
+            fan->set_fan_label(getData(fanDesc.m_label).toStdString());
+            fan->set_fan_speed(getData(fanDesc.m_input).toUInt());
+            fan->set_fan_speed_min(getData(fanDesc.m_min).toUInt());
+            fan->set_fan_speed_max(getData(fanDesc.m_max).toUInt());
+        }
 
         hardwareMonitoring.mutable_legion()->set_temp1_label(getData(hwMon.m_legion.m_temp1Label).toStdString());
         hardwareMonitoring.mutable_legion()->set_temp2_label(getData(hwMon.m_legion.m_temp2Label).toStdString());

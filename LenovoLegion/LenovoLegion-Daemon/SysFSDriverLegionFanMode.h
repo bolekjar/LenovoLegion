@@ -28,8 +28,8 @@ public:
                 m_cpu_sensor_default(descriptor["cpu_sensor_default"]),
                 m_current_value(descriptor["current_value"]),
                 m_display_name(descriptor["display_name"]),
-                m_gpu2_fan_default(descriptor["gpu2_fan_default"]),
-                m_gpu2_sensor_default(descriptor["gpu2_sensor_default"]),
+                m_sys_fan_default(descriptor["sys_fan_default"]),
+                m_sys_sensor_default(descriptor["sys_sensor_default"]),
                 m_gpu_fan_default(descriptor["gpu_fan_default"])    ,
                 m_gpu_sensor_default(descriptor["gpu_sensor_default"])
             {}
@@ -40,8 +40,8 @@ public:
             const std::filesystem::path m_cpu_sensor_default;
             const std::filesystem::path m_current_value;
             const std::filesystem::path m_display_name;
-            const std::filesystem::path m_gpu2_fan_default;
-            const std::filesystem::path m_gpu2_sensor_default;
+            const std::filesystem::path m_sys_fan_default;
+            const std::filesystem::path m_sys_sensor_default;
             const std::filesystem::path m_gpu_fan_default;
             const std::filesystem::path m_gpu_sensor_default;
         };

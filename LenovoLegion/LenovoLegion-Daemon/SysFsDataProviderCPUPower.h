@@ -9,6 +9,8 @@
 
 #include <SysFsDataProvider.h>
 
+#include "../LenovoLegion-PrepareBuild/CpuPower.pb.h"
+
 namespace LenovoLegionDaemon {
 
 class SysFsDataProviderCPUPower : public SysFsDataProvider
@@ -20,6 +22,11 @@ public:
 
     virtual QByteArray serializeAndGetData()                    const;
     virtual QByteArray deserializeAndSetData(const QByteArray&)      ;
+
+private:
+
+    void setValue(const std::filesystem::path& path,std::function<void (legion::messages::CPUPower::Limit::Descriptor &descriptor,uint value)> setter,auto map) const;
+    void setValuesSteps(const std::filesystem::path& path,std::function<void (legion::messages::CPUPower::Limit::Descriptor &descriptor,const QList<QString>& values)> setter,auto map) const;
 
 public:
 

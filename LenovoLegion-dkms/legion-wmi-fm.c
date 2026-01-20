@@ -72,9 +72,19 @@ static int legion_wmi_fm_call(struct notifier_block *nb, unsigned long cmd,void 
 {
 	struct legion_wmi_fm_priv *priv = container_of(nb, struct legion_wmi_fm_priv, hwmon_nb);
 	switch (cmd) {
-	case LEGION_WMI_FM_GET_FAN_MAX_SPEED: {
+	case LEGION_WMI_FM_GET_CPU_FAN_MAX_SPEED: {
 		int  *fan_max_speed = data;
-		*fan_max_speed = priv->fan_max_speed;
+		*fan_max_speed = priv->fan_cpu_max_speed;
+	}
+		return NOTIFY_OK;
+	case LEGION_WMI_FM_GET_GPU_FAN_MAX_SPEED: {
+		int  *fan_max_speed = data;
+		*fan_max_speed = priv->fan_gpu_max_speed;
+	}
+		return NOTIFY_OK;
+	case LEGION_WMI_FM_GET_SYS_FAN_MAX_SPEED: {
+		int  *fan_max_speed = data;
+		*fan_max_speed = priv->fan_sys_max_speed;
 	}
 		return NOTIFY_OK;
 	default:
@@ -138,6 +148,9 @@ static int legion_wmi_fm_master_bind(struct device *dev)
 	if (ret)
 		goto notifier_err;
 
+	/* Signal that binding is complete */
+	complete(&priv->bind_complete);
+
 	return 0;
 notifier_err:
 	legion_wmi_fm_sysfs_exit(priv);
@@ -179,14 +192,29 @@ static int legion_fm_other_probe(struct wmi_device *wdev, const void *context)
 
 	priv->wdev = wdev;
 
+	/* Initialize completion */
+	init_completion(&priv->bind_complete);
+
 	dev_set_drvdata(&wdev->dev, priv);
 
 	component_match_add(&wdev->dev, &master_match, legion_wmi_ftable_match, NULL);
 	if (IS_ERR(master_match))
 		return PTR_ERR(master_match);
 
-	return component_master_add_with_match(&wdev->dev, &legion_wmi_fm_master_ops,
-					       master_match);
+
+	/* Register as a component master (for cd01/dd components) */
+	int ret = component_master_add_with_match(&wdev->dev, &legion_wmi_fm_master_ops,
+		       master_match);
+	if (ret)
+		return ret;
+
+	/* Wait for binding to complete (with timeout) */
+	if (!wait_for_completion_timeout(&priv->bind_complete, msecs_to_jiffies(5000))) {
+		component_master_del(&wdev->dev, &legion_wmi_fm_master_ops);
+		return -ETIMEDOUT;
+	}
+
+	return 0;
 }
 
 static void legio_fm_other_remove(struct wmi_device *wdev)
@@ -198,7 +226,7 @@ static void legio_fm_other_remove(struct wmi_device *wdev)
 static struct wmi_driver legion_fm_other_driver = {
 	.driver = {
 		.name = "legion_wmi_fan_method",
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
 	},
 	.id_table = legion_fm_other_id_table,
 	.probe = legion_fm_other_probe,

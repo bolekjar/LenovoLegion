@@ -474,9 +474,13 @@ void CPUControl::renderData()
         ui->comboBox_CPUGovernor->setCurrentText(QString(m_cpuInfoData.cpus().at(0).governor().data()).trimmed());
     }
 
-    if(m_cpuSMTControlData.has_control() && m_cpuSMTControlData.has_active())
+    ui->checkBox_DisableSMP->blockSignals(true);
+    ui->checkBox_DisableSMP->setEnabled(false);
+    ui->checkBox_DisableSMP->setVisible(false);
+    if(QString(m_cpuSMTControlData.control().data()).trimmed() == SMT_OFF_DATA.control().data() ||
+       QString(m_cpuSMTControlData.control().data()).trimmed() == SMT_ON_DATA.control().data()
+      )
     {
-        ui->checkBox_DisableSMT->blockSignals(true);
         if(m_cpuSMTControlData.active())
         {
             if(QString(m_cpuSMTControlData.control().data()).trimmed() == SMT_OFF_DATA.control().data())
@@ -484,7 +488,7 @@ void CPUControl::renderData()
                 m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUSMT::dataType,SMT_ON_DATA);
             }
 
-            ui->checkBox_DisableSMT->setChecked(false);
+            ui->checkBox_DisableSMP->setChecked(false);
         }
         else
         {
@@ -493,17 +497,17 @@ void CPUControl::renderData()
                 m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderCPUSMT::dataType,SMT_OFF_DATA);
             }
 
-            ui->checkBox_DisableSMT->setChecked(true);
+            ui->checkBox_DisableSMP->setChecked(true);
         }
-        ui->checkBox_DisableSMT->blockSignals(false);
-    }
-    else
-    {
-        ui->checkBox_DisableSMT->setEnabled(false);
+
+        ui->checkBox_DisableSMP->setEnabled(true);
+        ui->checkBox_DisableSMP->blockSignals(false);
+        ui->checkBox_DisableSMP->setVisible(true);
     }
 }
 
-void CPUControl::on_checkBox_DisableSMT_checkStateChanged(const Qt::CheckState &arg1)
+
+void CPUControl::on_checkBox_DisableSMP_checkStateChanged(const Qt::CheckState &arg1)
 {
     if(arg1 == Qt::CheckState::Checked)
     {

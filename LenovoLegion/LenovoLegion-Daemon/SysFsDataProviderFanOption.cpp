@@ -7,8 +7,9 @@
  */
 
 #include "SysFsDataProviderFanOption.h"
-#include "SysFsDriverLegionEc.h"
 
+
+#include "SysFsDriverLegionOther.h"
 
 #include "../LenovoLegion-PrepareBuild/FanControl.pb.h"
 
@@ -30,10 +31,9 @@ QByteArray SysFsDataProviderFanOption::serializeAndGetData() const
 
 
     try {
-        SysFsDriverLegionEc::EC::FanControl fanControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionEc::DRIVER_NAME));
+        SysFsDriverLegionOther::Other other(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
 
-        fanOptionMsg.set_full_speed(getData(fanControl.m_full_speed).toUShort() == 1);
-        fanOptionMsg.set_lock(getData(fanControl.m_lock).toUShort() == 1);
+        fanOptionMsg.set_full_speed(getData(other.m_fan_full_speed).toUShort() == 1);
     } catch(SysFsDriver::exception_T& ex)
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
@@ -58,7 +58,7 @@ QByteArray SysFsDataProviderFanOption::serializeAndGetData() const
 
 QByteArray SysFsDataProviderFanOption::deserializeAndSetData(const QByteArray &data)
 {
-    SysFsDriverLegionEc::EC::FanControl fanControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionEc::DRIVER_NAME));
+    SysFsDriverLegionOther::Other       other(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
     legion::messages::FanOption         fanOptionMsg;
 
     LOG_T(__PRETTY_FUNCTION__);
@@ -69,10 +69,7 @@ QByteArray SysFsDataProviderFanOption::deserializeAndSetData(const QByteArray &d
     }
 
     if(fanOptionMsg.has_full_speed()) {
-        setData(fanControl.m_full_speed,fanOptionMsg.full_speed());
-    }
-    if(fanOptionMsg.has_lock()) {
-        setData(fanControl.m_lock,fanOptionMsg.lock());
+        setData(other.m_fan_full_speed,fanOptionMsg.full_speed());
     }
 
     return {};

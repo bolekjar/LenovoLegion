@@ -54,6 +54,10 @@ void SysFsDriverLegionOther::init()
             buildSstandardAttributes(path,attr.toStdString().c_str());
         }
     };
+
+
+    m_descriptor["fan_full_speed"] = std::filesystem::path(m_path).append("other/fan_full_speed");
+
 }
 
 void SysFsDriverLegionOther::handleKernelEvent(const KernelEvent::Event &event)

@@ -171,21 +171,6 @@ public:
     SettingsSaverGPUPower& saveGPUPower(const legion::messages::GPUPower &gpuPower);
 };
 
-// CPU Power RAPL Settings
-class SettingsLoaderCPUPowerRapl: protected Settings
-{
-public:
-    explicit SettingsLoaderCPUPowerRapl();
-    SettingsLoaderCPUPowerRapl& loadCPUPowerRapl(legion::messages::CPUPowerRapl &cpuPowerRapl);
-};
-
-class SettingsSaverCPUPowerRapl: protected Settings
-{
-public:
-    explicit SettingsSaverCPUPowerRapl();
-    SettingsSaverCPUPowerRapl& saveCPUPowerRapl(const legion::messages::CPUPowerRapl &cpuPowerRapl);
-};
-
 // Nvidia NVML Settings
 class SettingsLoaderNvidiaNvml: protected Settings
 {

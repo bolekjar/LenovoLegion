@@ -34,23 +34,30 @@ QByteArray SysFsDataProviderIntelMSR::serializeAndGetData() const
         cpuIntelMSRMessage.mutable_analogio()->set_max_overvolt(getData(intelMSR.m_analogio_max_overvolt).toInt());
         cpuIntelMSRMessage.mutable_analogio()->set_max_undervolt(getData(intelMSR.m_analogio_max_undervolt).toInt());
         cpuIntelMSRMessage.mutable_analogio()->set_offset(getData(intelMSR.m_analogio_offset).toInt());
+        cpuIntelMSRMessage.mutable_analogio()->set_supported(getData(intelMSR.m_analogio_offset_ctrl_supported).toUShort() == 1);
+
 
         cpuIntelMSRMessage.mutable_cache()->set_max_overvolt(getData(intelMSR.m_cache_max_overvolt).toInt());
         cpuIntelMSRMessage.mutable_cache()->set_max_undervolt(getData(intelMSR.m_cache_max_undervolt).toInt());
         cpuIntelMSRMessage.mutable_cache()->set_offset(getData(intelMSR.m_cache_offset).toInt());
+        cpuIntelMSRMessage.mutable_cache()->set_supported(getData(intelMSR.m_cache_offset_ctrl_supported).toUShort() == 1);
+
 
 
         cpuIntelMSRMessage.mutable_cpu()->set_max_overvolt(getData(intelMSR.m_cpu_max_overvolt).toInt());
         cpuIntelMSRMessage.mutable_cpu()->set_max_undervolt(getData(intelMSR.m_cpu_max_undervolt).toInt());
         cpuIntelMSRMessage.mutable_cpu()->set_offset(getData(intelMSR.m_cpu_offset).toInt());
+        cpuIntelMSRMessage.mutable_cpu()->set_supported(getData(intelMSR.m_cpu_offset_ctrl_supported).toUShort() == 1);
 
         cpuIntelMSRMessage.mutable_gpu()->set_max_overvolt(getData(intelMSR.m_gpu_max_overvolt).toInt());
         cpuIntelMSRMessage.mutable_gpu()->set_max_undervolt(getData(intelMSR.m_gpu_max_undervolt).toInt());
         cpuIntelMSRMessage.mutable_gpu()->set_offset(getData(intelMSR.m_gpu_offset).toInt());
+        cpuIntelMSRMessage.mutable_gpu()->set_supported(getData(intelMSR.m_gpu_offset_ctrl_supported).toUShort() == 1);
 
         cpuIntelMSRMessage.mutable_uncore()->set_max_overvolt(getData(intelMSR.m_uncore_max_overvolt).toInt());
         cpuIntelMSRMessage.mutable_uncore()->set_max_undervolt(getData(intelMSR.m_uncore_max_undervolt).toInt());
         cpuIntelMSRMessage.mutable_uncore()->set_offset(getData(intelMSR.m_uncore_offset).toInt());
+        cpuIntelMSRMessage.mutable_uncore()->set_supported(getData(intelMSR.m_uncore_offset_ctrl_supported).toUShort() == 1);
     } catch(SysFsDriver::exception_T& ex)
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)

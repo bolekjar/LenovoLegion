@@ -12,7 +12,6 @@
 
 #include "../LenovoLegion-PrepareBuild/CpuPower.pb.h"
 #include "../LenovoLegion-PrepareBuild/GPUPower.pb.h"
-#include "../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.h"
 #include "../LenovoLegion-PrepareBuild/PowerProfile.pb.h"
 
 #include <QWidget>
@@ -103,7 +102,6 @@ private:
 
     legion::messages::CPUPower             m_cpuControlData;
     legion::messages::GPUPower             m_gpuControlData;
-    legion::messages::CPUPowerRapl         m_cpuRaplData;
     legion::messages::PowerProfile         m_powerProfileData;
 };
 

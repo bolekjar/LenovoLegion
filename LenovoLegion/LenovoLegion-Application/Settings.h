@@ -18,7 +18,6 @@
 #include "../LenovoLegion-PrepareBuild/FanControl.pb.h"
 #include "../LenovoLegion-PrepareBuild/CpuPower.pb.h"
 #include "../LenovoLegion-PrepareBuild/GPUPower.pb.h"
-#include "../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.h"
 #include "../LenovoLegion-PrepareBuild/NvidiaNvml.pb.h"
 #include "../LenovoLegion-PrepareBuild/CpuIntelMSR.pb.h"
 #include "../LenovoLegion-PrepareBuild/Other.pb.h"
@@ -127,7 +126,6 @@ public:
     void saveCPUSMT(const legion::messages::CPUSMT& msg);
     void saveCPUPower(const legion::messages::CPUPower& msg);
     void saveGPUPower(const legion::messages::GPUPower& msg);
-    void saveCPUPowerRapl(const legion::messages::CPUPowerRapl& msg);
     void saveNvidiaNvml(const legion::messages::NvidiaNvml& msg);
     void saveIntelMSR(const legion::messages::CpuIntelMSR& msg);
     void saveOther(const legion::messages::OtherSettings& msg);
@@ -140,7 +138,6 @@ public:
     void loadCPUSMT(legion::messages::CPUSMT& msg);
     void loadCPUPower(legion::messages::CPUPower& msg);
     void loadGPUPower(legion::messages::GPUPower& msg);
-    void loadCPUPowerRapl(legion::messages::CPUPowerRapl& msg);
     void loadNvidiaNvml(legion::messages::NvidiaNvml& msg);
     void loadIntelMSR(legion::messages::CpuIntelMSR& msg);
     void loadOther(legion::messages::OtherSettings& msg);

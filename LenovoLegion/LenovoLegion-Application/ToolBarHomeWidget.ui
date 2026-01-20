@@ -23,7 +23,7 @@
       <layout class="QVBoxLayout" name="verticalLayout_PowerProfiles"/>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="20,80">
        <property name="sizeConstraint">
         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
        </property>

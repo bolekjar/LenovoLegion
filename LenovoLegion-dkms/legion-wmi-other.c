@@ -12,12 +12,16 @@
 #include "legion-wmi-gamezone.h"
 #include "legion-hwmon.h"
 #include "legion-wmi-helpers.h"
+#include "legion-dkms.h"
+#include "legion-rapl-mmio.h"
+#include "legion-rapl.h"
 
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/wmi.h>
 #include <linux/component.h>
 #include <linux/platform_device.h>
+#include <linux/completion.h>
 
 #define LEGION_WMI_LENOVO_OTHER_METHOD_GUID "DC2A8805-3A8C-41BA-A6F7-092E0089CD3B"
 
@@ -136,6 +140,100 @@ static int legion_wmi_other_call(struct notifier_block *nb,unsigned long action,
 	return NOTIFY_OK;
 }
 
+
+static int legion_wmi_other_dkms_call(struct notifier_block *nb,unsigned long action, void *data)
+{
+	struct legion_wmi_other_priv *priv 	  = container_of(nb, struct legion_wmi_other_priv, dkms_nb);
+	struct other_events_data * event_data = data;
+
+	unsigned int pl1_uw 	 = 0,
+				 pl1_time_us = 0,
+				 pl2_uw 	 = 0;
+
+	if(action == LEGION_WMI_OTHER_SET_THERMAL_MODE_RAPL_AND_MMIO)
+	{
+		struct legion_wmi_capdata01 capdata;
+
+		if (legion_wmi_cd01_get_data(priv->cd01_list,(CPULongTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+			return NOTIFY_BAD;
+		}
+		pl1_uw = capdata.max_value;
+
+
+		if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUShortTermPowerLimit & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+			return NOTIFY_BAD;
+		}
+		pl2_uw = capdata.max_value;
+
+		if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUPL1Tau & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+			return NOTIFY_BAD;
+		}
+		pl1_time_us = capdata.default_value;
+
+		if(legion_set_power_and_time_sysfs(event_data->rapl_private, pl1_uw * 1000, pl1_time_us * 1000000, pl2_uw * 1000))
+		{
+			return NOTIFY_BAD;
+		}
+	}
+
+
+	if(action == LEGION_WMI_OTHER_SET_THERMAL_MODE_RAPL_AND_MMIO ||
+	   action == LEGION_WMI_OTHER_SET_THERMAL_MODE_RAPL_MMIO_ONLY
+	   )
+	{
+		if(event_data->mode == LEGION_WMI_GZ_THERMAL_MODE_CUSTOM)
+		{
+			struct wmi_method_args_32 args;
+
+			args.arg0 = CPULongTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK);
+			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl1_uw))
+			{
+				return NOTIFY_BAD;
+			}
+
+			args.arg0 = CPUShortTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK);
+			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl2_uw))
+			{
+				return NOTIFY_BAD;
+			}
+
+			args.arg0 = CPUPL1Tau  & (~LEGION_WMI_MODE_ID_MASK);
+			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl1_time_us))
+			{
+				return NOTIFY_BAD;
+			}
+		}
+		else
+		{
+			struct legion_wmi_capdata01 capdata;
+
+			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPULongTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+				return NOTIFY_BAD;
+			}
+			pl1_uw = capdata.default_value;
+
+
+			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUShortTermPowerLimit & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+				return NOTIFY_BAD;
+			}
+			pl2_uw = capdata.default_value;
+
+			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUPL1Tau & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+				return NOTIFY_BAD;
+			}
+			pl1_time_us = capdata.default_value;
+		}
+
+		if(legion_set_power_and_time(event_data->rapl_mmio_private,pl1_uw * 1000,pl1_time_us * 1000000,pl2_uw * 1000))
+		{
+			return NOTIFY_BAD;
+		}
+
+	}
+
+	return NOTIFY_OK;
+}
+
 /**
  * legion_wmi_om_master_bind() - Bind all components of the other mode driver
  * @dev: The lenovo-wmi-other driver basic device.
@@ -167,7 +265,17 @@ static int legion_wmi_om_master_bind(struct device *dev)
 	if (ret)
 		goto hwmon_err;
 
+	priv->dkms_nb.notifier_call = legion_wmi_other_dkms_call;
+	ret = devm_lenovo_dkms_register_notifier(dev, &priv->dkms_nb);
+	if (ret)
+		goto dkms_err;
+
+	/* Signal that binding is complete */
+	complete(&priv->bind_complete);
+
 	return 0;
+
+dkms_err:
 hwmon_err:
 	legion_wmi_other_sysfs_exit(priv);
 sysfs_err:
@@ -198,8 +306,6 @@ static const struct component_master_ops legion_wmi_om_master_ops = {
 	.unbind = legion_wmi_om_master_unbind,
 };
 
-
-
 static int legion_wmi_other_probe(struct wmi_device *wdev, const void *context)
 {
 	struct component_match 		 *master_match = NULL;
@@ -213,6 +319,8 @@ static int legion_wmi_other_probe(struct wmi_device *wdev, const void *context)
 	priv->dd_list = NULL;
 	priv->wdev = wdev;
 
+	/* Initialize completion */
+	init_completion(&priv->bind_complete);
 
 	dev_set_drvdata(&wdev->dev, priv);
 
@@ -224,19 +332,32 @@ static int legion_wmi_other_probe(struct wmi_device *wdev, const void *context)
 	if (IS_ERR(master_match))
 		return PTR_ERR(master_match);
 
-	return component_master_add_with_match(&wdev->dev, &legion_wmi_om_master_ops,
+	/* Register as a component master (for cd01/dd components) */
+	int ret = component_master_add_with_match(&wdev->dev, &legion_wmi_om_master_ops,
 					       master_match);
+	if (ret)
+		return ret;
+
+	/* Wait for binding to complete (with timeout) */
+	if (!wait_for_completion_timeout(&priv->bind_complete, msecs_to_jiffies(5000))) {
+		component_master_del(&wdev->dev, &legion_wmi_om_master_ops);
+		return -ETIMEDOUT;
+	}
+
+
+	return 0;
 }
 
 static void legio_nwmi_other_remove(struct wmi_device *wdev)
 {
+	/* Remove as a component master first (this calls unbind) */
 	component_master_del(&wdev->dev, &legion_wmi_om_master_ops);
 }
 
 static struct wmi_driver legion_wmi_other_driver = {
 	.driver = {
 		.name = "legion_wmi_other",
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
 	},
 	.id_table = legion_wmi_other_id_table,
 	.probe = legion_wmi_other_probe,

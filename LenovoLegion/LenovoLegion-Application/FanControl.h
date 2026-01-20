@@ -21,6 +21,7 @@ namespace Ui {
 class FanControl;
 }
 
+class QSlider;
 namespace LenovoLegionGui {
 
 class DataProvider;
@@ -52,7 +53,6 @@ private slots:
 
 
     void on_checkBox_MaxFanSpeed_checkStateChanged(const Qt::CheckState &arg1);
-    void on_checkBox_LockFanControl_checkStateChanged(const Qt::CheckState &arg1);
 
     void on_verticalSlider_FanCurve1_valueChanged(int value);
     void on_verticalSlider_FanCurve2_valueChanged(int value);
@@ -73,6 +73,7 @@ private:
     void renderData();
     void renderFanCurveControlData();
     void renderFanControlData();
+    void renderToolTipsFanCurveControlData(QSlider &slider, const int index);
 
     void markChangesFanCurveControlData();
 

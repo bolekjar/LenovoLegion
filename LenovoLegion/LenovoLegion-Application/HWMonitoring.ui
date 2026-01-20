@@ -31,7 +31,7 @@
      <property name="title">
       <string>HW Monitoring</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_23" stretch="23,31,23,23">
+     <layout class="QHBoxLayout" name="horizontalLayout_23" stretch="0,0,0,0">
       <property name="topMargin">
        <number>30</number>
       </property>
@@ -166,7 +166,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_11">
+       <widget class="QGroupBox" name="groupBox_Fans">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -176,7 +176,7 @@
         <property name="title">
          <string>FANs </string>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -193,10 +193,11 @@
           <number>10</number>
          </property>
          <item>
-          <widget class="LenovoLegionGui::HWMonitor" name="widget_CPUFanSpeed" native="true"/>
-         </item>
-         <item>
-          <widget class="LenovoLegionGui::HWMonitor" name="widget_GPUFanSpeed" native="true"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_Fans">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+          </layout>
          </item>
         </layout>
        </widget>

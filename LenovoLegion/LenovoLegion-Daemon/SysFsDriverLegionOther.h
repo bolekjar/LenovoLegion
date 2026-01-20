@@ -82,16 +82,18 @@ public:
 
         explicit Other(const SysFsDriver::DescriptorType& descriptor) :
             m_cpu(descriptor),
-            m_gpu(descriptor)
+            m_gpu(descriptor),
+            m_fan_full_speed(descriptor["fan_full_speed"])
         {}
 
 
-        const CPU m_cpu;
-        const GPU m_gpu;
+        const CPU                   m_cpu;
+        const GPU                   m_gpu;
+        const std::filesystem::path m_fan_full_speed;
     };
 public:
 
-    SysFsDriverLegionOther(QObject * parrent);
+    SysFsDriverLegionOther(QObject* parrent);
 
     ~SysFsDriverLegionOther() override = default;
 

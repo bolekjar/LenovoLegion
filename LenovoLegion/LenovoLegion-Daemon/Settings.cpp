@@ -202,9 +202,6 @@ SettingsLoaderFanOption& SettingsLoaderFanOption::loadFanOption(legion::messages
     if (m_settings.contains("full_speed")) {
         fanOption.set_full_speed(m_settings.value("full_speed").toBool());
     }
-    if (m_settings.contains("lock")) {
-        fanOption.set_lock(m_settings.value("lock").toBool());
-    }
     return *this;
 }
 
@@ -216,7 +213,6 @@ SettingsSaverFanOption::SettingsSaverFanOption() :
 SettingsSaverFanOption& SettingsSaverFanOption::saveFanOption(const legion::messages::FanOption &fanOption)
 {
     m_settings.setValue("full_speed", fanOption.full_speed());
-    m_settings.setValue("lock", fanOption.lock());
     return *this;
 }
 
@@ -346,82 +342,6 @@ SettingsSaverGPUPower& SettingsSaverGPUPower::saveGPUPower(const legion::message
     }
     return *this;
 }
-
-// CPU Power RAPL Settings
-SettingsLoaderCPUPowerRapl::SettingsLoaderCPUPowerRapl() :
-    Settings("CPUPowerRaplData")
-{
-}
-
-SettingsLoaderCPUPowerRapl& SettingsLoaderCPUPowerRapl::loadCPUPowerRapl(legion::messages::CPUPowerRapl &cpuPowerRapl)
-{
-    // LTP Limit
-    if (m_settings.contains("ltp_power_limit_uw")) {
-        cpuPowerRapl.mutable_ltp_limit()->set_power_limit_uw(m_settings.value("ltp_power_limit_uw").toULongLong());
-    }
-    if (m_settings.contains("ltp_time_window_us")) {
-        cpuPowerRapl.mutable_ltp_limit()->set_time_window_us(m_settings.value("ltp_time_window_us").toULongLong());
-    }
-    
-    // STP Limit
-    if (m_settings.contains("stp_power_limit_uw")) {
-        cpuPowerRapl.mutable_stp_limit()->set_power_limit_uw(m_settings.value("stp_power_limit_uw").toULongLong());
-    }
-    if (m_settings.contains("stp_time_window_us")) {
-        cpuPowerRapl.mutable_stp_limit()->set_time_window_us(m_settings.value("stp_time_window_us").toULongLong());
-    }
-    
-    // PP Limit
-    if (m_settings.contains("pp_power_limit_uw")) {
-        cpuPowerRapl.mutable_pp_limit()->set_power_limit_uw(m_settings.value("pp_power_limit_uw").toULongLong());
-    }
-    if (m_settings.contains("pp_time_window_us")) {
-        cpuPowerRapl.mutable_pp_limit()->set_time_window_us(m_settings.value("pp_time_window_us").toULongLong());
-    }
-    
-    return *this;
-}
-
-SettingsSaverCPUPowerRapl::SettingsSaverCPUPowerRapl() :
-    Settings("CPUPowerRaplData")
-{
-}
-
-SettingsSaverCPUPowerRapl& SettingsSaverCPUPowerRapl::saveCPUPowerRapl(const legion::messages::CPUPowerRapl &cpuPowerRapl)
-{
-    // LTP Limit
-    if (cpuPowerRapl.has_ltp_limit()) {
-        if (cpuPowerRapl.ltp_limit().has_power_limit_uw()) {
-            m_settings.setValue("ltp_power_limit_uw", static_cast<qulonglong>(cpuPowerRapl.ltp_limit().power_limit_uw()));
-        }
-        if (cpuPowerRapl.ltp_limit().has_time_window_us()) {
-            m_settings.setValue("ltp_time_window_us", static_cast<qulonglong>(cpuPowerRapl.ltp_limit().time_window_us()));
-        }
-    }
-    
-    // STP Limit
-    if (cpuPowerRapl.has_stp_limit()) {
-        if (cpuPowerRapl.stp_limit().has_power_limit_uw()) {
-            m_settings.setValue("stp_power_limit_uw", static_cast<qulonglong>(cpuPowerRapl.stp_limit().power_limit_uw()));
-        }
-        if (cpuPowerRapl.stp_limit().has_time_window_us()) {
-            m_settings.setValue("stp_time_window_us", static_cast<qulonglong>(cpuPowerRapl.stp_limit().time_window_us()));
-        }
-    }
-    
-    // PP Limit
-    if (cpuPowerRapl.has_pp_limit()) {
-        if (cpuPowerRapl.pp_limit().has_power_limit_uw()) {
-            m_settings.setValue("pp_power_limit_uw", static_cast<qulonglong>(cpuPowerRapl.pp_limit().power_limit_uw()));
-        }
-        if (cpuPowerRapl.pp_limit().has_time_window_us()) {
-            m_settings.setValue("pp_time_window_us", static_cast<qulonglong>(cpuPowerRapl.pp_limit().time_window_us()));
-        }
-    }
-    
-    return *this;
-}
-
 // Nvidia NVML Settings
 SettingsLoaderNvidiaNvml::SettingsLoaderNvidiaNvml() :
     Settings("NvidiaNvmlData")

@@ -428,13 +428,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="checkBox_LockFanControl">
-          <property name="text">
-           <string>Lock  fan control</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>

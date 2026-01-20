@@ -260,11 +260,16 @@ void OffsetsControl::on_pushButton_cpuVoltageApply_clicked()
 {
     legion::messages::CpuIntelMSR cpuIntelMSR;
 
-    cpuIntelMSR.mutable_cpu()->set_offset(ui->horizontalSlider_cpuVoltageCore->value() * 1000);
-    cpuIntelMSR.mutable_uncore()->set_offset(ui->horizontalSlider_cpuVoltageUncore->value() * 1000);
-    cpuIntelMSR.mutable_cache()->set_offset(ui->horizontalSlider_cpuVoltageCache->value() * 1000);
-    cpuIntelMSR.mutable_gpu()->set_offset(ui->horizontalSlider_cpuVoltageGPU->value()* 1000);
-    cpuIntelMSR.mutable_analogio()->set_offset(ui->horizontalSlider_cpuVoltageAnalogIO->value() * 1000);
+    if(m_cpuIntelMSRData.cpu().supported())
+        cpuIntelMSR.mutable_cpu()->set_offset(ui->horizontalSlider_cpuVoltageCore->value() * 1000);
+    if(m_cpuIntelMSRData.uncore().supported())
+        cpuIntelMSR.mutable_uncore()->set_offset(ui->horizontalSlider_cpuVoltageUncore->value() * 1000);
+    if(m_cpuIntelMSRData.cache().supported())
+        cpuIntelMSR.mutable_cache()->set_offset(ui->horizontalSlider_cpuVoltageCache->value() * 1000);
+    if(m_cpuIntelMSRData.gpu().supported())
+        cpuIntelMSR.mutable_gpu()->set_offset(ui->horizontalSlider_cpuVoltageGPU->value()* 1000);
+    if(m_cpuIntelMSRData.analogio().supported())
+        cpuIntelMSR.mutable_analogio()->set_offset(ui->horizontalSlider_cpuVoltageAnalogIO->value() * 1000);
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderIntelMSR::dataType,cpuIntelMSR);
 
@@ -378,15 +383,15 @@ void OffsetsControl::on_comboBox_cpuVoltagePreset_currentTextChanged(const QStri
 {
     const legion::messages::CpuIntelMSR &preset = CPU_VOLTAGE_PRESETS.value(arg1);
 
-    if(preset.has_cpu())
+    if(preset.has_cpu() && m_cpuIntelMSRData.cpu().supported())
         ui->horizontalSlider_cpuVoltageCore->setValue(preset.cpu().offset());
-    if(preset.has_uncore())
+    if(preset.has_uncore() && m_cpuIntelMSRData.uncore().supported())
         ui->horizontalSlider_cpuVoltageUncore->setValue(preset.uncore().offset());
-    if(preset.has_cache())
+    if(preset.has_cache() && m_cpuIntelMSRData.cache().supported())
         ui->horizontalSlider_cpuVoltageCache->setValue(preset.cache().offset());
-    if(preset.has_gpu())
+    if(preset.has_gpu() && m_cpuIntelMSRData.gpu().supported())
         ui->horizontalSlider_cpuVoltageGPU->setValue(preset.gpu().offset());
-    if(preset.has_analogio())
+    if(preset.has_analogio() && m_cpuIntelMSRData.analogio().supported())
         ui->horizontalSlider_cpuVoltageAnalogIO->setValue(preset.analogio().offset());
 
     markChangesCpuVoltageOffsetData();
@@ -394,23 +399,114 @@ void OffsetsControl::on_comboBox_cpuVoltagePreset_currentTextChanged(const QStri
 
 void OffsetsControl::refreshCpuVoltageOffsetData()
 {
+    ui->horizontalSlider_cpuVoltageCore->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageCache->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageGPU->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageUncore->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageAnalogIO->blockSignals(true);
+
+    ui->comboBox_cpuVoltagePreset->blockSignals(true);
+
+    ui->horizontalSlider_cpuVoltageCore->setEnabled(false);
+    ui->horizontalSlider_cpuVoltageCache->setEnabled(false);
+    ui->horizontalSlider_cpuVoltageGPU->setEnabled(false);
+    ui->horizontalSlider_cpuVoltageUncore->setEnabled(false);
+    ui->horizontalSlider_cpuVoltageAnalogIO->setEnabled(false);
+
+    ui->comboBox_cpuVoltagePreset->setEnabled(false);
+
+
+    ui->lcdNumber_cpuVoltageCore->blockSignals(true);
+    ui->lcdNumber_cpuVoltageCache->blockSignals(true);
+    ui->lcdNumber_cpuVoltageGPU->blockSignals(true);
+    ui->lcdNumber_cpuVoltageUncore->blockSignals(true);
+    ui->lcdNumber_cpuVoltageAnalogIO->blockSignals(true);
+
+    ui->lcdNumber_cpuVoltageCore->setEnabled(false);
+    ui->lcdNumber_cpuVoltageCache->setEnabled(false);
+    ui->lcdNumber_cpuVoltageGPU->setEnabled(false);
+    ui->lcdNumber_cpuVoltageUncore->setEnabled(false);
+    ui->lcdNumber_cpuVoltageAnalogIO->setEnabled(false);
+
+    ui->horizontalSlider_cpuVoltageCore->setValue(0);
+    ui->horizontalSlider_cpuVoltageCache->setValue(0);
+    ui->horizontalSlider_cpuVoltageGPU->setValue(0);
+    ui->horizontalSlider_cpuVoltageUncore->setValue(0);
+    ui->horizontalSlider_cpuVoltageAnalogIO->setValue(0);
+
+    ui->lcdNumber_cpuVoltageCore->display(0);
+    ui->lcdNumber_cpuVoltageCache->display(0);
+    ui->lcdNumber_cpuVoltageGPU->display(0);
+    ui->lcdNumber_cpuVoltageUncore->display(0);
+    ui->lcdNumber_cpuVoltageAnalogIO->display(0);
+
     ui->comboBox_cpuVoltagePreset->setCurrentText("None");
 
-    ui->horizontalSlider_cpuVoltageCore->setValue(m_cpuIntelMSRData.cpu().offset());
-    ui->lcdNumber_cpuVoltageCore->display(m_cpuIntelMSRData.cpu().offset());
 
-    ui->horizontalSlider_cpuVoltageCache->setValue(m_cpuIntelMSRData.cache().offset());
-    ui->lcdNumber_cpuVoltageCache->display(m_cpuIntelMSRData.cache().offset());
+    if(m_cpuIntelMSRData.cpu().supported())
+    {
+        ui->horizontalSlider_cpuVoltageCore->setValue(m_cpuIntelMSRData.cpu().offset());
+        ui->lcdNumber_cpuVoltageCore->display(m_cpuIntelMSRData.cpu().offset());
 
-    ui->horizontalSlider_cpuVoltageGPU->setValue(m_cpuIntelMSRData.gpu().offset());
-    ui->lcdNumber_cpuVoltageGPU->display(m_cpuIntelMSRData.gpu().offset());
+        ui->horizontalSlider_cpuVoltageCore->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+        ui->horizontalSlider_cpuVoltageCore->blockSignals(false);
+        ui->lcdNumber_cpuVoltageCore->blockSignals(false);
+        ui->lcdNumber_cpuVoltageCore->setEnabled(true);
+    }
 
-    ui->horizontalSlider_cpuVoltageUncore->setValue(m_cpuIntelMSRData.uncore().offset());
-    ui->lcdNumber_cpuVoltageUncore->display(m_cpuIntelMSRData.uncore().offset());
+    if(m_cpuIntelMSRData.cache().supported())
+    {
+        ui->horizontalSlider_cpuVoltageCache->setValue(m_cpuIntelMSRData.cache().offset());
+        ui->lcdNumber_cpuVoltageCache->display(m_cpuIntelMSRData.cache().offset());
 
-    ui->horizontalSlider_cpuVoltageAnalogIO->setValue(m_cpuIntelMSRData.analogio().offset());
-    ui->lcdNumber_cpuVoltageAnalogIO->display(m_cpuIntelMSRData.analogio().offset());
+        ui->horizontalSlider_cpuVoltageCache->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+        ui->horizontalSlider_cpuVoltageCache->blockSignals(false);
+        ui->lcdNumber_cpuVoltageCache->blockSignals(false);
+        ui->lcdNumber_cpuVoltageCache->setEnabled(true);
+    }
 
+    if(m_cpuIntelMSRData.gpu().supported())
+    {
+        ui->horizontalSlider_cpuVoltageGPU->setValue(m_cpuIntelMSRData.gpu().offset());
+        ui->lcdNumber_cpuVoltageGPU->display(m_cpuIntelMSRData.gpu().offset());
+
+        ui->horizontalSlider_cpuVoltageGPU->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+        ui->horizontalSlider_cpuVoltageGPU->blockSignals(false);
+        ui->lcdNumber_cpuVoltageGPU->blockSignals(false);
+        ui->lcdNumber_cpuVoltageGPU->setEnabled(true);
+    }
+
+    if(m_cpuIntelMSRData.uncore().supported())
+    {
+        ui->horizontalSlider_cpuVoltageUncore->setValue(m_cpuIntelMSRData.uncore().offset());
+        ui->lcdNumber_cpuVoltageUncore->display(m_cpuIntelMSRData.uncore().offset());
+
+        ui->horizontalSlider_cpuVoltageUncore->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+        ui->horizontalSlider_cpuVoltageUncore->blockSignals(false);
+        ui->lcdNumber_cpuVoltageUncore->blockSignals(false);
+        ui->lcdNumber_cpuVoltageUncore->setEnabled(true);
+    }
+
+    if(m_cpuIntelMSRData.analogio().supported())
+    {
+        ui->horizontalSlider_cpuVoltageAnalogIO->setValue(m_cpuIntelMSRData.analogio().offset());
+        ui->lcdNumber_cpuVoltageAnalogIO->display(m_cpuIntelMSRData.analogio().offset());
+
+        ui->horizontalSlider_cpuVoltageAnalogIO->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->setEnabled(true);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+        ui->horizontalSlider_cpuVoltageAnalogIO->blockSignals(false);
+        ui->lcdNumber_cpuVoltageAnalogIO->blockSignals(false);
+        ui->lcdNumber_cpuVoltageAnalogIO->setEnabled(true);
+    }
 
     markChangesCpuVoltageOffsetData();
 }

@@ -11,7 +11,6 @@ DESTDIR = $${DESTINATION_BIN_PATH}
 
 SOURCES +=  \
         Application.cpp \
-        Computer.cpp \
         DaemonSettingsManager.cpp \
         DataProvider.cpp \
         DataProviderDaemonSettings.cpp \
@@ -27,14 +26,12 @@ SOURCES +=  \
         SysFSDriverLegionFanMode.cpp \
         SysFSDriverLegionGameZone.cpp \
         SysFSDriverLegionIntelMSR.cpp \
-        SysFSDriverLegionRaplMMIO.cpp \
         SysFsDataProvider.cpp \
         SysFsDataProviderBattery.cpp \
         SysFsDataProviderCPUFrequency.cpp \
         SysFsDataProviderCPUInfo.cpp \
         SysFsDataProviderCPUOptions.cpp \
         SysFsDataProviderCPUPower.cpp \
-        SysFsDataProviderCPUPowerRapl.cpp \
         SysFsDataProviderCPUSMT.cpp \
         SysFsDataProviderCPUTopology.cpp \
         SysFsDataProviderFanCurve.cpp \
@@ -54,7 +51,6 @@ SOURCES +=  \
         SysFsDriverCPUInfo.cpp \
         SysFsDriverCPUXList.cpp \
         SysFsDriverIntelPowercapRapl.cpp \
-        SysFsDriverLegionEc.cpp \
         SysFsDriverLegionEvents.cpp \
         SysFsDriverLegionMachineInformation.cpp \
         SysFsDriverLegionOther.cpp \
@@ -66,7 +62,6 @@ SOURCES +=  \
 
 HEADERS += \
     Application.h \
-    Computer.h \
     DaemonSettingsManager.h \
     DataProvider.h \
     DataProviderDaemonSettings.h \
@@ -83,14 +78,12 @@ HEADERS += \
     SysFSDriverLegionGameZone.h \
     Settings.h \
     SysFSDriverLegionIntelMSR.h \
-    SysFSDriverLegionRaplMMIO.h \
     SysFsDataProvider.h \
     SysFsDataProviderBattery.h \
     SysFsDataProviderCPUFrequency.h \
     SysFsDataProviderCPUInfo.h \
     SysFsDataProviderCPUOptions.h \
     SysFsDataProviderCPUPower.h \
-    SysFsDataProviderCPUPowerRapl.h \
     SysFsDataProviderCPUSMT.h \
     SysFsDataProviderCPUTopology.h \
     SysFsDataProviderFanCurve.h \
@@ -111,7 +104,6 @@ HEADERS += \
     SysFsDriverCPUXList.h \
     SysFsDriverIntelPowercapRapl.h \
     SysFsDriverLegion.h \
-    SysFsDriverLegionEc.h \
     SysFsDriverLegionEvents.h \
     SysFsDriverLegionMachineInformation.h \
     SysFsDriverLegionOther.h \
@@ -145,7 +137,6 @@ HEADERS += \
         ../LenovoLegion-PrepareBuild/CPUFrequency.pb.h \
         ../LenovoLegion-PrepareBuild/CPUOptions.pb.h   \
         ../LenovoLegion-PrepareBuild/Notification.pb.h \
-        ../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.h \
         ../LenovoLegion-PrepareBuild/CpuIntelMSR.pb.h  \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.h   \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.h \
@@ -164,7 +155,6 @@ SOURCES += \
         ../LenovoLegion-PrepareBuild/CPUFrequency.pb.cc \
         ../LenovoLegion-PrepareBuild/CPUOptions.pb.cc   \
         ../LenovoLegion-PrepareBuild/Notification.pb.cc \
-        ../LenovoLegion-PrepareBuild/CpuPowerRapl.pb.cc \
         ../LenovoLegion-PrepareBuild/CpuIntelMSR.pb.cc  \
         ../LenovoLegion-PrepareBuild/NvidiaNvml.pb.cc   \
         ../LenovoLegion-PrepareBuild/ComputerInfo.pb.cc \

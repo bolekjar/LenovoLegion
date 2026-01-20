@@ -10,6 +10,7 @@ message CpuIntelMSR
         uint32  max_overvolt    = 1;
         uint32  max_undervolt   = 2;
         int32   offset          = 3;
+        bool    supported       = 4;
     }
 
     VoltageSettings   analogio                       = 1;

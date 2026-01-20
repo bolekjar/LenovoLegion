@@ -30,6 +30,7 @@ package() {
   #settings
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/blacklist-lenovo-legion.conf $pkgdir/etc/modprobe.d/
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/lenovo-legion.conf $pkgdir/etc/modules-load.d/
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/99-rapl-readonly.rules $pkgdir/etc/udev/rules.d
 
   #daemon, gui
   qmake6 $srcdir/$pkgname-$pkgver/$pkgname/ -o $srcdir/$pkgname-$pkgver/$pkgname/Makefile

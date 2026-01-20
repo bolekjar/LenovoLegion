@@ -255,47 +255,87 @@ static struct kobj_attribute kobj_attr_fan_curve_current_value  		= __LEGION_WMI
 /*
  * Default Table values
  */
-__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default,1,4,FAN);
-__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default,1,4,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(cpusen_fan_default,cpusen_fan_default,1,1,FAN);
-__LEGION_WMI_DEFAULT_TABLES(cpusen_sensor_default,cpusen_sensor_default,1,1,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default,2,5,FAN);
-__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default,2,5,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(gpu2_fan_default,gpu2_fan_default,3,5,FAN);
-__LEGION_WMI_DEFAULT_TABLES(gpu2_sensor_default,gpu2_sensor_default,3,5,SENSOR);
+
+__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v1,1,4,FAN);
+__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v1,1,4,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(cpusen_fan_default,cpusen_fan_default_v1,1,1,FAN);
+__LEGION_WMI_DEFAULT_TABLES(cpusen_sensor_default,cpusen_sensor_default_v1,1,1,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v1,2,5,FAN);
+__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v1,2,5,SENSOR);
+
+
+
+__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v2,1,1,FAN);
+__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v2,1,1,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v2,2,5,FAN);
+__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v2,2,5,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(sys_fan_default,sys_fan_default_v2,4,4,FAN);
+__LEGION_WMI_DEFAULT_TABLES(sys_sensor_default,sys_sensor_default_v2,4,4,SENSOR);
+
+
+
+
 __LEGION_WMI_KOBJ_ATTR_RO_STATIC_STRING(display_name,"FAN curve related settings",fan_curve_display_name)
 
-static struct attribute *legion_sysfs_fm_fan_curve_attributes[] = {
+
+static struct attribute *legion_sysfs_fm_fan_curve_attributes_v1[] = {
 		&kobj_attr_fan_curve_current_value.attr,
-		&kobj_attr_cpu_fan_default_value.attr,
-		&kobj_attr_cpu_sensor_default_value.attr,
-		&kobj_attr_cpusen_fan_default_value.attr,
-		&kobj_attr_cpusen_sensor_default_value.attr,
-		&kobj_attr_gpu_fan_default_value.attr,
-		&kobj_attr_gpu_sensor_default_value.attr,
-		&kobj_attr_gpu2_fan_default_value.attr,
-		&kobj_attr_gpu2_sensor_default_value.attr,
+		&kobj_attr_cpu_fan_default_v1_value.attr,
+		&kobj_attr_cpu_sensor_default_v1_value.attr,
+		&kobj_attr_cpusen_fan_default_v1_value.attr,
+		&kobj_attr_cpusen_sensor_default_v1_value.attr,
+		&kobj_attr_gpu_fan_default_v1_value.attr,
+		&kobj_attr_gpu_sensor_default_v1_value.attr,
 		&kobj_attr_fan_curve_display_name.attr,
 		NULL
 };
 
-static const struct attribute_group legion_sysfs_fm_group[] = {
+static const struct attribute_group legion_sysfs_fm_group_v1[] = {
 		{
 			.name = "fan_curve",
-			.attrs = legion_sysfs_fm_fan_curve_attributes
+			.attrs = legion_sysfs_fm_fan_curve_attributes_v1
+		},
+		{}
+};
+
+static struct attribute *legion_sysfs_fm_fan_curve_attributes_v2[] = {
+		&kobj_attr_fan_curve_current_value.attr,
+		&kobj_attr_cpu_fan_default_v2_value.attr,
+		&kobj_attr_cpu_sensor_default_v2_value.attr,
+		&kobj_attr_gpu_fan_default_v2_value.attr,
+		&kobj_attr_gpu_sensor_default_v2_value.attr,
+		&kobj_attr_sys_fan_default_v2_value.attr,
+		&kobj_attr_sys_sensor_default_v2_value.attr,
+		&kobj_attr_fan_curve_display_name.attr,
+		NULL
+};
+
+static const struct attribute_group legion_sysfs_fm_group_v2[] = {
+		{
+			.name = "fan_curve",
+			.attrs = legion_sysfs_fm_fan_curve_attributes_v2
 		},
 		{}
 };
 
 
-
 static int legion_wmi_fm_fw_attr_add(struct legion_wmi_fm_priv *priv)
 {
-	int err = 0;
-	unsigned int i   = 0;
+	int err 			= 0;
+	unsigned int i   	= 0;
+
+	/*
+	 * Read SmartFan version
+	 */
+	err = legion_wmi_fm_notifier_call(&priv->smart_fan_version,LEGION_WMI_GZ_GET_SMARTFAN_VERSION);
+	if (err) {
+		return err;
+	}
+
 	priv->ida_id = ida_alloc(&legion_wmi_fm_ida, GFP_KERNEL);
 	if (priv->ida_id < 0)
 		return priv->ida_id;
+
 
 	priv->fw_attr_dev = device_create(&legion_firmware_attributes_class, NULL,
 					  MKDEV(0, 0), priv, "%s-%u",
@@ -313,17 +353,61 @@ static int legion_wmi_fm_fw_attr_add(struct legion_wmi_fm_priv *priv)
 		goto err_unregister_fw_attr_dev;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group) - 1; i++) {
-		err = sysfs_create_group(&priv->fw_attr_kset->kobj,
-				&legion_sysfs_fm_group[i]);
-		if (err)
-			goto err_remove_groups;
+	if(priv->smart_fan_version == 8)
+	{
+		for (i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group_v2) - 1; i++) {
+			err = sysfs_create_group(&priv->fw_attr_kset->kobj,
+					&legion_sysfs_fm_group_v2[i]);
+			if (err)
+				goto err_remove_groups;
+		}
+
+		for(int i = 0;i < FAN_MAX; ++i)
+		{
+			if(priv->fan_max_speeds[i].fan_id == 1 && priv->fan_max_speeds[i].sensor_id == 1)
+			{
+				priv->fan_cpu_max_speed = priv->fan_max_speeds[i].max_speed;
+			}
+			else if(priv->fan_max_speeds[i].fan_id == 2 && priv->fan_max_speeds[i].sensor_id == 5)
+			{
+				priv->fan_gpu_max_speed = priv->fan_max_speeds[i].max_speed;
+			}
+			else if(priv->fan_max_speeds[i].fan_id == 4 && priv->fan_max_speeds[i].sensor_id == 4)
+			{
+				priv->fan_sys_max_speed = priv->fan_max_speeds[i].max_speed;
+			}
+		}
+	}
+	else
+	{
+		for (i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group_v1) - 1; i++) {
+			err = sysfs_create_group(&priv->fw_attr_kset->kobj,
+					&legion_sysfs_fm_group_v1[i]);
+			if (err)
+				goto err_remove_groups;
+		}
+
+		for(int i = 0;i < FAN_MAX; ++i)
+		{
+			if(priv->fan_max_speeds[i].fan_id == 1 && priv->fan_max_speeds[i].sensor_id == 4)
+			{
+				priv->fan_cpu_max_speed = priv->fan_max_speeds[i].max_speed;
+			}
+			else if(priv->fan_max_speeds[i].fan_id == 2 && priv->fan_max_speeds[i].sensor_id == 5)
+			{
+				priv->fan_gpu_max_speed = priv->fan_max_speeds[i].max_speed;
+			}
+		}
 	}
 
 	return 0;
 err_remove_groups:
-	while (i--)
-		sysfs_remove_group(&priv->fw_attr_kset->kobj,&legion_sysfs_fm_group[i]);
+	if(priv->smart_fan_version == 8)
+		while (i--)
+			sysfs_remove_group(&priv->fw_attr_kset->kobj,&legion_sysfs_fm_group_v2[i]);
+	else
+		while (i--)
+			sysfs_remove_group(&priv->fw_attr_kset->kobj,&legion_sysfs_fm_group_v1[i]);
 	kset_unregister(priv->fw_attr_kset);
 err_unregister_fw_attr_dev:
 	device_unregister(priv->fw_attr_dev);
@@ -335,8 +419,12 @@ err_free_ida:
 static void legion_wmi_fm_fw_attr_remove(struct legion_wmi_fm_priv *priv)
 {
 	/* Remove sysfs group first */
-	for (unsigned int i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group) - 1; i++)
-		sysfs_remove_group(&priv->fw_attr_kset->kobj,&legion_sysfs_fm_group[i]);
+	if(priv->smart_fan_version == 8)
+		for (unsigned int i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group_v2) - 1; i++)
+			sysfs_remove_group(&priv->fw_attr_kset->kobj,&legion_sysfs_fm_group_v2[i]);
+	else
+		for (unsigned int i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group_v1) - 1; i++)
+			sysfs_remove_group(&priv->fw_attr_kset->kobj,&legion_sysfs_fm_group_v1[i]);
 
 	/* Unregister kset before device since kset is child of device's kobj */
 	kset_unregister(priv->fw_attr_kset);

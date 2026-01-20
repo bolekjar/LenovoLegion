@@ -84,7 +84,7 @@ private slots:
 
     void on_pushButton_CPUControlApply_clicked();
 
-    void on_checkBox_DisableSMT_checkStateChanged(const Qt::CheckState &arg1);
+    void on_checkBox_DisableSMP_checkStateChanged(const Qt::CheckState &arg1);
 
     void on_comboBoxApplyTo_currentTextChanged(const QString &arg1);
 

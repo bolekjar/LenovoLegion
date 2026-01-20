@@ -17,8 +17,9 @@
 
 
 enum gamezone_events_type {
-	LEGION_WMI_GZ_GET_THERMAL_MODE = 1,
-	LEGION_WMI_GZ_GET_SUPPORTED_THERMAL_MODES
+	LEGION_WMI_GZ_GET_THERMAL_MODE 				= 1,
+	LEGION_WMI_GZ_GET_SUPPORTED_THERMAL_MODES 	= 2,
+	LEGION_WMI_GZ_GET_SMARTFAN_VERSION  		= 3
 };
 
 enum LEGION_GAMEZONE_METHOD_ID {
@@ -178,6 +179,7 @@ enum power_adapter_status
 	LEGION_WMI_GZ_AC_DISCONNECTED           = 0x02
 };
 
+#define DEFAULT_THERMAL_MODE LEGION_WMI_GZ_THERMAL_MODE_BALANCED
 
 struct game_zone_preloaded_method_values
 {
@@ -205,8 +207,9 @@ struct lenovo_wmi_gz_priv {
 	int  extreme_supported;
 
 	struct notifier_block event_nb;
-	struct notifier_block mode_nb;
-	struct notifier_block mode_fm_nb;
+	struct notifier_block other_nb;
+	struct notifier_block fm_nb;
+	struct notifier_block hwmon_nb;
 
 	struct wmi_device *wdev;
 	struct device *ppdev;
@@ -230,6 +233,7 @@ struct device;
 int legion_wmi_gz_get(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,u32 *value);
 int legion_wmi_gz_set(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,u32 value);
 int legion_wmi_gz_get_string(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,char *retval,size_t max_retval_size);
+int legion_wmi_gz_match(struct device *dev, void *data);
 
 
 int  legion_wmi_gamezone_driver_init(struct device *parent);

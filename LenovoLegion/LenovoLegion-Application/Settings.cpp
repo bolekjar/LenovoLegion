@@ -278,18 +278,12 @@ void ProfileSettings::saveFanOption(const legion::messages::FanOption& msg)
     if (msg.has_full_speed()) {
         m_settings.setValue("FanOption/full_speed", msg.full_speed());
     }
-    if (msg.has_lock()) {
-        m_settings.setValue("FanOption/lock", msg.lock());
-    }
 }
 
 void ProfileSettings::loadFanOption(legion::messages::FanOption& msg)
 {
     if (m_settings.contains("FanOption/full_speed")) {
         msg.set_full_speed(m_settings.value("FanOption/full_speed").toBool());
-    }
-    if (m_settings.contains("FanOption/lock")) {
-        msg.set_lock(m_settings.value("FanOption/lock").toBool());
     }
 }
 
@@ -380,57 +374,6 @@ void ProfileSettings::loadGPUPower(legion::messages::GPUPower& msg)
     }
     if (m_settings.contains("GPUPower/gpu_temperature_limit")) {
         msg.mutable_gpu_temperature_limit()->set_current_value(m_settings.value("GPUPower/gpu_temperature_limit").toUInt());
-    }
-}
-
-void ProfileSettings::saveCPUPowerRapl(const legion::messages::CPUPowerRapl& msg)
-{
-    // Save LTP (Long Term Power) Limit
-    if (msg.has_ltp_limit()) {
-        const auto& ltp = msg.ltp_limit();
-        if (ltp.has_power_limit_uw()) m_settings.setValue("CPUPowerRapl/ltp_power_limit_uw", static_cast<qulonglong>(ltp.power_limit_uw()));
-        if (ltp.has_time_window_us()) m_settings.setValue("CPUPowerRapl/ltp_time_window_us", static_cast<qulonglong>(ltp.time_window_us()));
-    }
-    
-    // Save STP (Short Term Power) Limit
-    if (msg.has_stp_limit()) {
-        const auto& stp = msg.stp_limit();
-        if (stp.has_power_limit_uw()) m_settings.setValue("CPUPowerRapl/stp_power_limit_uw", static_cast<qulonglong>(stp.power_limit_uw()));
-        if (stp.has_time_window_us()) m_settings.setValue("CPUPowerRapl/stp_time_window_us", static_cast<qulonglong>(stp.time_window_us()));
-    }
-    
-    // Save PP (Package Power) Limit
-    if (msg.has_pp_limit()) {
-        const auto& pp = msg.pp_limit();
-        if (pp.has_power_limit_uw()) m_settings.setValue("CPUPowerRapl/pp_power_limit_uw", static_cast<qulonglong>(pp.power_limit_uw()));
-        if (pp.has_time_window_us()) m_settings.setValue("CPUPowerRapl/pp_time_window_us", static_cast<qulonglong>(pp.time_window_us()));
-    }
-}
-
-void ProfileSettings::loadCPUPowerRapl(legion::messages::CPUPowerRapl& msg)
-{
-    // Load LTP (Long Term Power) Limit
-    if (m_settings.contains("CPUPowerRapl/ltp_power_limit_uw")) {
-        msg.mutable_ltp_limit()->set_power_limit_uw(m_settings.value("CPUPowerRapl/ltp_power_limit_uw").toULongLong());
-    }
-    if (m_settings.contains("CPUPowerRapl/ltp_time_window_us")) {
-        msg.mutable_ltp_limit()->set_time_window_us(m_settings.value("CPUPowerRapl/ltp_time_window_us").toULongLong());
-    }
-    
-    // Load STP (Short Term Power) Limit
-    if (m_settings.contains("CPUPowerRapl/stp_power_limit_uw")) {
-        msg.mutable_stp_limit()->set_power_limit_uw(m_settings.value("CPUPowerRapl/stp_power_limit_uw").toULongLong());
-    }
-    if (m_settings.contains("CPUPowerRapl/stp_time_window_us")) {
-        msg.mutable_stp_limit()->set_time_window_us(m_settings.value("CPUPowerRapl/stp_time_window_us").toULongLong());
-    }
-    
-    // Load PP (Package Power) Limit
-    if (m_settings.contains("CPUPowerRapl/pp_power_limit_uw")) {
-        msg.mutable_pp_limit()->set_power_limit_uw(m_settings.value("CPUPowerRapl/pp_power_limit_uw").toULongLong());
-    }
-    if (m_settings.contains("CPUPowerRapl/pp_time_window_us")) {
-        msg.mutable_pp_limit()->set_time_window_us(m_settings.value("CPUPowerRapl/pp_time_window_us").toULongLong());
     }
 }
 

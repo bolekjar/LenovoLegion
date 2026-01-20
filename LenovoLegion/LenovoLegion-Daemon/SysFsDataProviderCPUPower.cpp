@@ -9,15 +9,14 @@
 #include "SysFsDataProviderCPUPower.h"
 #include "SysFsDriverLegionOther.h"
 
-#include "../LenovoLegion-PrepareBuild/CpuPower.pb.h"
-
-
 #include <Core/LoggerHolder.h>
 
 
 namespace LenovoLegionDaemon {
 
-SysFsDataProviderCPUPower::SysFsDataProviderCPUPower(SysFsDriverManager* sysFsDriverManager,QObject* parent) : SysFsDataProvider(sysFsDriverManager,parent,dataType) {}
+SysFsDataProviderCPUPower::SysFsDataProviderCPUPower(SysFsDriverManager* sysFsDriverManager, QObject* parent) :
+    SysFsDataProvider(sysFsDriverManager,parent,dataType)
+{}
 
 
 
@@ -33,64 +32,10 @@ QByteArray SysFsDataProviderCPUPower::serializeAndGetData() const
         SysFsDriverLegionOther::Other::CPU cpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
         SysFsDriverLegionOther::Other::GPU gpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
 
-        auto setValue = [](const std::filesystem::path& path,std::function<void (legion::messages::CPUPower::Limit::Descriptor &descriptor,uint value)> setter,auto map)
-        {
-
-            if(!getData(path).trimmed().isEmpty())
-            {
-                auto modeValue = getData(path).split(',');
-
-                for (unsigned int i = 0; i < modeValue.size(); ++i) {
-                    auto range = modeValue.at(i).split('=');
-
-                    if(range.size() == 2)
-                    {
-                        setter((*map)[range.at(0).toUInt()],range.at(1).toUInt());
-                    }
-                    else
-                    {
-                        THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid CPU power data !").c_str());
-                    }
-                }
-            }
-            else
-            {
-                THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid CPU power data !").c_str());
-            }
-        };
-
-        auto setValuesSteps = [](const std::filesystem::path& path,std::function<void (legion::messages::CPUPower::Limit::Descriptor &descriptor,const QList<QString>& values)> setter,auto map)
-        {
-
-            if(!getData(path).trimmed().isEmpty())
-            {
-                auto modeValue = getData(path).split(',');
-
-                for (unsigned int i = 0; i < modeValue.size(); ++i) {
-                    auto range = modeValue.at(i).split('=');
-
-                    if(range.size() == 2)
-                    {
-                        setter((*map)[range.at(0).toUInt()],range.at(1).split("|"));
-                    }
-                    else
-                    {
-                        THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid CPU power data !").c_str());
-                    }
-                }
-            }
-            else
-            {
-                THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid CPU power data !").c_str());
-            }
-        };
-
-
         /*
          * STP power limit
          */
         cpuPower.mutable_cpu_stp_limit()->set_current_value(static_cast<quint8>(getData(cpuControl.m_cpu_stp_limit.m_current_value).toUShort()));
-
         setValue(cpuControl.m_cpu_stp_limit.m_default_value,[&](legion::messages::CPUPower::Limit::Descriptor &descriptor,uint value){
             descriptor.set_default_value(value);
         },cpuPower.mutable_cpu_stp_limit()->mutable_mode_descriptor_map());
@@ -255,9 +200,9 @@ QByteArray SysFsDataProviderCPUPower::serializeAndGetData() const
 
 QByteArray SysFsDataProviderCPUPower::deserializeAndSetData(const QByteArray &data)
 {
-    SysFsDriverLegionOther::Other::CPU cpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
-    SysFsDriverLegionOther::Other::GPU gpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
-    legion::messages::CPUPower         cpuPower;
+    SysFsDriverLegionOther::Other::CPU                   cpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
+    SysFsDriverLegionOther::Other::GPU                   gpuControl(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
+    legion::messages::CPUPower                           cpuPower;
 
     LOG_T(__PRETTY_FUNCTION__);
 
@@ -289,8 +234,57 @@ QByteArray SysFsDataProviderCPUPower::deserializeAndSetData(const QByteArray &da
         setData(gpuControl.m_gpu_to_cpu_dynamic_boost.m_current_value,cpuPower.gpu_to_cpu_dynamic_boost().current_value());
     }
 
-
     return {};
+}
+
+void SysFsDataProviderCPUPower::setValue(const std::filesystem::path &path, std::function<void (legion::messages::CPUPower::Limit::Descriptor &, uint)> setter, auto map) const
+{
+    if(!getData(path).trimmed().isEmpty())
+    {
+        auto modeValue = getData(path).split(',');
+
+        for (unsigned int i = 0; i < modeValue.size(); ++i) {
+            auto range = modeValue.at(i).split('=');
+
+            if(range.size() == 2)
+            {
+                setter((*map)[range.at(0).toUInt()],range.at(1).toUInt());
+            }
+            else
+            {
+                THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid power data !").c_str());
+            }
+        }
+    }
+    else
+    {
+        THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid power data !").c_str());
+    }
+}
+
+void SysFsDataProviderCPUPower::setValuesSteps(const std::filesystem::path &path, std::function<void (legion::messages::CPUPower::Limit::Descriptor &, const QList<QString> &)> setter, auto map) const
+{
+    if(!getData(path).trimmed().isEmpty())
+    {
+        auto modeValue = getData(path).split(',');
+
+        for (unsigned int i = 0; i < modeValue.size(); ++i) {
+            auto range = modeValue.at(i).split('=');
+
+            if(range.size() == 2)
+            {
+                setter((*map)[range.at(0).toUInt()],range.at(1).split("|"));
+            }
+            else
+            {
+                THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid power data !").c_str());
+            }
+        }
+    }
+    else
+    {
+        THROW_EXCEPTION(exception_T,DataProvider::ERROR_CODES::INVALID_DATA,std::string("Invalid power data !").c_str());
+    }
 }
 
 

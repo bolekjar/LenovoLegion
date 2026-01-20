@@ -108,8 +108,15 @@ HWMonitoring::HWMonitoring(DataProvider *dataProvider,QWidget *parent)
     ui->widget_GPUTemp->init("Temp [%1 °C]",30,100,30,100);
     ui->widget_GPUClock->init("Power [%1 W]",0,m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000,0,m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000);
 
-    ui->widget_CPUFanSpeed->init("CPU [%1 RPM]",m_hwMonitoringData.legion().fan1_speed_min(),m_hwMonitoringData.legion().fan1_speed_max() + 100,m_hwMonitoringData.legion().fan1_speed_min(),m_hwMonitoringData.legion().fan1_speed_max() + 100);
-    ui->widget_GPUFanSpeed->init("GPU [%1 RPM]",m_hwMonitoringData.legion().fan2_speed_min(),m_hwMonitoringData.legion().fan2_speed_max() + 100,m_hwMonitoringData.legion().fan2_speed_min(),m_hwMonitoringData.legion().fan2_speed_max() + 100);
+    /*
+     * Fans
+     */
+    for (int i = 0; i < m_hwMonitoringData.legion().fans_size(); ++i)
+    {
+        auto fanWidget = new HWMonitor(this);
+        fanWidget->init(m_hwMonitoringData.legion().fans().at(i).fan_label().data() + QString(" [%1 RPM]"),m_hwMonitoringData.legion().fans().at(i).fan_speed_min(),m_hwMonitoringData.legion().fans().at(i).fan_speed_max() + 100,m_hwMonitoringData.legion().fans().at(i).fan_speed_min(),m_hwMonitoringData.legion().fans().at(i).fan_speed_max() + 100);
+        ui->horizontalLayout_Fans->addWidget(fanWidget);
+    }
 
     connect(m_windowFreqInfoByCore,&CPUFrequency::closed,this,&HWMonitoring::freqInfoByCoreClosed);
     connect(m_windowGPUDetails,&GPUDetails::closed,this,&HWMonitoring::gpuDetailsClosed);
@@ -165,14 +172,23 @@ void HWMonitoring::refresh()
                                                                                                                              .arg(nvidiaData.hardware_monitor().power().min_value() / 1000)
                                                                                                                              .arg(m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000));
 
-        ui->widget_CPUFanSpeed->refresh(data.legion().fan1_speed(),0,10,' ',QString("CPU FAN Speed: %1 RPM\n"\
-                                                                                          "CPU FAN Speed min: 0 RPM\n"\
-                                                                                          "CPU FAN Speed max: %2 RPM\n").arg(data.legion().fan1_speed()).arg((data.legion().fan1_speed_max())));
-        ui->widget_GPUFanSpeed->refresh(data.legion().fan2_speed(),0,10,' ',QString("GPU FAN Speed: %1 RPM\n"\
-                                                                                          "GPU FAN Speed min: 0 RPM\n"\
-                                                                                          "GPU FAN Speed max: %2 RPM\n").arg(data.legion().fan2_speed()).arg(data.legion().fan2_speed_max()));
 
-
+        /*
+         * Fans
+         */
+        for (int i = 0; i < data.legion().fans_size() && i < ui->horizontalLayout_Fans->count(); ++i)
+        {
+            dynamic_cast<HWMonitor*>(ui->horizontalLayout_Fans->itemAt(i)->widget())->refresh(data.legion().fans().at(i).fan_speed(),
+                                                                                               0,
+                                                                                               10,
+                                                                                               ' ',
+                                                                                               QString("Fan %1 Speed: %2 RPM\n"\
+                                                                                                       "Fan %1 Speed min: %3 RPM\n"\
+                                                                                                       "Fan %1 Speed max: %4 RPM\n").arg(data.legion().fans().at(i).fan_label())
+                                                                                                                                    .arg(data.legion().fans().at(i).fan_speed())
+                                                                                                                                    .arg(data.legion().fans().at(i).fan_speed_min())
+                                                                                                                                    .arg(data.legion().fans().at(i).fan_speed_max() + 100));
+        }
 
         /*
          * CPU Frequency stats
