@@ -21,6 +21,9 @@ SOURCES +=  \
         ProtocolProcessor.cpp \
         ProtocolProcessorBase.cpp \
         ProtocolProcessorNotifier.cpp \
+        RGBControlers/LenovoRGBControllerC197.cpp \
+        RGBControlers/LenovoRGBControllerC9xx.cpp \
+        RGBControlers/LenovoUSBControllerC9xx.cpp \
         RGBController.cpp \
         SysFSDriverHWMon.cpp \
         SysFSDriverLegionFanMode.cpp \
@@ -73,6 +76,9 @@ HEADERS += \
     ProtocolProcessor.h \
     ProtocolProcessorBase.h \
     ProtocolProcessorNotifier.h \
+    RGBControlers/LenovoRGBControllerC197.h \
+    RGBControlers/LenovoRGBControllerC9xx.h \
+    RGBControlers/LenovoUSBControllerC9xx.h \
     SysFSDriverHWMon.h \
     SysFSDriverLegionFanMode.h \
     SysFSDriverLegionGameZone.h \

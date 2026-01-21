@@ -30,6 +30,9 @@ namespace LenovoLegionDaemon {
 
 class LenovoUSBController
 {
+
+protected:
+    \
     enum LENOVO_SPECTRUM_OPERATION_TYPE : uint8_t
     {
         Compatibility       = 0xD1,
@@ -121,21 +124,18 @@ public:
     |ctor(s) and dtor|
     \*--------------*/
     LenovoUSBController(hid_device* dev_handle, const char* path, uint16_t in_pid);
-    ~LenovoUSBController();
+    virtual ~LenovoUSBController();
 
 
     /*--------------*\
     |Setters         |
     \*--------------*/
     void setProfileDescription(uint8_t profile_id,const  std::vector<led_group>& led_groups);
-    void setLedsDirect(const std::vector<RGBColor> &colors);
-
-    void setLedsDirectOn(uint8_t profile_id);
-    void setLedsDirectOff(uint8_t profile_id);
 
     void setBrightness(uint8_t brightness);
 
     void setProfile(uint8_t profile_id);
+
     void setProfileDefault(uint8_t profile_id);
 
 
@@ -161,14 +161,16 @@ public:
      */
     std::vector<led_group>  getProfileDescription(uint8_t profile_id) const;
 
-private:
+protected:
 
     static ByteArray    serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE type, const Params& params = {},ByteArray payload = ByteArray(),uint8_t size = 0xC0);
     static std::string  convertBytesArrayToHex(const ByteArray &array);
 
 private:
+
     bool                    isCompatible();
     void                    initilizeKeyMap();
+
 private:
 
     /*--------------*\
@@ -186,6 +188,7 @@ private:
     /*--------------*\
     |device functions|
     \*--------------*/
+protected:
     void        sendFeatureReport(const ByteArray& packet)       const;
     ByteArray   sendAndGetFeatureReport(const ByteArray& packet) const;
 

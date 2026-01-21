@@ -21,6 +21,9 @@ namespace LenovoLegionDaemon {
 
 class LenovoRGBController : public RGBController
 {
+
+protected:
+
     enum SupportedModes : quint8
     {
         MODE_SCREW_RAINBOW                  = 0x01,
@@ -61,14 +64,22 @@ public:
         DIRECT_CONTROL_NOT_SUPPORTED = 1
     };
 
-protected:
-
-    void timerEvent(QTimerEvent* event) override;
-
 public:
 
-    LenovoRGBController(LenovoUSBController* controller_ptr);
-    ~LenovoRGBController();
+    LenovoRGBController(LenovoUSBController* controller_ptr,
+                        const Profiles&                profiles,
+                        const Brightnesses&            britnesses,
+                        const std::string&             name,
+                        const std::string&             vendor,
+                        const std::string&             description,
+                        const std::string&             serial,
+                        const std::string&             location,
+                        device_type                    type,
+                        const std::vector<mode>&       modes,
+                        const std::vector<zone>&       zones,
+                        unsigned int                   maxEffects
+                        );
+    virtual ~LenovoRGBController();
 
     void        DeviceUpdateEfects()                   override;
     void        DeviceResetEffectsToDefault()          override;
@@ -88,8 +99,6 @@ public:
 
 private:
     void readActiveProfileSettings();
-    void startStopDirectControlModeTimerIfNeeded();
-
 
     /*
      * Serialization from controler model
@@ -102,6 +111,8 @@ private:
     unsigned int             fromControlerBrightness(uint8_t brightness)                                    const;
 
 
+protected:
+
     /*
      * Serialization to controler model
      */
@@ -111,10 +122,9 @@ private:
     uint8_t                                             toControlerProfile(unsigned int profile)            const;
     uint8_t                                             toControlerBrightness(unsigned int brightness)      const;
 
-private:
+protected:
 
     std::unique_ptr<LenovoUSBController>  controller;
-    int                                   m_timerId;
 };
 
 }

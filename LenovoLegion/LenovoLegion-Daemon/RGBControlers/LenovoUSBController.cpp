@@ -131,54 +131,7 @@ void LenovoUSBController::setProfileDescription(uint8_t profile_id,const  std::v
     }(),0x00);
 
 
-
-
-
-
     sendFeatureReport(packet);
-}
-
-void LenovoUSBController::setLedsDirectOn(uint8_t profile_id)
-{
-    LOG_T(QString::asprintf("LenovoUSBController::setLedsDirectOn: Setting direct LED control for profile %d", profile_id));
-
-    sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraStartStop, {.value1 = 0x01,
-                                                                                          .value2 = profile_id
-                                                                                         }));
-}
-
-void LenovoUSBController::setLedsDirectOff(uint8_t profile_id)
-{
-    LOG_T(QString::asprintf("LenovoUSBController::setLedsDirectOff: Disabling direct LED control for profile %d", profile_id));
-
-    sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraStartStop, {.value1 = 0x02,
-                                                                                          .value2 = profile_id
-                                                                                         }));
-}
-
-void LenovoUSBController::setLedsDirect(const std::vector<RGBColor> &colors)
-{
-    LOG_T("LenovoUSBController::setLedsDirect: Setting direct LED colors");
-
-    sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraSendBitmap,{},[this,&colors](){
-        ByteArray payload;
-
-
-
-        for(size_t height = 0; height < getKeyMap().m_height; height++)
-        {
-            for (int width = 0; width < getKeyMap().m_width; ++width) {
-
-                payload.push_back(getKeyMap().m_keyCodes[width][height] & 0xFF);
-                payload.push_back(getKeyMap().m_keyCodes[width][height] >> 8 & 0xFF);
-                payload.push_back(RGBGetRValue(colors[width + (height * getKeyMap().m_width)]));
-                payload.push_back(RGBGetGValue(colors[width + (height * getKeyMap().m_width)]));
-                payload.push_back(RGBGetBValue(colors[width + (height * getKeyMap().m_width)]));
-
-            }
-        }
-        return payload;
-    }()));
 }
 
 uint8_t LenovoUSBController::getCurrentProfileId() const
