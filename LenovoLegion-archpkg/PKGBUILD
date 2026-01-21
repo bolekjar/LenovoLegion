@@ -20,6 +20,7 @@ package() {
   mkdir -p $pkgdir/etc/modprobe.d/
   mkdir -p $pkgdir/etc/modules-load.d/
   mkdir -p $pkgdir/usr/share/applications/
+  mkdir -p $pkgdir/etc/udev/rules.d/
 
 
   ln -s $pkgname-$pkgver $pkgdir/opt/$pkgname
