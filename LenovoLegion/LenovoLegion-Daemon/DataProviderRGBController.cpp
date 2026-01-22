@@ -305,6 +305,8 @@ namespace LenovoLegionDaemon {
                 captureData.push_back(static_cast<RGBColor>(rgbController.capture_data_colors(i)));
             }
 
+            LOG_T("Applying Capture Data with " + QString::number(captureData.size()) + " colors");
+
             m_rgbController->setCaptureData(captureData);
         }
 
