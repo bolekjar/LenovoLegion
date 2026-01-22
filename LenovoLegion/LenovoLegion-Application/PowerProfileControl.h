@@ -45,6 +45,8 @@ private slots:
 
     void on_radioButton_PPExtreme_clicked();
 
+    void on_checkBox_customFnQ_stateChanged(int arg1);
+
 signals:
 
     void widgetEvent(const LenovoLegionGui::WidgetMessage& event);

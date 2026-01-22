@@ -55,8 +55,8 @@ void SysFsDriverLegionOther::init()
         }
     };
 
-
     m_descriptor["fan_full_speed"] = std::filesystem::path(m_path).append("other/fan_full_speed");
+    m_descriptor["god_mode_fnq_switchable"] = std::filesystem::path(m_path).append("other/god_mode_fnq_switchable");
 
 }
 

@@ -8,6 +8,7 @@
 
 #include "SysFsDataProviderPowerProfile.h"
 #include "SysFSDriverLegionGameZone.h"
+#include "SysFsDriverLegionOther.h"
 
 #include "../LenovoLegion-PrepareBuild/PowerProfile.pb.h"
 
@@ -31,9 +32,12 @@ QByteArray SysFsDataProviderPowerProfile::serializeAndGetData() const
     try {
         SysFSDriverLegionGameZone::GameZone::SmartFan smartFan(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
         SysFSDriverLegionGameZone::GameZone::Other    other(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
+        SysFsDriverLegionOther::Other                 otherInOther(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
 
         powerProfile.set_current_value(static_cast<legion::messages::PowerProfile::Profiles>(getData(smartFan.m_current_value).toUShort()));
         powerProfile.set_thermal_mode(static_cast<legion::messages::PowerProfile::Profiles>(getData(other.get_thermal_mode).toUShort()));
+        powerProfile.set_custom_fnq_enabled(getData(otherInOther.m_god_mode_fnq_switchable).toShort() == 1);
+
     } catch(SysFsDriver::exception_T& ex)
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
@@ -59,6 +63,9 @@ QByteArray SysFsDataProviderPowerProfile::serializeAndGetData() const
 QByteArray SysFsDataProviderPowerProfile::deserializeAndSetData(const QByteArray &data)
 {
     SysFSDriverLegionGameZone::GameZone::SmartFan smartFan(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
+    SysFSDriverLegionGameZone::GameZone::Other    other(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
+    SysFsDriverLegionOther::Other                 otherInOther(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
+
     legion::messages::PowerProfile                powerProfile;
 
     LOG_T(__PRETTY_FUNCTION__);
@@ -70,6 +77,11 @@ QByteArray SysFsDataProviderPowerProfile::deserializeAndSetData(const QByteArray
 
     if(powerProfile.has_current_value()) {
         setData(smartFan.m_current_value,static_cast<quint8>(powerProfile.current_value()));
+    }
+
+    if(powerProfile.has_custom_fnq_enabled())
+    {
+        setData(otherInOther.m_god_mode_fnq_switchable, powerProfile.custom_fnq_enabled());
     }
 
     return {};

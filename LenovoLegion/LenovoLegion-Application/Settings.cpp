@@ -163,6 +163,10 @@ void ProfileSettings::savePowerProfile(const legion::messages::PowerProfile& msg
     if (msg.has_current_value()) {
         m_settings.setValue("PowerProfile/current_value", msg.current_value());
     }
+
+    if(msg.has_custom_fnq_enabled()) {
+        m_settings.setValue("PowerProfile/custom_fnq_enabled", msg.custom_fnq_enabled());
+    }
 }
 
 void ProfileSettings::loadPowerProfile(legion::messages::PowerProfile& msg)
@@ -170,6 +174,10 @@ void ProfileSettings::loadPowerProfile(legion::messages::PowerProfile& msg)
     if (m_settings.contains("PowerProfile/current_value")) {
         msg.set_current_value(static_cast<legion::messages::PowerProfile_Profiles>(
             m_settings.value("PowerProfile/current_value").toInt()));
+    }
+
+    if(m_settings.contains("PowerProfile/custom_fnq_enabled")) {
+        msg.set_custom_fnq_enabled(m_settings.value("PowerProfile/custom_fnq_enabled").toBool());
     }
 }
 

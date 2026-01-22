@@ -37,6 +37,11 @@ SettingsLoaderPowerProfiles& SettingsLoaderPowerProfiles::loadPowerProfile(legio
         profile.set_current_value(static_cast<legion::messages::PowerProfile::Profiles>(
             m_settings.value("PowerProfile").toUInt()));
     }
+
+    if(m_settings.contains("custom_fnq_enabled")) {
+        profile.set_custom_fnq_enabled(m_settings.value("custom_fnq_enabled").toBool());
+    }
+
     return *this;
 }
 
@@ -48,6 +53,7 @@ SettingsSaverPowerProfiles::SettingsSaverPowerProfiles() :
 SettingsSaverPowerProfiles& SettingsSaverPowerProfiles::saverPowerProfile(const legion::messages::PowerProfile &profile)
 {
     m_settings.setValue("PowerProfile", static_cast<quint32>(profile.current_value()));
+    m_settings.setValue("custom_fnq_enabled", profile.custom_fnq_enabled());
     return *this;
 }
 

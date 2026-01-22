@@ -14,6 +14,7 @@ message PowerProfile
         POWER_PROFILE_CUSTOM       = 255;
     }
 
-    Profiles   current_value         = 1; //smart_fan
-    Profiles   thermal_mode          = 2; //thermal mode
+    Profiles   current_value         = 1;  //smart_fan
+    Profiles   thermal_mode          = 2;  //thermal mode
+    bool       custom_fnq_enabled    = 3;  //custom fn+q
 }

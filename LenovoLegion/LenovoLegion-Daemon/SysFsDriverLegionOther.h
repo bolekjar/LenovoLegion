@@ -83,13 +83,15 @@ public:
         explicit Other(const SysFsDriver::DescriptorType& descriptor) :
             m_cpu(descriptor),
             m_gpu(descriptor),
-            m_fan_full_speed(descriptor["fan_full_speed"])
+            m_fan_full_speed(descriptor["fan_full_speed"]),
+            m_god_mode_fnq_switchable(descriptor["god_mode_fnq_switchable"])
         {}
 
 
-        const CPU                   m_cpu;
-        const GPU                   m_gpu;
-        const std::filesystem::path m_fan_full_speed;
+        const CPU                    m_cpu;
+        const GPU                    m_gpu;
+        const std::filesystem::path  m_fan_full_speed;
+        const std::filesystem::path  m_god_mode_fnq_switchable;
     };
 public:
 
