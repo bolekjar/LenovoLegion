@@ -257,6 +257,7 @@ void MainWindow::daemonNotification(const legion::messages::Notification &msg)
 
                     for(const auto& color : colors)
                     {
+                        LOG_T(QString::asprintf("MainWindow: Adding color RGB:%X",color));
                         response.add_capture_data_colors(color);
                     }
 
