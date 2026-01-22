@@ -266,11 +266,11 @@ __LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v1,2,5,SENSOR)
 
 
 __LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v2,1,1,FAN);
-__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v2,1,1,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v2,4,4,SENSOR);
 __LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v2,2,5,FAN);
 __LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v2,2,5,SENSOR);
 __LEGION_WMI_DEFAULT_TABLES(sys_fan_default,sys_fan_default_v2,4,4,FAN);
-__LEGION_WMI_DEFAULT_TABLES(sys_sensor_default,sys_sensor_default_v2,4,4,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(sys_sensor_default,sys_sensor_default_v2,1,1,SENSOR);
 
 
 

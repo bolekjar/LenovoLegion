@@ -15,6 +15,45 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButton_MaxSpeed">
+       <property name="text">
+        <string>Maximum</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>true</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_Custom">
+       <property name="text">
+        <string>Custom</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>true</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox_fanCurve">
      <property name="title">
       <string>Fan curve</string>
@@ -406,32 +445,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_fanControl">
-     <property name="title">
-      <string>Controls</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_24">
-      <property name="topMargin">
-       <number>30</number>
-      </property>
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_23">
-        <item>
-         <widget class="QCheckBox" name="checkBox_MaxFanSpeed">
-          <property name="text">
-           <string>Maximum fan speed</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
    </item>
   </layout>
  </widget>

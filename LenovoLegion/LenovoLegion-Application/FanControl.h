@@ -13,7 +13,6 @@
 
 #include "../LenovoLegion-PrepareBuild/FanControl.pb.h"
 #include "../LenovoLegion-PrepareBuild/PowerProfile.pb.h"
-#include "../LenovoLegion-PrepareBuild/HWMonitoring.pb.h"
 
 #include <QWidget>
 
@@ -48,11 +47,13 @@ public:
     void refresh();
 
 signals:
+
     void widgetEvent(const LenovoLegionGui::WidgetMessage& event);
+
 private slots:
 
 
-    void on_checkBox_MaxFanSpeed_checkStateChanged(const Qt::CheckState &arg1);
+    //void on_checkBox_MaxFanSpeed_checkStateChanged(const Qt::CheckState &arg1);
 
     void on_verticalSlider_FanCurve1_valueChanged(int value);
     void on_verticalSlider_FanCurve2_valueChanged(int value);
@@ -68,8 +69,13 @@ private slots:
     void on_pushButton_FanCurveApply_clicked();
     void on_pushButton_FanCurveCancel_clicked();
 
+    void on_pushButton_MaxSpeed_clicked();
+
+    void on_pushButton_Custom_clicked();
+
 private:
 
+    void refreshData();
     void renderData();
     void renderFanCurveControlData();
     void renderFanControlData();
@@ -78,11 +84,6 @@ private:
     void markChangesFanCurveControlData();
 
     void normalizeCurrentFanCurveControlData(int fromIndex,int value);
-
-    void setEnabledGuiElementsFanCurveControl(bool enabled);
-    void setEnabledGuiElementsMaxFanSpeedControl(bool enabled);
-    void setEnabledGuiElementsLockFanControl(bool enabled);
-
 private:
     Ui::FanControl *ui;
 
@@ -92,7 +93,6 @@ private:
     legion::messages::FanCurve             m_fanCurveControlData,
                                            m_localFanCurveControlData;
     legion::messages::PowerProfile         m_powerProfileData;
-    legion::messages::HardwareMonitor      m_hwMonitoringData;;
 
 };
 
