@@ -209,7 +209,6 @@ struct lenovo_wmi_gz_priv {
 	struct notifier_block event_nb;
 	struct notifier_block other_nb;
 	struct notifier_block fm_nb;
-	struct notifier_block hwmon_nb;
 
 	struct wmi_device *wdev;
 	struct device *ppdev;

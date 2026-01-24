@@ -39,48 +39,9 @@
        <number>20</number>
       </property>
       <item>
-       <widget class="QGroupBox" name="groupBox_CPU">
+       <widget class="QGroupBox" name="groupBox_CPU_Per_Thr">
         <property name="title">
-         <string>CPU</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="sizeConstraint">
-          <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>30</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>10</number>
-         </property>
-         <item>
-          <widget class="LenovoLegionGui::HWMonitor" name="widget_CPUTemp" native="true"/>
-         </item>
-         <item>
-          <widget class="LenovoLegionGui::HWMonitor" name="widget_CPUPower" native="true"/>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_17">
-        <property name="title">
-         <string>CPU Frequency per thread</string>
+         <string>CPU Details</string>
         </property>
         <property name="flat">
          <bool>false</bool>
@@ -124,7 +85,46 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_GPU">
+       <widget class="QGroupBox" name="groupBox_Power">
+        <property name="title">
+         <string>GPU details</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="sizeConstraint">
+          <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>30</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="LenovoLegionGui::HWMonitor" name="widget_CPUPower" native="true"/>
+         </item>
+         <item>
+          <widget class="LenovoLegionGui::HWMonitor" name="widget_GPUPower" native="true"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_Temperatures">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -132,10 +132,10 @@
          </size>
         </property>
         <property name="title">
-         <string>GPU</string>
+         <string>Temperatures</string>
         </property>
         <property name="checkable">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="checked">
          <bool>false</bool>
@@ -157,10 +157,7 @@
           <number>10</number>
          </property>
          <item>
-          <widget class="LenovoLegionGui::HWMonitor" name="widget_GPUTemp" native="true"/>
-         </item>
-         <item>
-          <widget class="LenovoLegionGui::HWMonitor" name="widget_GPUClock" native="true"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_Temp"/>
          </item>
         </layout>
        </widget>

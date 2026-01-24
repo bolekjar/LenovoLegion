@@ -241,9 +241,9 @@ void FanControl::renderFanControlData()
     ui->pushButton_MaxSpeed->setChecked(false);
     ui->pushButton_Custom->setChecked(true);
 
-    if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
+    if(m_fanControlData.full_speed().supported() && m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
     {
-        if(m_fanControlData.full_speed())
+        if(m_fanControlData.full_speed().current_value())
         {
             ui->pushButton_MaxSpeed->setChecked(true);
             ui->pushButton_Custom->setChecked(false);
@@ -447,7 +447,7 @@ void FanControl::on_pushButton_MaxSpeed_clicked()
 {
     legion::messages::FanOption data;
 
-    data.set_full_speed(true);
+    data.mutable_full_speed()->set_current_value(true);
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderFanOption::dataType,data);
     refresh();
@@ -457,7 +457,7 @@ void FanControl::on_pushButton_Custom_clicked()
 {
     legion::messages::FanOption data;
 
-    data.set_full_speed(false);
+    data.mutable_full_speed()->set_current_value(false);
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderFanOption::dataType,data);
     refresh();
@@ -481,7 +481,7 @@ void FanControl::refreshData()
 
     if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
     {
-        if(m_fanControlData.full_speed())
+        if(m_fanControlData.full_speed().supported() && m_fanControlData.full_speed().current_value())
         {
             m_fanCurveControlData.mutable_current_value()->set_point1(10);
             m_fanCurveControlData.mutable_current_value()->set_point2(10);

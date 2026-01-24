@@ -10,6 +10,7 @@
 #include "legion-compatibility.h"
 #include "legion-wmi-events.h"
 #include "legion-wmi-gamezone.h"
+#include "legion-wmi-capdata00.h"
 #include "legion-wmi-capdata01.h"
 #include "legion-wmi-other.h"
 #include "legion-wmi-ddata.h"
@@ -196,6 +197,16 @@ static int legion_probe(struct platform_device *pdev)
 	dev_info(&pdev->dev,"\tWMI game zone driver was initialized \n");
 
     /*
+     * WMI cd00
+     */
+    err = legion_wmi_cd00_driver_init(&pdev->dev);
+	if (err) {
+		dev_err(&pdev->dev, "\tFailed to create WMI capability data 00 driver: %d\n", err);
+		goto err_wmi_cd00;
+	}
+	dev_info(&pdev->dev,"\tWMI capability data 00 driver was initialized \n");
+
+    /*
      * WMI cd01
      */
     err = legion_wmi_cd01_driver_init(&pdev->dev);
@@ -364,6 +375,8 @@ err_wmi_other:
 err_wmi_dd:
 	legion_wmi_cd01_driver_exit();
 err_wmi_cd01:
+	legion_wmi_cd00_driver_exit();
+err_wmi_cd00:
 	legion_wmi_gamezone_driver_exit();
 err_wmi_gamezone:
 	legion_wmi_events_driver_exit();
@@ -411,6 +424,9 @@ static void legion_remove(struct platform_device *pdev)
 
     legion_wmi_cd01_driver_exit();
     dev_info(&pdev->dev, "\tWMI capability data 01 driver was unregistered \n");
+
+    legion_wmi_cd00_driver_exit();
+    dev_info(&pdev->dev, "\tWMI capability data 00 driver was unregistered \n");
 
     legion_wmi_gamezone_driver_exit();
     dev_info(&pdev->dev, "\tWMI game zone driver was unregistered \n");

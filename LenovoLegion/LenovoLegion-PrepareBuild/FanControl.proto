@@ -6,7 +6,13 @@ package legion.messages;
 
 message FanOption
 {
-    bool full_speed = 1;
+    message Option {
+        bool       current_value  = 1;
+        bool       default_value  = 2;
+        bool       supported      = 3;
+    }
+
+    Option full_speed = 1;
 }
 
 

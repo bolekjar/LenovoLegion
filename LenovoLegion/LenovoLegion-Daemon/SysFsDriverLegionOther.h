@@ -20,9 +20,9 @@ class SysFsDriverLegionOther : public SysFsDriver
 public:
     struct Other {
 
-        struct StandardAttributes
+        struct StandardAttributesCapData01
         {
-            StandardAttributes(const SysFsDriver::DescriptorType& descriptor,const QString& prefix):
+            StandardAttributesCapData01(const SysFsDriver::DescriptorType& descriptor,const QString& prefix):
                 m_current_value(descriptor[prefix + "current_value"]),
                 m_default_value(descriptor[prefix + "default_value"]),
                 m_display_name(descriptor[prefix +  "display_name"]),
@@ -46,6 +46,23 @@ public:
             const std::filesystem::path m_type;
         };
 
+        struct StandardAttributesCapData00
+        {
+            StandardAttributesCapData00(const SysFsDriver::DescriptorType& descriptor,const QString& prefix):
+                m_current_value(descriptor[prefix + "current_value"]),
+                m_default_value(descriptor[prefix + "default_value"]),
+                m_display_name(descriptor[prefix +  "display_name"]),
+                m_supported(descriptor[prefix +  "supported"]),
+                m_type(descriptor[prefix +  "type"])
+            {}
+
+            const std::filesystem::path m_current_value;
+            const std::filesystem::path m_default_value;
+            const std::filesystem::path m_display_name;
+            const std::filesystem::path m_supported;
+            const std::filesystem::path m_type;
+        };
+
         struct CPU {
             CPU(const SysFsDriver::DescriptorType& descriptor) :
                 m_cpu_clp_limit(descriptor,QString("cpu_clp_limit")),
@@ -56,12 +73,12 @@ public:
                 m_cpu_tmp_limit(descriptor,QString("cpu_tmp_limit")) {}
 
 
-            const StandardAttributes m_cpu_clp_limit;
-            const StandardAttributes m_cpu_ltp_limit;
-            const StandardAttributes m_cpu_pl1_tau;
-            const StandardAttributes m_cpu_pp_limit;
-            const StandardAttributes m_cpu_stp_limit;
-            const StandardAttributes m_cpu_tmp_limit;
+            const StandardAttributesCapData01 m_cpu_clp_limit;
+            const StandardAttributesCapData01 m_cpu_ltp_limit;
+            const StandardAttributesCapData01 m_cpu_pl1_tau;
+            const StandardAttributesCapData01 m_cpu_pp_limit;
+            const StandardAttributesCapData01 m_cpu_stp_limit;
+            const StandardAttributesCapData01 m_cpu_tmp_limit;
         };
 
         struct GPU {
@@ -73,25 +90,25 @@ public:
                 m_gpu_total_onac(descriptor,QString("gpu_total_onac")){}
 
 
-            const StandardAttributes m_gpu_configurable_tgp;
-            const StandardAttributes m_gpu_power_boost;
-            const StandardAttributes m_gpu_temperature_limit;
-            const StandardAttributes m_gpu_to_cpu_dynamic_boost;
-            const StandardAttributes m_gpu_total_onac;
+            const StandardAttributesCapData01 m_gpu_configurable_tgp;
+            const StandardAttributesCapData01 m_gpu_power_boost;
+            const StandardAttributesCapData01 m_gpu_temperature_limit;
+            const StandardAttributesCapData01 m_gpu_to_cpu_dynamic_boost;
+            const StandardAttributesCapData01 m_gpu_total_onac;
         };
 
         explicit Other(const SysFsDriver::DescriptorType& descriptor) :
             m_cpu(descriptor),
             m_gpu(descriptor),
-            m_fan_full_speed(descriptor["fan_full_speed"]),
-            m_god_mode_fnq_switchable(descriptor["god_mode_fnq_switchable"])
+            m_fan_full_speed(descriptor,"fan_full_speed"),
+            m_god_mode_fnq_switchable(descriptor,"god_mode_fnq_switchable")
         {}
 
 
-        const CPU                    m_cpu;
-        const GPU                    m_gpu;
-        const std::filesystem::path  m_fan_full_speed;
-        const std::filesystem::path  m_god_mode_fnq_switchable;
+        const CPU                          m_cpu;
+        const GPU                          m_gpu;
+        const StandardAttributesCapData00  m_fan_full_speed;
+        const StandardAttributesCapData00  m_god_mode_fnq_switchable;
     };
 public:
 

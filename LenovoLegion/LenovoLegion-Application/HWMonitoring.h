@@ -50,13 +50,11 @@ public:
     void refresh();
 
 private slots:
-    void on_groupBox_17_clicked(bool checked);
+    void on_groupBox_CPU_Per_Thr_clicked(bool checked);
     void freqInfoByCoreClosed();
     void gpuDetailsClosed();
-    void cpuDetailsClosed();
 
-    void on_groupBox_GPU_clicked(bool checked);
-    void on_groupBox_CPU_clicked(bool checked);
+    void on_groupBox_Power_clicked(bool checked);
 
 private:
     void forAllCpuPerformanceCores(const std::function<bool(const int index)> &func);
@@ -77,7 +75,6 @@ private:
     DataProvider                *m_dataProvider;
     CPUFrequency                *m_windowFreqInfoByCore;
     GPUDetails                  *m_windowGPUDetails;
-    CPUDetails                  *m_windowCPUDetails;
 
     std::chrono::steady_clock::time_point    m_lastRefreshTime;
 

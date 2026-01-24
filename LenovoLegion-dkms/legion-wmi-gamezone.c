@@ -168,10 +168,6 @@ static int legion_wmi_fm_gz_call(struct notifier_block *nb, unsigned long cmd,vo
 	return legion_wmi_gz_call(container_of(nb, struct lenovo_wmi_gz_priv, fm_nb),cmd,data);
 }
 
-static int legion_wmi_hwmon_gz_call(struct notifier_block *nb, unsigned long cmd,void *data){
-	return legion_wmi_gz_call(container_of(nb, struct lenovo_wmi_gz_priv, hwmon_nb),cmd,data);
-}
-
 /**
  * legion_wmi_gz_extreme_supported() - Evaluate if a device supports extreme thermal mode.
  * @profile_support_ver: Version of the WMI interface.
@@ -603,11 +599,6 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 
 	priv->fm_nb.notifier_call = legion_wmi_fm_gz_call;
 	ret = devm_lenovo_wmi_fm_register_notifier(&wdev->dev, &priv->fm_nb);
-	if (ret)
-		return ret;
-
-	priv->hwmon_nb.notifier_call = legion_wmi_hwmon_gz_call;
-	ret = legion_hwmon_gz_register_notifier(&wdev->dev, &priv->hwmon_nb);
 	if (ret)
 		return ret;
 

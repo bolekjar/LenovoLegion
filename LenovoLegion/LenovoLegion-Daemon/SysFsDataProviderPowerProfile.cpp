@@ -36,7 +36,10 @@ QByteArray SysFsDataProviderPowerProfile::serializeAndGetData() const
 
         powerProfile.set_current_value(static_cast<legion::messages::PowerProfile::Profiles>(getData(smartFan.m_current_value).toUShort()));
         powerProfile.set_thermal_mode(static_cast<legion::messages::PowerProfile::Profiles>(getData(other.get_thermal_mode).toUShort()));
-        powerProfile.set_custom_fnq_enabled(getData(otherInOther.m_god_mode_fnq_switchable).toShort() == 1);
+
+        powerProfile.mutable_custom_fnq_enabled()->set_supported(getData(otherInOther.m_god_mode_fnq_switchable.m_supported).toShort() > 0);
+        powerProfile.mutable_custom_fnq_enabled()->set_current_value(getData(otherInOther.m_god_mode_fnq_switchable.m_current_value).toShort() == 1);
+        powerProfile.mutable_custom_fnq_enabled()->set_default_value(getData(otherInOther.m_god_mode_fnq_switchable.m_default_value).toShort() == 1);
 
     } catch(SysFsDriver::exception_T& ex)
     {
@@ -81,7 +84,10 @@ QByteArray SysFsDataProviderPowerProfile::deserializeAndSetData(const QByteArray
 
     if(powerProfile.has_custom_fnq_enabled())
     {
-        setData(otherInOther.m_god_mode_fnq_switchable, powerProfile.custom_fnq_enabled());
+        if(getData(otherInOther.m_god_mode_fnq_switchable.m_supported).toShort() > 0)
+        {
+            setData(otherInOther.m_god_mode_fnq_switchable.m_current_value, powerProfile.custom_fnq_enabled().current_value());
+        }
     }
 
     return {};

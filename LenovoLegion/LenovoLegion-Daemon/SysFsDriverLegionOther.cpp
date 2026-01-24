@@ -25,7 +25,7 @@ void SysFsDriverLegionOther::init()
 
     clean();
 
-    auto buildSstandardAttributes = [this] (std::filesystem::path path, const QString& prefix)
+    auto buildSstandardAttributesCapData01 = [this] (std::filesystem::path path, const QString& prefix)
     {
 
         m_descriptor[prefix + "current_value"] = std::filesystem::path(path).append("current_value");
@@ -39,25 +39,42 @@ void SysFsDriverLegionOther::init()
         m_descriptor[prefix + "type"] = std::filesystem::path(path).append("type");
     };
 
+    auto buildSstandardAttributesCapData00 = [this] (std::filesystem::path path, const QString& prefix)
+    {
+        m_descriptor[prefix + "current_value"] = std::filesystem::path(path).append("current_value");
+        m_descriptor[prefix + "default_value"] = std::filesystem::path(path).append("default_value");
+        m_descriptor[prefix + "display_name"] = std::filesystem::path(path).append("display_name");
+        m_descriptor[prefix + "supported"] = std::filesystem::path(path).append("supported");
+        m_descriptor[prefix + "type"] = std::filesystem::path(path).append("type");
+    };
 
-    std::vector<QString> standardSttributes = {"apus_pptp_limit","cpu_clp_limit","cpu_ltp_limit","cpu_pl1_tau","cpu_pp_limit","cpu_stp_limit","cpu_tmp_limit",
+
+    std::vector<QString> standardSttributesCapData01 = {"apus_pptp_limit","cpu_clp_limit","cpu_ltp_limit","cpu_pl1_tau","cpu_pp_limit","cpu_stp_limit","cpu_tmp_limit",
                                                "gpu_configurable_tgp","gpu_power_boost","gpu_temperature_limit","gpu_to_cpu_dynamic_boost","gpu_total_onac"};
 
-
-    for (const auto& attr : standardSttributes)
+    for (const auto& attr : standardSttributesCapData01)
     {
         std::filesystem::path path = std::filesystem::path(m_path).append(attr.toStdString().c_str());
         if(std::filesystem::exists(path))
         {
             LOG_D(QString("Found Legion Other ").append(attr).append(" driver in path: ") + path.c_str());
 
-            buildSstandardAttributes(path,attr.toStdString().c_str());
+            buildSstandardAttributesCapData01(path,attr.toStdString().c_str());
         }
     };
 
-    m_descriptor["fan_full_speed"] = std::filesystem::path(m_path).append("other/fan_full_speed");
-    m_descriptor["god_mode_fnq_switchable"] = std::filesystem::path(m_path).append("other/god_mode_fnq_switchable");
 
+    std::vector<QString> standardSttributesCapData00 = {"fan_full_speed","god_mode_fnq_switchable"};
+    for (const auto& attr : standardSttributesCapData00)
+    {
+        std::filesystem::path path = std::filesystem::path(m_path).append(attr.toStdString().c_str());
+        if(std::filesystem::exists(path))
+        {
+            LOG_D(QString("Found Legion Other ").append(attr).append(" driver in path: ") + path.c_str());
+
+            buildSstandardAttributesCapData00(path,attr.toStdString().c_str());
+        }
+    };
 }
 
 void SysFsDriverLegionOther::handleKernelEvent(const KernelEvent::Event &event)

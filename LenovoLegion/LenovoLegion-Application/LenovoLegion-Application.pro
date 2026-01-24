@@ -13,7 +13,6 @@ SOURCES +=               \
         Application.cpp  \
         BateryStatus.cpp \
         CPUControl.cpp \
-        CPUDetails.cpp \
         CPUFrequency.cpp \
         CPUFrequencyControl.cpp \
         DataProvider.cpp \
@@ -56,7 +55,6 @@ HEADERS +=          \
         Application.h \
         BateryStatus.h \
         CPUControl.h \
-        CPUDetails.h \
         CPUFrequency.h \
         CPUFrequencyControl.h \
         DataProvider.h \
@@ -136,7 +134,6 @@ FORMS +=           \
     AboutWindow.ui \
     BateryStatus.ui \
     CPUControl.ui \
-    CPUDetails.ui \
     CPUFrequency.ui \
     CPUFrequencyControl.ui \
     FanControl.ui \

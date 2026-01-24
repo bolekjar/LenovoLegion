@@ -29,42 +29,60 @@ public:
                 const std::filesystem::path m_label;
             };
 
-            Legion(const SysFsDriver::DescriptorType& descriptor,const SysFsDriver::DescriptorsInVectorType& descriptorInVector) :
-                m_temp1Temp(descriptor["temp1"])        ,
-                m_temp2Temp(descriptor["temp2"])        ,
-                m_temp1Label(descriptor["temp1Label"])  ,
-                m_temp2Label(descriptor["temp2Label"])  ,
+
+            struct Temp {
+                const std::filesystem::path m_input;
+                const std::filesystem::path m_label;
+            };
+
+            Legion(const SysFsDriver::DescriptorsInVectorType& descriptorInVector) :
+
                 m_fans([&descriptorInVector](){
                     std::vector<Fan> fans;
 
                     for(const auto& desc : descriptorInVector)
                     {
-                        fans.emplace_back(Fan{
-                            .m_input    = desc.value("fan_input"),
-                            .m_min = desc.value("fan_min"),
-                            .m_max = desc.value("fan_max"),
-                            .m_label    = desc.value("fan_label")
-                        });
+                        if(desc.contains("fan_input"))
+                        {
+                            fans.emplace_back(Fan{
+                                .m_input    = desc.value("fan_input"),
+                                .m_min = desc.value("fan_min"),
+                                .m_max = desc.value("fan_max"),
+                                .m_label    = desc.value("fan_label")
+                            });
+                        }
                     }
 
                     return  fans;
+                }()),
+
+                m_temps([&descriptorInVector](){
+                    std::vector<Temp> temp;
+
+                    for(const auto& desc : descriptorInVector)
+                    {
+                        if(desc.contains("temp_input"))
+                        {
+                            temp.emplace_back(Temp{
+                                .m_input    = desc.value("temp_input"),
+                                .m_label    = desc.value("temp_label")
+                            });
+                        }
+                    }
+
+                    return  temp;
                 }())
+
             {}
 
-            const std::filesystem::path m_temp1Temp;
-            const std::filesystem::path m_temp2Temp;
-            const std::filesystem::path m_temp1Label;
-            const std::filesystem::path m_temp2Label;
-
             const std::vector<Fan> m_fans;
+            const std::vector<Temp> m_temps;
         };
 
 
-        explicit HWMon(const SysFsDriver::DescriptorType& descriptor,const SysFsDriver::DescriptorsInVectorType& descriptorInVector) :
-            m_legion(descriptor,descriptorInVector)
+        explicit HWMon(const SysFsDriver::DescriptorsInVectorType& descriptorInVector) :
+            m_legion(descriptorInVector)
         {}
-
-
         const Legion         m_legion;
     };
 

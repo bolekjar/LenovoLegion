@@ -39,7 +39,7 @@ SettingsLoaderPowerProfiles& SettingsLoaderPowerProfiles::loadPowerProfile(legio
     }
 
     if(m_settings.contains("custom_fnq_enabled")) {
-        profile.set_custom_fnq_enabled(m_settings.value("custom_fnq_enabled").toBool());
+        profile.mutable_custom_fnq_enabled()->set_current_value(m_settings.value("custom_fnq_enabled").toBool());
     }
 
     return *this;
@@ -53,7 +53,7 @@ SettingsSaverPowerProfiles::SettingsSaverPowerProfiles() :
 SettingsSaverPowerProfiles& SettingsSaverPowerProfiles::saverPowerProfile(const legion::messages::PowerProfile &profile)
 {
     m_settings.setValue("PowerProfile", static_cast<quint32>(profile.current_value()));
-    m_settings.setValue("custom_fnq_enabled", profile.custom_fnq_enabled());
+    m_settings.setValue("custom_fnq_enabled", profile.custom_fnq_enabled().current_value());
     return *this;
 }
 
@@ -206,7 +206,7 @@ SettingsLoaderFanOption::SettingsLoaderFanOption() :
 SettingsLoaderFanOption& SettingsLoaderFanOption::loadFanOption(legion::messages::FanOption &fanOption)
 {
     if (m_settings.contains("full_speed")) {
-        fanOption.set_full_speed(m_settings.value("full_speed").toBool());
+        fanOption.mutable_full_speed()->set_current_value(m_settings.value("full_speed").toBool());
     }
     return *this;
 }
@@ -218,7 +218,7 @@ SettingsSaverFanOption::SettingsSaverFanOption() :
 
 SettingsSaverFanOption& SettingsSaverFanOption::saveFanOption(const legion::messages::FanOption &fanOption)
 {
-    m_settings.setValue("full_speed", fanOption.full_speed());
+    m_settings.setValue("full_speed", fanOption.full_speed().current_value());
     return *this;
 }
 

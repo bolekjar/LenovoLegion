@@ -32,7 +32,7 @@ QByteArray SysFsDataProviderHWMon::serializeAndGetData() const
     LOG_T(__PRETTY_FUNCTION__);
 
     try {
-        SysFSDriverHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverHWMon::DRIVER_NAME),m_sysFsDriverManager->getDriverDescriptorsInVector(SysFSDriverHWMon::DRIVER_NAME));
+        SysFSDriverHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFSDriverHWMon::DRIVER_NAME));
 
         for(const auto& fanDesc : hwMon.m_legion.m_fans)
         {
@@ -44,11 +44,14 @@ QByteArray SysFsDataProviderHWMon::serializeAndGetData() const
             fan->set_fan_speed_max(getData(fanDesc.m_max).toUInt());
         }
 
-        hardwareMonitoring.mutable_legion()->set_temp1_label(getData(hwMon.m_legion.m_temp1Label).toStdString());
-        hardwareMonitoring.mutable_legion()->set_temp2_label(getData(hwMon.m_legion.m_temp2Label).toStdString());
+        for(const auto& tempDes : hwMon.m_legion.m_temps)
+        {
+            auto temp = hardwareMonitoring.mutable_legion()->add_temps();
 
-        hardwareMonitoring.mutable_legion()->set_temp1_temp(getData(hwMon.m_legion.m_temp1Temp).toUInt());
-        hardwareMonitoring.mutable_legion()->set_temp2_temp(getData(hwMon.m_legion.m_temp2Temp).toUInt());
+            temp->set_temp_label(getData(tempDes.m_label).toStdString());
+            temp->set_temp_value(getData(tempDes.m_input).toUInt());
+        }
+
     } catch(SysFsDriver::exception_T& ex)
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)

@@ -7,6 +7,7 @@
  */
 #include "legion-wmi-other.h"
 #include "legion-wmi-capdata01.h"
+#include "legion-wmi-capdata00.h"
 #include "legion-wmi-ddata.h"
 #include "legion-wmi-other-sysfs.h"
 #include "legion-wmi-gamezone.h"
@@ -121,23 +122,43 @@ int legion_wmi_other_notifier_call(void *data,enum gamezone_events_type gamezone
 static int legion_wmi_other_call(struct notifier_block *nb,unsigned long action, void *data)
 {
 	struct legion_wmi_other_priv *priv = container_of(nb, struct legion_wmi_other_priv, hwmon_nb);
-	struct wmi_method_args_32 args;
-	int ret = 0,retval  = 0;
-	int * value = data;
+	struct hwmon_capability*     value = data;
 
-	args.arg0 = ((enum CapabilityID)action)  & (~LEGION_WMI_MODE_ID_MASK);
-	args.arg1 = 0;
 
-	ret = legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,
-				    (unsigned char *)&args, sizeof(args),
-				    &retval);
-	if (ret) {
-		return ret;
+	switch(action)
+	{
+	case LEGION_WMI_FM_GET_CAPABILITY_VALUE:
+	{
+		struct wmi_method_args_32 args;
+
+		args.arg0 = value->capability_id  & (~LEGION_WMI_MODE_ID_MASK);
+		args.arg1 = 0;
+
+		if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,
+					    (unsigned char *)&args, sizeof(args),
+					    value->data))
+		{
+			return NOTIFY_BAD;
+		}
+
+		return NOTIFY_OK;
+	}
+	break;
+	case LEGION_WMI_FM_GET_CAPABILITY_DATA:
+	{
+		int ret = legion_wmi_cd00_get_data(priv->cd00_list,value->capability_id & (~LEGION_WMI_MODE_ID_MASK), value->data);
+		if (ret && ret != -EINVAL) {
+			return NOTIFY_BAD;
+		}
+		return NOTIFY_OK;
+	}
+	break;
+	default:
+		return NOTIFY_DONE;
+	break;
 	}
 
-	(*value) = retval;
-
-	return NOTIFY_OK;
+	return NOTIFY_DONE;
 }
 
 
@@ -323,6 +344,10 @@ static int legion_wmi_other_probe(struct wmi_device *wdev, const void *context)
 	init_completion(&priv->bind_complete);
 
 	dev_set_drvdata(&wdev->dev, priv);
+
+	component_match_add(&wdev->dev, &master_match, legion_wmi_cd00_match, NULL);
+	if (IS_ERR(master_match))
+		return PTR_ERR(master_match);
 
 	component_match_add(&wdev->dev, &master_match, legion_wmi_cd01_match, NULL);
 	if (IS_ERR(master_match))

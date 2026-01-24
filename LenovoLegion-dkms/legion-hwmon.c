@@ -12,6 +12,7 @@
 #include "legion-wmi-other.h"
 #include "legion-wmi-fm.h"
 #include "legion-wmi-gamezone.h"
+#include "legion-wmi-capdata00.h"
 
 #include <asm/errno.h>
 #include <linux/hwmon-sysfs.h>
@@ -22,7 +23,6 @@
 
 static BLOCKING_NOTIFIER_HEAD(legion_hwmon_chain_head);
 static BLOCKING_NOTIFIER_HEAD(legion_hwmon_fm_chain_head);
-static BLOCKING_NOTIFIER_HEAD(legion_hwmon_gz_chain_head);
 
 static int legion_hwmon_other_register_notifier_dev(struct notifier_block *nb)
 {
@@ -56,7 +56,22 @@ static int legion_hwmon_other_notifier_call(void *data,enum CapabilityID capabil
 {
 	int ret;
 
-	ret = blocking_notifier_call_chain(&legion_hwmon_chain_head,capability_id, data);
+	struct hwmon_capability req_data = {capability_id,data};
+
+	ret = blocking_notifier_call_chain(&legion_hwmon_chain_head,LEGION_WMI_FM_GET_CAPABILITY_VALUE, &req_data);
+	if ((ret & ~NOTIFY_STOP_MASK) != NOTIFY_OK)
+		return -EINVAL;
+
+	return 0;
+}
+
+static int legion_hwmon_other_data00_notifier_call(void *data,enum CapabilityID capability_id)
+{
+	int ret;
+
+	struct hwmon_capability req_data = {capability_id,data};
+
+	ret = blocking_notifier_call_chain(&legion_hwmon_chain_head,LEGION_WMI_FM_GET_CAPABILITY_DATA, &req_data);
 	if ((ret & ~NOTIFY_STOP_MASK) != NOTIFY_OK)
 		return -EINVAL;
 
@@ -105,71 +120,31 @@ static int legion_hwmon_fm_notifier_call(void *data,enum fm_events_type events_t
 	return 0;
 }
 
-
-
-static int legion_hwmon_gz_register_notifier_dev(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_register(&legion_hwmon_gz_chain_head, nb);
-}
-
-static int legion_hwmon_gz_unregister_notifier_dev(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_unregister(&legion_hwmon_gz_chain_head, nb);
-}
-
-static void legion_hwmon_gz_unregister_notifier(void *data)
-{
-	struct notifier_block *nb = data;
-
-	legion_hwmon_gz_unregister_notifier_dev(nb);
-}
-
-int legion_hwmon_gz_register_notifier(struct device *dev,struct notifier_block *nb)
-{
-	int ret;
-
-	ret = legion_hwmon_gz_register_notifier_dev(nb);
-	if (ret < 0)
-		return ret;
-
-	return devm_add_action_or_reset(dev, legion_hwmon_gz_unregister_notifier,nb);
-}
-
-static int legion_hwmon_gz_notifier_call(void *data,enum gamezone_events_type events_type)
-{
-	int ret;
-
-	ret = blocking_notifier_call_chain(&legion_hwmon_gz_chain_head,events_type, &data);
-	if ((ret & ~NOTIFY_STOP_MASK) != NOTIFY_OK)
-		return -EINVAL;
-
-	return 0;
-}
-
 enum SENSOR_CHANNELS {
+	SENSOR_SYS_TEMP_ID        = 0,
+    SENSOR_CPU_TEMP_ID        = 1,
+    SENSOR_GPU_TEMP_ID        = 2,
 
-    SENSOR_CPU_TEMP_ID        = 0,
-    SENSOR_GPU_TEMP_ID        = 1,
+    SENSOR_CPU_FAN_RPM_ID     = 3,
+    SENSOR_GPU_FAN_RPM_ID     = 4,
+	SENSOR_SYS_FAN_RPM_ID     = 5,
 
-    SENSOR_CPU_FAN_RPM_ID     = 2,
-    SENSOR_GPU_FAN_RPM_ID     = 3,
+    SENSOR_CPU_FAN_MIN_ID     = 6,
+    SENSOR_GPU_FAN_MIN_ID     = 7,
+	SENSOR_SYS_FAN_MIN_ID     = 8,
 
-    SENSOR_CPU_FAN_MIN_ID     = 4,
-    SENSOR_GPU_FAN_MIN_ID     = 5,
+    SENSOR_CPU_FAN_MAX_ID     = 9,
+    SENSOR_GPU_FAN_MAX_ID     = 10,
+	SENSOR_SYS_FAN_MAX_ID     = 11,
 
-    SENSOR_CPU_FAN_MAX_ID     = 6,
-    SENSOR_GPU_FAN_MAX_ID     = 7,
 
-	SENSOR_SYS_FAN_RPM_ID     = 8,
-	SENSOR_SYS_FAN_MIN_ID     = 9,
-	SENSOR_SYS_FAN_MAX_ID     = 10,
-
-    NOT_SUPPORTED             = 11
+    NOT_SUPPORTED             = 12
 };
 
 
 
 static const char * const sensors_names[] = {
+	[SENSOR_SYS_TEMP_ID]	       =	"SYS Temperature",
     [SENSOR_CPU_TEMP_ID]	       =	"CPU Temperature",
     [SENSOR_GPU_TEMP_ID]	       =	"GPU Temperature",
     [SENSOR_CPU_FAN_RPM_ID]	       =	"CPU Fan",
@@ -192,6 +167,18 @@ static ssize_t legion_read_cpu_temprature(u32 *temperature)
 static ssize_t legion_read_gpu_temprature(u32 *temperature)
 {
     ssize_t ret = legion_hwmon_other_notifier_call(temperature,GpuCurrentTemperature);
+	if (ret) {
+		return ret;
+	}
+
+    *temperature *= 1000;
+
+    return ret;
+}
+
+static ssize_t legion_read_sys_temprature(u32 *temperature)
+{
+    ssize_t ret = legion_hwmon_other_notifier_call(temperature,SysCurrentTemperature);
 	if (ret) {
 		return ret;
 	}
@@ -259,16 +246,17 @@ static ssize_t legion_read_not_supported(u32 *temperature)
 typedef ssize_t (*legion_read_hwmon)(u32 *temperature);
 
 legion_read_hwmon  sensors_handlers[] = {
+	[SENSOR_SYS_TEMP_ID]           =    legion_read_sys_temprature,
     [SENSOR_CPU_TEMP_ID]	       =	legion_read_cpu_temprature,
     [SENSOR_GPU_TEMP_ID]	       =	legion_read_gpu_temprature,
     [SENSOR_CPU_FAN_RPM_ID]	       =	legion_read_cpu_fan_speed,
     [SENSOR_GPU_FAN_RPM_ID]	       =    legion_read_gpu_fan_speed,
+	[SENSOR_SYS_FAN_RPM_ID]        = 	legion_read_sys_fan_speed,
     [SENSOR_CPU_FAN_MIN_ID]        =    legion_read_cpu_fan_min,
     [SENSOR_GPU_FAN_MIN_ID]        =    legion_read_gpu_fan_min,
+    [SENSOR_SYS_FAN_MIN_ID]        =    legion_read_sys_fan_min,
     [SENSOR_CPU_FAN_MAX_ID]        =    legion_read_cpu_fan_max,
     [SENSOR_GPU_FAN_MAX_ID]        =    legion_read_gpu_fan_max,
-	[SENSOR_SYS_FAN_RPM_ID]        = 	legion_read_sys_fan_speed,
-    [SENSOR_SYS_FAN_MIN_ID]        =    legion_read_sys_fan_min,
 	[SENSOR_SYS_FAN_MAX_ID]        =    legion_read_sys_fan_max,
     [NOT_SUPPORTED]                =    legion_read_not_supported
 };
@@ -302,12 +290,27 @@ static SENSOR_DEVICE_ATTR_RO(temp1_input, sensor, SENSOR_CPU_TEMP_ID);
 static SENSOR_DEVICE_ATTR_RO(temp1_label, sensor_label, SENSOR_CPU_TEMP_ID);
 static SENSOR_DEVICE_ATTR_RO(temp2_input, sensor, SENSOR_GPU_TEMP_ID);
 static SENSOR_DEVICE_ATTR_RO(temp2_label, sensor_label, SENSOR_GPU_TEMP_ID);
+static SENSOR_DEVICE_ATTR_RO(temp3_input, sensor, SENSOR_SYS_TEMP_ID);
+static SENSOR_DEVICE_ATTR_RO(temp3_label, sensor_label, SENSOR_SYS_TEMP_ID);
 
-static struct attribute *sensor_hwmon_attributes_temp[] = {
+/*static struct attribute *sensor_hwmon_attributes_temp[] = {
     &sensor_dev_attr_temp1_input.dev_attr.attr,
     &sensor_dev_attr_temp1_label.dev_attr.attr,
     &sensor_dev_attr_temp2_input.dev_attr.attr,
     &sensor_dev_attr_temp2_label.dev_attr.attr,
+    &sensor_dev_attr_temp3_input.dev_attr.attr,
+    &sensor_dev_attr_temp3_label.dev_attr.attr,
+    NULL
+};*/
+
+static struct attribute *sensor_hwmon_attributes_temp[] = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+
     NULL
 };
 
@@ -383,50 +386,134 @@ static const struct attribute_group legion_hwmon_sensor_group_fan_sys = {
     .attrs = sensor_hwmon_attributes_fan_sys
 };
 
-static const struct attribute_group *legion_hwmon_groups_v2[] = {
-    &legion_hwmon_sensor_group_temp,
-    &legion_hwmon_sensor_group_fan_cpu,
-    &legion_hwmon_sensor_group_fan_gpu,
-	&legion_hwmon_sensor_group_fan_sys,
+static const struct attribute_group *legion_hwmon_groups[] = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+
     NULL
 };
 
-static const struct attribute_group *legion_hwmon_groups_v1[] = {
-    &legion_hwmon_sensor_group_temp,
-    &legion_hwmon_sensor_group_fan_cpu,
-    &legion_hwmon_sensor_group_fan_gpu,
-    NULL
-};
+static void insert_hwmon_attributes_temp(struct attribute * attribute_input,struct attribute * attribute_label)
+{
+	for(int i = 0; i < ((sizeof(sensor_hwmon_attributes_temp) / sizeof(sensor_hwmon_attributes_temp[0])) - 1);++i)
+	{
+		if(sensor_hwmon_attributes_temp[i] == NULL)
+		{
+			sensor_hwmon_attributes_temp[i] = attribute_input;
+			sensor_hwmon_attributes_temp[i + 1] = attribute_label;
+			return;
+		}
+	}
+}
+
+static void insert_hwmon_attributes_group(const struct attribute_group * attribute_group)
+{
+	for(int i = 0; i < ((sizeof(legion_hwmon_groups) / sizeof(legion_hwmon_groups[0])) - 1);++i)
+	{
+		if(legion_hwmon_groups[i] == NULL)
+		{
+			legion_hwmon_groups[i] = attribute_group;
+			return;
+		}
+	}
+}
+
 
 int legion_hwmon_init(struct device *parent)
 {
 	struct legion_data* 		  data 					= dev_get_drvdata(parent);
-	int 						  smart_fan_version 	= 0;
+	struct legion_wmi_capdata00   cap_data00 			= {0,0,0};
+	int err 											= 0;
 
 	if (!data)
 	    return -ENODEV;
 
-	/*
-	 * Read SmartFan version
-	 */
-	int err = legion_hwmon_gz_notifier_call(&smart_fan_version,LEGION_WMI_GZ_GET_SMARTFAN_VERSION);
+	err = legion_hwmon_other_data00_notifier_call(&cap_data00,CpuCurrentTemperature);
 	if (err) {
 		return err;
 	}
-
-	if(smart_fan_version == 8)
+	if(cap_data00.id == CpuCurrentTemperature && cap_data00.supported)
 	{
-		data->hwmon_dev = hwmon_device_register_with_groups(parent, "legion", NULL,legion_hwmon_groups_v2);
-	    if (IS_ERR_OR_NULL(data->hwmon_dev)) {
-	        return PTR_ERR(data->hwmon_dev) ? : -ENODEV;
-	    }
+		insert_hwmon_attributes_temp(&sensor_dev_attr_temp1_input.dev_attr.attr,&sensor_dev_attr_temp1_label.dev_attr.attr);
 	}
-	else
+
+
+	cap_data00.id 			 = 0;
+	cap_data00.default_value = 0;
+	cap_data00.supported 	 = 0;
+	err = legion_hwmon_other_data00_notifier_call(&cap_data00,GpuCurrentTemperature);
+	if (err) {
+		return err;
+	}
+	if(cap_data00.id == GpuCurrentTemperature && cap_data00.supported)
 	{
-		data->hwmon_dev = hwmon_device_register_with_groups(parent, "legion", NULL,legion_hwmon_groups_v1);
-	    if (IS_ERR_OR_NULL(data->hwmon_dev)) {
-	        return PTR_ERR(data->hwmon_dev) ? : -ENODEV;
-	    }
+		insert_hwmon_attributes_temp(&sensor_dev_attr_temp2_input.dev_attr.attr,&sensor_dev_attr_temp2_label.dev_attr.attr);
+	}
+
+
+	cap_data00.id 			 = 0;
+	cap_data00.default_value = 0;
+	cap_data00.supported 	 = 0;
+	err = legion_hwmon_other_data00_notifier_call(&cap_data00,SysCurrentTemperature);
+	if (err) {
+		return err;
+	}
+	if(cap_data00.id == SysCurrentTemperature && cap_data00.supported)
+	{
+		insert_hwmon_attributes_temp(&sensor_dev_attr_temp3_input.dev_attr.attr,&sensor_dev_attr_temp3_label.dev_attr.attr);
+	}
+
+
+	if(sensor_hwmon_attributes_temp[0] != NULL)
+	{
+		insert_hwmon_attributes_group(&legion_hwmon_sensor_group_temp);
+	}
+
+
+
+	cap_data00.id 			 = 0;
+	cap_data00.default_value = 0;
+	cap_data00.supported 	 = 0;
+	err = legion_hwmon_other_data00_notifier_call(&cap_data00,CpuCurrentFanSpeed);
+	if (err) {
+		return err;
+	}
+	if(cap_data00.id == CpuCurrentFanSpeed && cap_data00.supported)
+	{
+		insert_hwmon_attributes_group(&legion_hwmon_sensor_group_fan_cpu);
+	}
+
+
+	cap_data00.id 			 = 0;
+	cap_data00.default_value = 0;
+	cap_data00.supported 	 = 0;
+	err = legion_hwmon_other_data00_notifier_call(&cap_data00,GpuCurrentFanSpeed);
+	if (err) {
+		return err;
+	}
+	if(cap_data00.id == GpuCurrentFanSpeed && cap_data00.supported)
+	{
+		insert_hwmon_attributes_group(&legion_hwmon_sensor_group_fan_gpu);
+	}
+
+
+	cap_data00.id 			 = 0;
+	cap_data00.default_value = 0;
+	cap_data00.supported 	 = 0;
+	err = legion_hwmon_other_data00_notifier_call(&cap_data00,SysCurrentFanSpeed);
+	if (err) {
+		return err;
+	}
+	if(cap_data00.id == SysCurrentFanSpeed && cap_data00.supported)
+	{
+		insert_hwmon_attributes_group(&legion_hwmon_sensor_group_fan_sys);
+	}
+
+	data->hwmon_dev = hwmon_device_register_with_groups(parent, "legion", NULL,legion_hwmon_groups);
+	if (IS_ERR_OR_NULL(data->hwmon_dev)) {
+		return PTR_ERR(data->hwmon_dev) ? : -ENODEV;
 	}
 
 	return 0;
@@ -439,5 +526,7 @@ void legion_hwmon_exit(struct device *parent)
 	if (!data)
 		return;
 
-	hwmon_device_unregister(data->hwmon_dev);
+	if(data->hwmon_dev) {
+		hwmon_device_unregister(data->hwmon_dev);
+	}
 }

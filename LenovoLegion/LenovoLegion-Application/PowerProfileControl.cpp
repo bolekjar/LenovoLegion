@@ -130,7 +130,12 @@ void PowerProfileControl::renderData()
         break;
     }
 
-    ui->checkBox_customFnQ->setChecked(m_powerProfileControlData.custom_fnq_enabled());
+    if(m_powerProfileControlData.mutable_custom_fnq_enabled()->supported())
+    {
+        ui->checkBox_customFnQ->setChecked(m_powerProfileControlData.mutable_custom_fnq_enabled()->current_value());
+        ui->checkBox_customFnQ->setDisabled(false);
+        ui->checkBox_customFnQ->blockSignals(false);
+    }
 
 
     ui->groupBox->setVisible(true);
@@ -140,11 +145,7 @@ void PowerProfileControl::renderData()
         ui->radioButton_PPPerformance->setVisible(true);
         ui->radioButton_PPExtreme->setVisible(true);
     }
-
-    ui->checkBox_customFnQ->setDisabled(false);
-
     ui->groupBox->blockSignals(false);
-    ui->checkBox_customFnQ->blockSignals(false);
 
     emit widgetEvent( LenovoLegionGui::WidgetMessage {
         .m_widget       = LenovoLegionGui::WidgetMessage::Widget::POWER_PROFILE_CONTROL,
@@ -156,7 +157,7 @@ void PowerProfileControl::on_checkBox_customFnQ_stateChanged(int arg1)
 {
     legion::messages::PowerProfile data;
 
-    data.set_custom_fnq_enabled(arg1 != 0);
+    data.mutable_custom_fnq_enabled()->set_current_value(arg1 != 0);
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderPowerProfile::dataType,data);
 

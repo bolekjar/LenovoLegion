@@ -165,7 +165,7 @@ void ProfileSettings::savePowerProfile(const legion::messages::PowerProfile& msg
     }
 
     if(msg.has_custom_fnq_enabled()) {
-        m_settings.setValue("PowerProfile/custom_fnq_enabled", msg.custom_fnq_enabled());
+        m_settings.setValue("PowerProfile/custom_fnq_enabled", msg.custom_fnq_enabled().current_value());
     }
 }
 
@@ -177,7 +177,7 @@ void ProfileSettings::loadPowerProfile(legion::messages::PowerProfile& msg)
     }
 
     if(m_settings.contains("PowerProfile/custom_fnq_enabled")) {
-        msg.set_custom_fnq_enabled(m_settings.value("PowerProfile/custom_fnq_enabled").toBool());
+        msg.mutable_custom_fnq_enabled()->set_current_value(m_settings.value("PowerProfile/custom_fnq_enabled").toBool());
     }
 }
 
@@ -284,14 +284,14 @@ void ProfileSettings::loadFanCurve(legion::messages::FanCurve& msg)
 void ProfileSettings::saveFanOption(const legion::messages::FanOption& msg)
 {
     if (msg.has_full_speed()) {
-        m_settings.setValue("FanOption/full_speed", msg.full_speed());
+        m_settings.setValue("FanOption/full_speed", msg.full_speed().current_value());
     }
 }
 
 void ProfileSettings::loadFanOption(legion::messages::FanOption& msg)
 {
     if (m_settings.contains("FanOption/full_speed")) {
-        msg.set_full_speed(m_settings.value("FanOption/full_speed").toBool());
+        msg.mutable_full_speed()->set_current_value(m_settings.value("FanOption/full_speed").toBool());
     }
 }
 

@@ -46,26 +46,28 @@
 
 #define MAX_FANCURVE_SIZE 10
 
-#define CPU_SENSOR_ID 3;
-#define GPU_SENSOR_ID 4;
-
-#define CPU_FAN_ID 0;
-#define GPU_FAN_ID 1;
-
 enum FanTableType
 {
-    Unknown		,
-    CPU			,
-    CPUSensor	,
-    GPU			,
-    GPU2
+    CPU			= 0,
+    CPUSensor	= 1,
+    GPU			= 2,
+    SYS			= 3
 };
 
 enum TableType
 {
-	FAN,
-	SENSOR
+	FAN			= 0,
+	SENSOR		= 1
 };
+
+
+static const int fan_table_id_v1[]  = {1,1,2,0};
+static const int fan_sensor_id_v1[] = {4,1,5,0};
+
+
+static const int fan_table_id_v2[]  = {1,0,2,4};
+static const int fan_sensor_id_v2[] = {1,0,5,4};
+
 
 static DEFINE_IDA(legion_wmi_fm_ida);
 
@@ -256,21 +258,21 @@ static struct kobj_attribute kobj_attr_fan_curve_current_value  		= __LEGION_WMI
  * Default Table values
  */
 
-__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v1,1,4,FAN);
-__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v1,1,4,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(cpusen_fan_default,cpusen_fan_default_v1,1,1,FAN);
-__LEGION_WMI_DEFAULT_TABLES(cpusen_sensor_default,cpusen_sensor_default_v1,1,1,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v1,2,5,FAN);
-__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v1,2,5,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v1,fan_table_id_v1[CPU],fan_sensor_id_v1[CPU],FAN);
+__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v1,fan_table_id_v1[CPU],fan_sensor_id_v1[CPU],SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(cpusen_fan_default,cpusen_fan_default_v1,fan_table_id_v1[CPUSensor],fan_sensor_id_v1[CPUSensor],FAN);
+__LEGION_WMI_DEFAULT_TABLES(cpusen_sensor_default,cpusen_sensor_default_v1,fan_table_id_v1[CPUSensor],fan_sensor_id_v1[CPUSensor],SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v1,fan_table_id_v1[GPU],fan_sensor_id_v1[GPU],FAN);
+__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v1,fan_table_id_v1[GPU],fan_sensor_id_v1[GPU],SENSOR);
 
 
 
-__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v2,1,1,FAN);
-__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v2,4,4,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v2,2,5,FAN);
-__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v2,2,5,SENSOR);
-__LEGION_WMI_DEFAULT_TABLES(sys_fan_default,sys_fan_default_v2,4,4,FAN);
-__LEGION_WMI_DEFAULT_TABLES(sys_sensor_default,sys_sensor_default_v2,1,1,SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(cpu_fan_default,cpu_fan_default_v2,fan_table_id_v2[CPU],fan_sensor_id_v2[CPU],FAN);
+__LEGION_WMI_DEFAULT_TABLES(cpu_sensor_default,cpu_sensor_default_v2,fan_table_id_v2[SYS],fan_sensor_id_v2[SYS],SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(gpu_fan_default,gpu_fan_default_v2,fan_table_id_v2[GPU],fan_sensor_id_v2[GPU],FAN);
+__LEGION_WMI_DEFAULT_TABLES(gpu_sensor_default,gpu_sensor_default_v2,fan_table_id_v2[GPU],fan_sensor_id_v2[GPU],SENSOR);
+__LEGION_WMI_DEFAULT_TABLES(sys_fan_default,sys_fan_default_v2,fan_table_id_v2[SYS],fan_sensor_id_v2[SYS],FAN);
+__LEGION_WMI_DEFAULT_TABLES(sys_sensor_default,sys_sensor_default_v2,fan_table_id_v2[CPU],fan_sensor_id_v2[CPU],SENSOR);
 
 
 
@@ -353,6 +355,7 @@ static int legion_wmi_fm_fw_attr_add(struct legion_wmi_fm_priv *priv)
 		goto err_unregister_fw_attr_dev;
 	}
 
+
 	if(priv->smart_fan_version == 8)
 	{
 		for (i = 0; i < ARRAY_SIZE(legion_sysfs_fm_group_v2) - 1; i++) {
@@ -364,15 +367,15 @@ static int legion_wmi_fm_fw_attr_add(struct legion_wmi_fm_priv *priv)
 
 		for(int i = 0;i < FAN_MAX; ++i)
 		{
-			if(priv->fan_max_speeds[i].fan_id == 1 && priv->fan_max_speeds[i].sensor_id == 1)
+			if(priv->fan_max_speeds[i].fan_id == fan_table_id_v2[CPU] && priv->fan_max_speeds[i].sensor_id == fan_sensor_id_v2[CPU])
 			{
 				priv->fan_cpu_max_speed = priv->fan_max_speeds[i].max_speed;
 			}
-			else if(priv->fan_max_speeds[i].fan_id == 2 && priv->fan_max_speeds[i].sensor_id == 5)
+			else if(priv->fan_max_speeds[i].fan_id == fan_table_id_v2[GPU] && priv->fan_max_speeds[i].sensor_id == fan_sensor_id_v2[GPU])
 			{
 				priv->fan_gpu_max_speed = priv->fan_max_speeds[i].max_speed;
 			}
-			else if(priv->fan_max_speeds[i].fan_id == 4 && priv->fan_max_speeds[i].sensor_id == 4)
+			else if(priv->fan_max_speeds[i].fan_id == fan_table_id_v2[SYS] && priv->fan_max_speeds[i].sensor_id == fan_sensor_id_v2[SYS])
 			{
 				priv->fan_sys_max_speed = priv->fan_max_speeds[i].max_speed;
 			}
@@ -389,11 +392,11 @@ static int legion_wmi_fm_fw_attr_add(struct legion_wmi_fm_priv *priv)
 
 		for(int i = 0;i < FAN_MAX; ++i)
 		{
-			if(priv->fan_max_speeds[i].fan_id == 1 && priv->fan_max_speeds[i].sensor_id == 4)
+			if(priv->fan_max_speeds[i].fan_id == fan_table_id_v1[CPU] && priv->fan_max_speeds[i].sensor_id == fan_sensor_id_v1[CPU])
 			{
 				priv->fan_cpu_max_speed = priv->fan_max_speeds[i].max_speed;
 			}
-			else if(priv->fan_max_speeds[i].fan_id == 2 && priv->fan_max_speeds[i].sensor_id == 5)
+			else if(priv->fan_max_speeds[i].fan_id == fan_table_id_v1[GPU] && priv->fan_max_speeds[i].sensor_id == fan_sensor_id_v1[GPU])
 			{
 				priv->fan_gpu_max_speed = priv->fan_max_speeds[i].max_speed;
 			}

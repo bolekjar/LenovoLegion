@@ -7,8 +7,13 @@
  */
 #pragma once
 
+#include "../LenovoLegion-PrepareBuild/ComputerInfo.pb.h"
+#include "../LenovoLegion-PrepareBuild/CPUTopology.pb.h"
+
+
 #include <QWidget>
 #include <QGroupBox>
+
 
 namespace Ui {
 class CPUFrequency;
@@ -25,6 +30,9 @@ namespace LenovoLegionGui {
     public:
         explicit CPUFrequency(QWidget *parent = nullptr);
         ~CPUFrequency();
+
+
+        void init(const legion::messages::CPUInfo& data,const legion::messages::CPUTopology& topology,int freqMin,int freqMax);
 
         void addPerformanceWidget(int i, QWidget *widget);
         void addEfficiencyWidget(int i,  QWidget *widget);

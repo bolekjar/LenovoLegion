@@ -46,7 +46,6 @@ void SysFSDriverHWMon::init()
             if(driverName.trimmed() == "legion")
             {
                 LOG_D(QString("Found Legion HWMon driver in path: ") + entry.path().c_str());
-
                 /*
                  * Fans
                  */
@@ -64,14 +63,20 @@ void SysFSDriverHWMon::init()
 
                         LOG_T(QString("Legion HWMon Fan(") + entry.path().filename().string().c_str() + ")driver file: " + entry.path().c_str());
                     }
+
+                    if(entry.is_regular_file() && entry.path().filename().string().find("temp") != std::string::npos)
+                    {
+                        qsizetype tempCount = 0;
+                        char name[64] = {0};
+
+                        sscanf(entry.path().filename().string().c_str(),"temp%llu_%s",&tempCount,name);
+
+                        m_descriptorsInVector.resize(std::max(tempCount,m_descriptorsInVector.size()));
+                        m_descriptorsInVector[tempCount - 1]["temp_" + QString(name)] = entry.path();
+
+                        LOG_T(QString("Legion HWMon Temp(") + entry.path().filename().string().c_str() + ")driver file: " + entry.path().c_str());
+                    }
                 }
-
-                m_descriptor["temp1"] = std::filesystem::path(entry).append("temp1_input");
-                m_descriptor["temp1Label"] = std::filesystem::path(entry).append("temp1_label");
-
-                m_descriptor["temp2"] = std::filesystem::path(entry).append("temp2_input");
-                m_descriptor["temp2Label"] = std::filesystem::path(entry).append("temp2_label");
-
             }
         }
 

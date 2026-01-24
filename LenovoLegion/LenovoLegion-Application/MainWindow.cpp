@@ -227,47 +227,53 @@ void MainWindow::daemonNotification(const legion::messages::Notification &msg)
                     // Adjust contrast
                     float contrast = 1.5;  //1.0 = no change, >1.0 = more contrast, <1.0 = less contrast
 
-                    QPixmap screenshot = screen->grabWindow(0).scaled(msg.rgb_controler_screen_shot_data_params().width(),msg.rgb_controler_screen_shot_data_params().height(), Qt::IgnoreAspectRatio);
+                    QPixmap screenshot = screen->grabWindow(0); // Wayland not supported
 
-
-                    std::vector<LenovoLegionDaemon::RGBColor> colors;
-
-
-                    colors.resize(msg.rgb_controler_screen_shot_data_params().width() * msg.rgb_controler_screen_shot_data_params().height());
-
-
-                    for(uint32_t y = 0; y < msg.rgb_controler_screen_shot_data_params().height(); y++)
+                    if(!screenshot.isNull())
                     {
-                        for (uint32_t x = 0; x < msg.rgb_controler_screen_shot_data_params().width(); ++x) {
+                        screenshot.scaled(msg.rgb_controler_screen_shot_data_params().width(),msg.rgb_controler_screen_shot_data_params().height(), Qt::IgnoreAspectRatio);
 
-                            QColor color = screenshot.toImage().pixelColor(x,y);
+                        if(!screenshot.isNull() && (screenshot.width() >= static_cast<qsizetype>(msg.rgb_controler_screen_shot_data_params().width())) && (screenshot.height() >= static_cast<qsizetype>(msg.rgb_controler_screen_shot_data_params().height())))
+                        {
+                            std::vector<LenovoLegionDaemon::RGBColor> colors;
 
-                            colors[x + (y * msg.rgb_controler_screen_shot_data_params().width())] = ToRGBColor(
-                                qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
-                                qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
-                                qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
-                                );
+
+                            colors.resize(msg.rgb_controler_screen_shot_data_params().width() * msg.rgb_controler_screen_shot_data_params().height());
+
+
+                            for(uint32_t y = 0; y < msg.rgb_controler_screen_shot_data_params().height(); y++)
+                            {
+                                for (uint32_t x = 0; x < msg.rgb_controler_screen_shot_data_params().width(); ++x) {
+
+                                    QColor color = screenshot.toImage().pixelColor(x,y);
+
+                                    colors[x + (y * msg.rgb_controler_screen_shot_data_params().width())] = ToRGBColor(
+                                        qBound(0, (int)((color.red()   - 128) * contrast + 128), 255),
+                                        qBound(0, (int)((color.green() - 128) * contrast + 128), 255),
+                                        qBound(0, (int)((color.blue()  - 128) * contrast + 128), 255)
+                                        );
+
+                                }
+                            }
+
+                            legion::messages::RGBControllerSetRequest response;
+
+                            response.set_set_request_flags( legion::messages::RGBControllerSetRequest::SET_REQUEST_CAPTURE_DATA);
+
+                            for(const auto& color : colors)
+                            {
+                                response.add_capture_data_colors(color);
+                            }
+
+                            try {
+                                m_dataProviderManager->dataProvider()->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,response);
+                            } catch (const ProtocolProcessorBase::exception_T &ex) {
+                                LOG_W(QString::asprintf("MainWindow: Caught exception while sending screenshot data to daemon: %s", ex.what()));
+                            }
 
                         }
                     }
-
-                    legion::messages::RGBControllerSetRequest response;
-
-                    response.set_set_request_flags( legion::messages::RGBControllerSetRequest::SET_REQUEST_CAPTURE_DATA);
-
-                    for(const auto& color : colors)
-                    {
-                        LOG_T(QString::asprintf("MainWindow: Adding color RGB:%X",color));
-                        response.add_capture_data_colors(color);
-                    }
-
-                    try {
-                        m_dataProviderManager->dataProvider()->setDataMessage(LenovoLegionDaemon::DataProviderRGBController::dataType,response);
-                    } catch (const ProtocolProcessorBase::exception_T &ex) {
-                        LOG_W(QString::asprintf("MainWindow: Caught exception while sending screenshot data to daemon: %s", ex.what()));
-                    }
             }
-
         }
         return;
     }

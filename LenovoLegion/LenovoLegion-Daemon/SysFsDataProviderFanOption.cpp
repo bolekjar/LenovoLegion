@@ -33,7 +33,9 @@ QByteArray SysFsDataProviderFanOption::serializeAndGetData() const
     try {
         SysFsDriverLegionOther::Other other(m_sysFsDriverManager->getDriverDesriptor(SysFsDriverLegionOther::DRIVER_NAME));
 
-        fanOptionMsg.set_full_speed(getData(other.m_fan_full_speed).toUShort() == 1);
+        fanOptionMsg.mutable_full_speed()->set_supported(getData(other.m_fan_full_speed.m_supported).toUShort() > 0);
+        fanOptionMsg.mutable_full_speed()->set_default_value(getData(other.m_fan_full_speed.m_default_value).toUShort() == 1);
+        fanOptionMsg.mutable_full_speed()->set_current_value(getData(other.m_fan_full_speed.m_current_value).toUShort() == 1);
     } catch(SysFsDriver::exception_T& ex)
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)
@@ -69,7 +71,11 @@ QByteArray SysFsDataProviderFanOption::deserializeAndSetData(const QByteArray &d
     }
 
     if(fanOptionMsg.has_full_speed()) {
-        setData(other.m_fan_full_speed,fanOptionMsg.full_speed());
+
+        if(getData(other.m_fan_full_speed.m_supported).toUShort() > 0)
+        {
+            setData(other.m_fan_full_speed.m_current_value,fanOptionMsg.full_speed().current_value());
+        }
     }
 
     return {};

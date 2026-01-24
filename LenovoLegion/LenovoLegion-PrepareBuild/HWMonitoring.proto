@@ -11,13 +11,15 @@ message HardwareMonitor
         string fan_label       = 4;
     }
 
-    message Legion {
-        uint32 temp1_temp       = 1;
-        uint32 temp2_temp       = 2;
-        string temp1_label      = 3;
-        string temp2_label      = 4;
+    message Temp {
+        uint32 temp_value      = 1;
+        string temp_label      = 2;
+    }
 
-        repeated Fan fans       = 5;
+
+    message Legion {
+        repeated Temp temps     = 1;
+        repeated Fan fans       = 2;
     }
 
     message IntelPowerRapl {

@@ -9,7 +9,6 @@
 #include "ui_HWMonitoring.h"
 
 #include "GPUDetails.h"
-#include "CPUDetails.h"
 #include "Utils.h"
 #include "DataProvider.h"
 
@@ -34,7 +33,6 @@ HWMonitoring::HWMonitoring(DataProvider *dataProvider,QWidget *parent)
     , m_dataProvider(dataProvider)
     , m_windowFreqInfoByCore(new CPUFrequency(nullptr))
     , m_windowGPUDetails(new GPUDetails(nullptr))
-    , m_windowCPUDetails(new CPUDetails(nullptr))
 {
     ui->setupUi(this);
 
@@ -61,9 +59,8 @@ HWMonitoring::HWMonitoring(DataProvider *dataProvider,QWidget *parent)
 
     m_windowGPUDetails->init(m_nvidiaNvmlData);
 
-    ui->groupBox_CPU->setTitle(QString("CPU (%1)").arg(m_cpuInfoData.cpu_model()));
-    ui->widget_CPUTemp->init("Temp [%1 °C]",30,100,30,100);
-    ui->widget_CPUPower->init("Power [%1 W]",0,250,0,250);
+    //ui->groupBox_CPU->setTitle(QString("CPU (%1), GPU (%2)").arg(m_cpuInfoData.cpu_model()).arg(m_nvidiaNvmlData.name()));
+    ui->widget_CPUPower->init("CPU Power [%1 W]",0,250,0,250);
 
     quint32 pMin = std::numeric_limits<quint32>::max();
     quint32 pMax = std::numeric_limits<quint32>::min();
@@ -102,11 +99,9 @@ HWMonitoring::HWMonitoring(DataProvider *dataProvider,QWidget *parent)
         ui->widget_CPUAvgFreq->init("Avg [%1 MHz]",std::min(pMin,eMin),std::max(pMax,eMax),std::min(pScaleMin,eScaleMin),std::max(pScaleMax,eScaleMax));
     }
 
-    m_windowCPUDetails->init(m_cpuInfoData,m_cpuTopology,std::min(pScaleMin,eScaleMin),std::max(pScaleMax,eScaleMax));
+    m_windowFreqInfoByCore->init(m_cpuInfoData,m_cpuTopology,std::min(pScaleMin,eScaleMin),std::max(pScaleMax,eScaleMax));
 
-    ui->groupBox_GPU->setTitle(QString("GPU (%1)").arg(m_nvidiaNvmlData.name()));
-    ui->widget_GPUTemp->init("Temp [%1 °C]",30,100,30,100);
-    ui->widget_GPUClock->init("Power [%1 W]",0,m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000,0,m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000);
+    ui->widget_GPUPower->init("GPU Power [%1 W]",0,m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000,0,m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000);
 
     /*
      * Fans
@@ -118,9 +113,19 @@ HWMonitoring::HWMonitoring(DataProvider *dataProvider,QWidget *parent)
         ui->horizontalLayout_Fans->addWidget(fanWidget);
     }
 
+    /*
+     * Temps
+     */
+    for (int i = 0; i < m_hwMonitoringData.legion().temps_size(); ++i)
+    {
+        auto tempWidget = new HWMonitor(this);
+        tempWidget->init(m_hwMonitoringData.legion().temps().at(i).temp_label().data() + QString(" Temp [%1 °C]"),30,110,30,110);
+        ui->horizontalLayout_Temp->addWidget(tempWidget);
+    }
+
+
     connect(m_windowFreqInfoByCore,&CPUFrequency::closed,this,&HWMonitoring::freqInfoByCoreClosed);
     connect(m_windowGPUDetails,&GPUDetails::closed,this,&HWMonitoring::gpuDetailsClosed);
-    connect(m_windowCPUDetails,&CPUDetails::closed,this,&HWMonitoring::cpuDetailsClosed);
 
 
     m_timerId = startTimer(TIMER_EVENT_IN_MS);
@@ -133,12 +138,16 @@ void HWMonitoring::refresh()
         const legion::messages::NvidiaNvml      nvidiaData  = m_dataProvider->getDataMessage<legion::messages::NvidiaNvml>(LenovoLegionDaemon::DataProviderNvidiaNvml::dataType);
 
 
-        /*
-         * HW monitoring
-         */
-        ui->widget_CPUTemp->refresh(data.legion().temp1_temp() / 1000,0,10,' ',QString("CPU Temperature: %1 °C\n"\
-                                                                                       "CPU Temperature min: 30 °C\n"\
-                                                                                       "CPU Temperature max: 100 °C\n").arg(data.legion().temp1_temp() / 1000));
+        for (int i = 0; i < m_hwMonitoringData.legion().temps_size(); ++i)
+        {
+            dynamic_cast<HWMonitor*>(ui->horizontalLayout_Temp->itemAt(i)->widget())->refresh(data.legion().temps().at(i).temp_value() / 1000,
+                                                                                               0,
+                                                                                               10,
+                                                                                               ' ',
+                                                                                               QString("%1: %2 °C\n"\
+                                                                                                       "%1 min: 30 °C\n"\
+                                                                                                       "%1 max: 100 °C\n").arg(data.legion().temps().at(i).temp_label().data()).arg(data.legion().temps().at(i).temp_value() / 1000));
+        }
 
         {
 
@@ -148,27 +157,27 @@ void HWMonitoring::refresh()
             {
                 ui->widget_CPUPower->refresh((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff ,
                                              0,10,' ',
-                                             QString("CPU Power : %1 W\n"
-                                                     "CPU Power min: 0 W\n"
-                                                     "CPU Power max: 250 W\n").arg((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff));
+                                             QString("%1\n"
+                                                     "Power : %2 W\n"
+                                                     "Power min: 0 W\n"
+                                                     "Power max: 250 W\n").arg(m_cpuInfoData.cpu_model()).arg((data.intel_power().power_cap_cpu_energy() - m_hwMonitoringData.intel_power().power_cap_cpu_energy())/diff));
             }
             else
             {
                 ui->widget_CPUPower->refresh(ui->widget_CPUPower->getValue() ,
                                              0,10,' ',
-                                             QString("CPU Power : %1 W\n"
-                                                     "CPU Power min: 0 W\n"
-                                                     "CPU Power max: 250 W\n").arg(ui->widget_CPUPower->getValue()));
+                                             QString("%1\n"
+                                                     "Power : %2 W\n"
+                                                     "Power min: 0 W\n"
+                                                     "Power max: 250 W\n").arg(m_cpuInfoData.cpu_model()).arg(ui->widget_CPUPower->getValue()));
             }
         }
 
-        ui->widget_GPUTemp->refresh(data.legion().temp2_temp() / 1000,0,10,' ',QString("GPU Temperature: %1 °C\n"\
-                                                                                           "GPU Temperature min: 30 °C\n"\
-                                                                                           "GPU Temperature max: 100 °C\n").arg(data.legion().temp2_temp() / 1000));
 
-        ui->widget_GPUClock->refresh(nvidiaData.hardware_monitor().power().value() / 1000,0,10,' ',QString("Power: %1 W\n"\
-                                                                                                         "Power min: %2 W\n"\
-                                                                                                         "Power max: %3 W\n").arg(nvidiaData.hardware_monitor().power().value() / 1000)
+        ui->widget_GPUPower->refresh(nvidiaData.hardware_monitor().power().value() / 1000,0,10,' ',QString("%1\n"\
+                                                                                                           "Power: %2 W\n"\
+                                                                                                           "Power min: %3 W\n"\
+                                                                                                           "Power max: %4 W").arg(nvidiaData.name()).arg(nvidiaData.hardware_monitor().power().value() / 1000)
                                                                                                                              .arg(nvidiaData.hardware_monitor().power().min_value() / 1000)
                                                                                                                              .arg(m_nvidiaNvmlData.hardware_monitor().power().max_value() / 1000));
 
@@ -303,7 +312,6 @@ HWMonitoring::~HWMonitoring()
 
     delete m_windowFreqInfoByCore;
     delete m_windowGPUDetails;
-    delete m_windowCPUDetails;
     delete ui;
 }
 
@@ -322,7 +330,7 @@ void HWMonitoring::forAllCpuEfficientCores(const std::function<bool (const int)>
     Utils::ProtoBuf::forAllCpuTopologyRange(func,m_cpuTopology.active_cpus_atom());
 }
 
-void HWMonitoring::on_groupBox_17_clicked(bool checked)
+void HWMonitoring::on_groupBox_CPU_Per_Thr_clicked(bool checked)
 {
     if(m_windowFreqInfoByCore->isHidden() && checked)
     {
@@ -336,20 +344,16 @@ void HWMonitoring::on_groupBox_17_clicked(bool checked)
 
 void HWMonitoring::freqInfoByCoreClosed()
 {
-    ui->groupBox_17->setChecked(false);
+    ui->groupBox_CPU_Per_Thr->setChecked(false);
 }
 
 void HWMonitoring::gpuDetailsClosed()
 {
-    ui->groupBox_GPU->setChecked(false);
+    ui->groupBox_Power->setChecked(false);
 }
 
-void HWMonitoring::cpuDetailsClosed()
-{
-    ui->groupBox_CPU->setChecked(false);
-}
 
-void HWMonitoring::on_groupBox_GPU_clicked(bool checked)
+void HWMonitoring::on_groupBox_Power_clicked(bool checked)
 {
     if(m_windowGPUDetails->isHidden() && checked)
     {
@@ -360,21 +364,6 @@ void HWMonitoring::on_groupBox_GPU_clicked(bool checked)
         m_windowGPUDetails->hide();
     }
 }
-
-void HWMonitoring::on_groupBox_CPU_clicked(bool checked)
-{
-    if(m_windowCPUDetails->isHidden() && checked)
-    {
-        m_windowCPUDetails->show();
-    }
-    else
-    {
-        m_windowCPUDetails->hide();
-    }
-}
-
-
-
 
 
 }

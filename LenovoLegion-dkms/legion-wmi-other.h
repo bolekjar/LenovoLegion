@@ -98,12 +98,14 @@ enum CapabilityID
 	CpuCurrentFanSpeed 									= 0x04030001,
     GpuCurrentFanSpeed 									= 0x04030002,
 	SysCurrentFanSpeed 									= 0x04030004,
+	SysCurrentTemperature 								= 0x05010000,
     CpuCurrentTemperature 								= 0x05040000,
     GpuCurrentTemperature 								= 0x05050000
 };
 
 
 struct legion_wmi_other_priv {
+	struct legion_wmi_cd00_list 	*cd00_list; /* only valid after capdata01 bind */
 	struct legion_wmi_cd01_list 	*cd01_list; /* only valid after capdata01 bind */
     struct legion_wmi_dd_list 		*dd_list;   /* only valid after ddata bind */
 	struct wmi_device 				*wdev;
