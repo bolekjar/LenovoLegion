@@ -53,15 +53,9 @@ private:
 
     void registerDataProviders();
 
-signals:
-
-    void dataRequested(const quint8 forDataTypeProvider,const std::vector<std::string>& params);
-
 public slots:
 
     void kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent& event);
-
-    void onDataRequested(const quint8 forDataTypeProvider,const std::vector<std::string>& params);
 
 private:
 

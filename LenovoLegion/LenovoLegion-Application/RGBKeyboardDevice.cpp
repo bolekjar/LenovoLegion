@@ -21,19 +21,21 @@
 
 namespace LenovoLegionGui {
 
-
 QString RGBKeyboardDevice::ModeDescription(const LenovoLegionDaemon::mode& m)
 {
     static const std::unordered_map<std::string, QString> descriptions =
     {
-        {"Direct",          tr("Set individual LEDs to static colors.  Safe for use with software-driven effects.")                     },
-        {"Custom",          tr("Set individual LEDs to static colors.  Not safe for use with software-driven effects.")                 },
-        {"Static",          tr("Sets the entire device or a zone to a single color.")                                                   },
-        {"Breathing",       tr("Gradually fades between fully off and fully on.")                                                       },
-        {"Flashing",        tr("Abruptly changes between fully off and fully on.")                                                      },
-        {"Spectrum Cycle",  tr("Gradually cycles through the entire color spectrum.  All lights on the device are the same color.")     },
-        {"Rainbow Wave",    tr("Gradually cycles through the entire color spectrum.  Produces a rainbow pattern that moves.")           },
-        {"Reactive",        tr("Flashes lights when keys or buttons are pressed.")                                                      },
+        {"Screw Rainbow",           tr("Screw Rainbow effect.")},
+        {"Rainbow Wave",            tr("Rainbow Wave effect.")},
+        {"Color Change",            tr("Color Change effect.")},
+        {"Color Pulse",             tr("Color Pulse effect.")},
+        {"Color Wave",              tr("Color Wave effect.")},
+        {"Smooth",                  tr("Smooth effect.")},
+        {"Rainbow Wave",            tr("Rainbow Wave effect.")},
+        {"Rain",                    tr("Rain Flashes effect.")},
+        {"Ripple",                  tr("Ripple Flashes effect.")},
+        {"Always",                  tr("Always Flashes effect.")},
+        {"Type Lighting",           tr("Type Lighting effect.")}
     };
 
     /*-----------------------------------------------------------------*\

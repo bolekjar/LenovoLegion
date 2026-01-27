@@ -121,7 +121,7 @@ LenovoRGBControllerC197::LenovoRGBControllerC197(LenovoUSBController *controller
                              {0xFFF500, 0xFFF500, 0xFFF500, 0xFFF500},
                              },
                              {
-                               "Audio Bounce Lighting", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
+                               "Audio Bounce Lighting (Not working)", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
                                MODE_AUDIO_BOUNCE_LIGHTING,
                                MODE_FLAG_HAS_ALL_LED_SELECTION,
                                0,
@@ -134,7 +134,7 @@ LenovoRGBControllerC197::LenovoRGBControllerC197(LenovoUSBController *controller
                                {}
                              },
                              {
-                               "Audio Ripple Lighting", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
+                               "Audio Ripple Lighting (Not working)", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
                                MODE_AUDIO_RIPPLE_LIGHTING,
                                0,
                                0,
@@ -160,7 +160,7 @@ LenovoRGBControllerC197::LenovoRGBControllerC197(LenovoUSBController *controller
                              {},
                              },
                             {
-                             "Type Lighting",
+                             "Type Lighting ",
                              MODE_TYPE_LIGHTING,
                              MODE_FLAG_HAS_SPEED | MODE_FLAG_HAS_MODE_SPECIFIC_COLOR | MODE_FLAG_HAS_RANDOM_COLOR | MODE_FLAG_HAS_AUTOMATIC_SAVE | MODE_FLAG_HAS_ALL_KB_LED_SELECTION,
                              SPEED_MIN,
@@ -173,7 +173,7 @@ LenovoRGBControllerC197::LenovoRGBControllerC197(LenovoUSBController *controller
                              {0xFFF500, 0xFFF500, 0xFFF500, 0xFFF500},
                              },
                              {
-                            "Aura",
+                            "Aura (Not working)", // Not working need implementation
                             MODE_LEGION_AURASYNC,
                             MODE_FLAG_HAS_DIRECT_CONTROL | MODE_FLAG_HAS_ALL_LED_SELECTION,
                             0,

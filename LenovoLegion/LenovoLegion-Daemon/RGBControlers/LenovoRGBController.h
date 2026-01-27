@@ -95,8 +95,6 @@ public:
 
     std::vector<RGBColor> DeviceGetState()     const   override;
 
-    virtual CaptureDataRequestParams DeviceGetCaptureDataRequestParams() const  override;
-
 private:
     void readActiveProfileSettings();
 

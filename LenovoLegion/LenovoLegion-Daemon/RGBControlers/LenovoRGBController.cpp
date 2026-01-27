@@ -33,12 +33,7 @@ LenovoRGBController::LenovoRGBController(LenovoUSBController* controller_ptr,
                                          ) :
     RGBController( profiles,britnesses,name,vendor,description,serial,location,type,modes,zones,maxEffects),
     controller(controller_ptr)
-{
-    /*
-     * Start timer for captureData rendering if needed
-     */
-    m_captureData.resize(controller_ptr->getKeyMap().m_width * controller_ptr->getKeyMap().m_height,RGBColor(0x000000)); // Initialize with black
-}
+{}
 
 LenovoRGBController::~LenovoRGBController()
 {}
@@ -139,12 +134,6 @@ std::vector<RGBColor> LenovoRGBController::DeviceGetState() const
     }
 
     return colors;
-}
-
-RGBController::CaptureDataRequestParams LenovoRGBController::DeviceGetCaptureDataRequestParams() const
-{
-    return CaptureDataRequestParams {.m_height = controller->getKeyMap().m_height,
-                                     .m_width = controller->getKeyMap().m_width};
 }
 
 void LenovoRGBController::DeviceRefresh(int expectedProfile)

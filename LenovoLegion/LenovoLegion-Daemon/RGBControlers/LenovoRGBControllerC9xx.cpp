@@ -133,7 +133,7 @@ LenovoRGBControllerC9xx::LenovoRGBControllerC9xx(LenovoUSBControllerC9xx *contro
                                {0xFFF500, 0xFFF500, 0xFFF500, 0xFFF500},
                                },
                                {
-                                "Audio Bounce Lighting", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
+                                "Audio Bounce Lighting (Not Supported)", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
                                 MODE_AUDIO_BOUNCE_LIGHTING,
                                 MODE_FLAG_HAS_ALL_LED_SELECTION,
                                 0,
@@ -146,17 +146,17 @@ LenovoRGBControllerC9xx::LenovoRGBControllerC9xx(LenovoUSBControllerC9xx *contro
                                 {}
                                 },
                                 {
-                                    "Audio Ripple Lighting", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
-                                    MODE_AUDIO_RIPPLE_LIGHTING,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    MODE_COLORS_NONE,
-                                    {},
-                                    {}
+                                "Audio Ripple Lighting (Not Supported)", // Not working in Linux due to missing implementation in sound driver, can be selected but no effect - is supported by Windows Lenovo Vantage and RGB Controler then must be present otherwise error is shown
+                                MODE_AUDIO_RIPPLE_LIGHTING,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                MODE_COLORS_NONE,
+                                {},
+                                {}
                                 },
                               {
                                "Always",
@@ -185,7 +185,7 @@ LenovoRGBControllerC9xx::LenovoRGBControllerC9xx(LenovoUSBControllerC9xx *contro
                                {0xFFF500, 0xFFF500, 0xFFF500, 0xFFF500},
                                },
                               {
-                               "Aura",
+                               "Aura (Not Supported)", // Not working need implementation
                                MODE_LEGION_AURASYNC,
                                MODE_FLAG_HAS_DIRECT_CONTROL | MODE_FLAG_HAS_ALL_LED_SELECTION,
                                0,
@@ -309,8 +309,7 @@ LenovoRGBControllerC9xx::LenovoRGBControllerC9xx(LenovoUSBControllerC9xx *contro
                           20 /* max effects */
 
 
-                          ),
-    m_timerId(-1)
+                          )
 {
     /*
      * Read active profile settings
@@ -318,53 +317,4 @@ LenovoRGBControllerC9xx::LenovoRGBControllerC9xx(LenovoUSBControllerC9xx *contro
     DeviceRefresh();
 }
 
-void LenovoRGBControllerC9xx::DeviceUpdateEfects()
-{
-    LenovoRGBController::DeviceUpdateEfects();
-
-    startStopDirectControlModeTimerIfNeeded();
-}
-
-void LenovoRGBControllerC9xx::DeviceRefreshEffects()
-{
-    LenovoRGBController::DeviceRefreshEffects();
-
-    startStopDirectControlModeTimerIfNeeded();
-}
-
-void LenovoRGBControllerC9xx::timerEvent(QTimerEvent *)
-{
-    LOG_T(QString(__PRETTY_FUNCTION__) + ":  LenovoRGBController::timerEvent: Updating direct LED colors");
-
-    dynamic_cast<LenovoUSBControllerC9xx*>(controller.get())->setLedsDirect(m_captureData);
-
-    emit dataRequested({NotifyGetScreenShotRequestParamName.data()});
-}
-
-void LenovoRGBControllerC9xx::startStopDirectControlModeTimerIfNeeded()
-{
-    if(std::find_if(m_effects.begin(),m_effects.end(),[](const led_group_effect& effect){
-            return effect.m_mode == MODE_LEGION_AURASYNC;
-        }) != m_effects.end())
-    {
-        if(m_timerId == -1)
-        {
-            LOG_D(QString(__PRETTY_FUNCTION__) + ":  Starting timer for direct control mode");
-
-            dynamic_cast<LenovoUSBControllerC9xx*>(controller.get())->setLedsDirectOn(toControlerProfile(m_profiles.active));
-            m_timerId = startTimer(TIMER_INTERVAL_DIRECT_MODE_UPDATE_MS);
-        }
-    }
-    else
-    {
-        if(m_timerId != -1)
-        {
-            LOG_D(QString(__PRETTY_FUNCTION__) + ":  Stopping timer for direct control mode");
-
-            killTimer(m_timerId);
-            m_timerId = -1;
-            dynamic_cast<LenovoUSBControllerC9xx*>(controller.get())->setLedsDirectOff(toControlerProfile(m_profiles.active));
-        }
-    }
-}
 }

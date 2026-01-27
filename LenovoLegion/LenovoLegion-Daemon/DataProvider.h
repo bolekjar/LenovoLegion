@@ -41,7 +41,6 @@ public:
     virtual QByteArray serializeAndGetData()                                                                                             const {return {};};
     virtual QByteArray serializeAndGetData(const QByteArray&)                                                                            const {return {};};
     virtual QByteArray deserializeAndSetData(const QByteArray&)                                                                                {return {};};
-    virtual QByteArray serializeNotification(const quint8 ,const std::vector<std::string>& )                                             const {return {};};
 
     virtual void init()                 {};
     virtual void clean()                {};
@@ -49,10 +48,6 @@ public:
     virtual void kernelEventHandler(const LenovoLegionDaemon::SysFsDriver::SubsystemEvent &)   {};
 
 private:
-
-signals:
-
-    void dataRequested(const quint8 forDataTypeProvider,const std::vector<std::string>& params);
 
 public:
 

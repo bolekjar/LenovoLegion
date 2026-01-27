@@ -32,8 +32,6 @@ void DataProviderManager::addDataProvider(DataProvider *driver)
     {
         THROW_EXCEPTION(exception_T,DATA_PROVIDER_ALREADY_LOADED,"Driver already loaded !");
     };
-
-    connect(driver,&DataProvider::dataRequested,this,&DataProviderManager::onDataRequested);
 }
 
 void DataProviderManager::initDataProviders()
@@ -48,7 +46,6 @@ void DataProviderManager::cleanDataProviders()
 {
     for(auto& driver : m_dataProviders)
     {
-        disconnect(driver.second,&DataProvider::dataRequested,this,&DataProviderManager::onDataRequested);
         driver.second->clean();
     }
 
@@ -79,11 +76,6 @@ void DataProviderManager::kernelEventHandler(const SysFsDriver::SubsystemEvent &
     {
         driver.second->kernelEventHandler(event);
     }
-}
-
-void DataProviderManager::onDataRequested(const quint8 forDataTypeProvider, const std::vector<std::string> &params)
-{
-    emit dataRequested(forDataTypeProvider,params);
 }
 
 }

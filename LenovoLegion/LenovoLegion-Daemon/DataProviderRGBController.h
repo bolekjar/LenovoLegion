@@ -60,7 +60,6 @@ public:
 
     virtual QByteArray serializeAndGetData(const QByteArray&)                                const override;
     virtual QByteArray deserializeAndSetData(const QByteArray&)                                    override;
-    virtual QByteArray serializeNotification(const quint8 ,const std::vector<std::string>& ) const override;
 
     virtual void init() override;
     virtual void clean() override;
@@ -74,10 +73,6 @@ public:
                                   uint16_t                  vid,
                                   uint16_t                  pid,
                                   uint16_t                  pidMask);
-
-public slots:
-
-    void onDataRequested(const std::vector<std::string>& params);
 
 private:
 

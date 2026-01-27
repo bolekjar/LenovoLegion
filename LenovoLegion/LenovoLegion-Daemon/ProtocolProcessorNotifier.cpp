@@ -184,31 +184,4 @@ void ProtocolProcessorNotifier::moduleSubsystemHandler(const LenovoLegionDaemon:
                                                            },data));
     }
 }
-
-void ProtocolProcessorNotifier::dataRequestedHandler(const quint8 forDataTypeProvider, const std::vector<std::string> &params)
-{
-    LOG_T("ProtocolProcessorNotifier: dataRequestedHandler forDataTypeProvider=" + QString::number(forDataTypeProvider) + ", params size=" + QString::number(params.size()));
-
-    if(!isRunning())
-    {
-        LOG_T("ProtocolProcessorNotifier is not running, ignoring module subsystem event !");
-        return;
-    }
-
-    m_dataProviderManger->forEachDataProviderDo([&forDataTypeProvider,&params,this](const DataProvider& dataProvider){
-        QByteArray data = dataProvider.serializeNotification(forDataTypeProvider,params);
-
-        if(data.size() > 0)
-        {
-            LOG_T("ProtocolProcessorNotifier: dataRequestedHandler sending data for data type provider=" + QString::number(forDataTypeProvider));
-
-            m_clientSocket->write(ProtocolParser::parseMessage(MessageHeader{
-                                                                   .m_type         = MessageHeader::NOTIFICATION,
-                                                                   .m_dataType     = m_dataType,
-                                                                   .m_dataLength   = data.length()
-                                                               },data));
-        }
-    });
-}
-
 }

@@ -20,21 +20,6 @@ class LenovoRGBControllerC9xx : public LenovoRGBController
 public:
 
     LenovoRGBControllerC9xx(LenovoUSBControllerC9xx* controller_ptr);
-
-
-    void    DeviceUpdateEfects()                   override;
-    void    DeviceRefreshEffects()                 override;
-
-protected:
-
-    void timerEvent(QTimerEvent* event) override;
-
-private:
-    void startStopDirectControlModeTimerIfNeeded();
-
-private:
-
-    int  m_timerId;
 };
 
 }
