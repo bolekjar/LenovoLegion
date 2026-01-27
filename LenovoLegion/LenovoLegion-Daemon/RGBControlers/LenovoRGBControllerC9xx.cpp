@@ -21,8 +21,8 @@ LenovoRGBControllerC9xx::LenovoRGBControllerC9xx(LenovoUSBControllerC9xx *contro
     LenovoRGBController(  controller_ptr,
                           {.min = 1,.max = 6,.active = 1},                            /* profiles */
                           {.min = 0,.max = 9,.active = 0},                            /* brightness levels */
-                          "Lenovo RGB Controller",            /* name */
-                          "Lenovo",                           /* vendor */
+                          "Lenovo RGB Controller",                                    /* name */
+                          "Integrated Technology Express, Inc. ITE Device(8258)",     /* vendor */
                           "Lenovo RGB Controller",            /* description */
                           controller_ptr->getSerialString(),  /* serial */
                           controller_ptr->getLocation(),      /* location */

@@ -195,6 +195,17 @@ void RGBController::readRGBControllerData(const uint32_t requestFlags)
             });
         }
     }
+
+    if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_DEVICE_INFO)
+    {
+        m_name        = rgbControllerData.has_device_info() && rgbControllerData.device_info().has_name() ? rgbControllerData.device_info().name().data() : "";
+        m_description = rgbControllerData.has_device_info() && rgbControllerData.device_info().description().data() ? rgbControllerData.device_info().description(): "";
+        m_serial      = rgbControllerData.has_device_info() && rgbControllerData.device_info().serial().data() ? rgbControllerData.device_info().serial(): "";
+        m_location    = rgbControllerData.has_device_info() && rgbControllerData.device_info().location().data()? rgbControllerData.device_info().location() : "";
+        m_vendor      = rgbControllerData.has_device_info() && rgbControllerData.device_info().vendor().data() ? rgbControllerData.device_info().vendor(): "";
+        m_productId   = rgbControllerData.has_device_info() && rgbControllerData.device_info().product_id() ? rgbControllerData.device_info().product_id(): 0;
+        m_vendorId    = rgbControllerData.has_device_info() && rgbControllerData.device_info().vendor_id() ? rgbControllerData.device_info().vendor_id() : 0;
+    }
 }
 
 void RGBController::sendRGBControllerData()
@@ -256,6 +267,41 @@ void RGBController::sendRGBControllerData()
     }
 
     m_pendingChanges.reset();
+}
+
+uint32_t RGBController::productId() const
+{
+    return m_productId;
+}
+
+uint32_t RGBController::vendorId() const
+{
+    return m_vendorId;
+}
+
+std::string RGBController::description() const
+{
+    return m_description;
+}
+
+std::string RGBController::serial() const
+{
+    return m_serial;
+}
+
+std::string RGBController::location() const
+{
+    return m_location;
+}
+
+std::string RGBController::vendor() const
+{
+    return m_vendor;
+}
+
+std::string RGBController::name() const
+{
+    return m_name;
 }
 
 unsigned int RGBController::GetLEDsInZone(unsigned int zone) const

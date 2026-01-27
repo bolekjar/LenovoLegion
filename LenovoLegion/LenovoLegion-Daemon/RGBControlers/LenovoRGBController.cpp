@@ -136,6 +136,16 @@ std::vector<RGBColor> LenovoRGBController::DeviceGetState() const
     return colors;
 }
 
+uint16_t LenovoRGBController::GetVendorID() const
+{
+    return controller->getVid();
+}
+
+uint16_t LenovoRGBController::GetProductID() const
+{
+    return controller->getPid();
+}
+
 void LenovoRGBController::DeviceRefresh(int expectedProfile)
 {
     /*

@@ -90,6 +90,17 @@ message RGBController
         repeated uint32       colors        = 5;
         repeated LED          leds          = 6;
     };
+
+    message DeviceTypeInfo
+    {
+        string  name            = 1;
+        string  vendor          = 2;
+        string  location        = 3;
+        string  serial          = 4;
+        string  description     = 5;
+        uint32  vendor_id       = 6;
+        uint32  product_id      = 7;
+    };
 }
 
 message RGBControllerRequest
@@ -105,6 +116,7 @@ message RGBControllerRequest
         REQUEST_LED_GROUP_EFFECTS   = 0x040;
         REQUEST_STATE_FOR_ALL_LEDS  = 0x080;
         REQUEST_MAX_EFFECTS         = 0x100;
+        REQUEST_DEVICE_INFO         = 0x200;
         REQUEST_ALL                 = 0xFFF;
     }
 
@@ -122,6 +134,7 @@ message RGBControllerResponse
     repeated RGBController.LedGroupEffect     led_group_effects     = 7;
     repeated uint32                           colors                = 8;
              uint32                           max_effects           = 9;
+             RGBController.DeviceTypeInfo     device_info           = 10;
 }
 
 message RGBControllerSetRequest

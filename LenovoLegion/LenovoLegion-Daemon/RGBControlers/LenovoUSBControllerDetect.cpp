@@ -24,7 +24,7 @@ RGBController * DetectLenovoLegionUSBControllersC9xx(const hid_device_info& info
 
     if(dev)
     {
-        LenovoRGBController*     rgb_controller  = new LenovoRGBControllerC9xx(new LenovoUSBControllerC9xx(dev, info.path, info.product_id));
+        LenovoRGBController*     rgb_controller  = new LenovoRGBControllerC9xx(new LenovoUSBControllerC9xx(dev, info.path, info.product_id,info.vendor_id));
         rgb_controller->GetName()                     = name;
 
         return rgb_controller;
@@ -42,7 +42,7 @@ RGBController * DetectLenovoLegionUSBControllersC197(const hid_device_info& info
 
     if(dev)
     {
-        LenovoRGBController*     rgb_controller  = new LenovoRGBControllerC197(new LenovoUSBController(dev, info.path, info.product_id));
+        LenovoRGBController*     rgb_controller  = new LenovoRGBControllerC197(new LenovoUSBController(dev, info.path, info.product_id,info.vendor_id));
         rgb_controller->GetName()                     = name;
 
         return rgb_controller;

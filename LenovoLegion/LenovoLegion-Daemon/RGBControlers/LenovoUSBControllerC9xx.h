@@ -18,7 +18,7 @@ class LenovoUSBControllerC9xx : public LenovoUSBController
 public:
 
 
-    LenovoUSBControllerC9xx(hid_device* dev_handle, const char* path, uint16_t in_pid);
+    LenovoUSBControllerC9xx(hid_device* dev_handle, const char* path, uint16_t in_pid,uint16_t in_vid);
 
 
     /*

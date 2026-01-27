@@ -95,6 +95,9 @@ public:
 
     std::vector<RGBColor> DeviceGetState()     const   override;
 
+    uint16_t                GetVendorID()         const   override;
+    uint16_t                GetProductID()        const   override;
+
 private:
     void readActiveProfileSettings();
 

@@ -22,10 +22,11 @@
 namespace LenovoLegionDaemon {
 
 
-LenovoUSBController::LenovoUSBController(hid_device* dev_handle, const char* path, uint16_t in_pid) :
+LenovoUSBController::LenovoUSBController(hid_device* dev_handle, const char* path, uint16_t in_pid, uint16_t in_vid) :
     m_dev(dev_handle),
     m_location(path),
-    m_pid(in_pid)
+    m_pid(in_pid),
+    m_vid(in_vid)
 {
     /*---------------------------------------------------------*\
     | Get device name from HID manufacturer and product strings |
@@ -71,6 +72,11 @@ LenovoUSBController::~LenovoUSBController()
 uint16_t LenovoUSBController::getPid() const
 {
     return m_pid;
+}
+
+uint16_t LenovoUSBController::getVid() const
+{
+    return m_vid;
 }
 
 std::string LenovoUSBController::getName() const
@@ -317,7 +323,7 @@ LenovoUSBController::ByteArray LenovoUSBController::serializeToBuffer(LENOVO_SPE
 
     if(size == 0x00)
     {
-        packet[2] = static_cast<uint8_t>((i + payload.size()) % 255);
+        packet[2] = static_cast<uint8_t>((i + payload.size()) % 256);
     }
 
     return packet;

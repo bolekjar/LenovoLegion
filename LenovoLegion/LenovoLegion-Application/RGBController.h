@@ -113,6 +113,18 @@ public:
      */
     void RefreshData();
 
+
+    /*
+     * Device Information
+     */
+    std::string name()          const;
+    std::string vendor()        const;
+    std::string location()      const;
+    std::string serial()        const;
+    std::string description()   const;
+    uint32_t vendorId()         const;
+    uint32_t productId()        const;
+
 private:
     void readRGBControllerData(const uint32_t requestFlags);
     void sendRGBControllerData();
@@ -133,6 +145,18 @@ private:
     std::vector<LenovoLegionDaemon::led_group_effect>   m_effects;
 
     std::bitset<MAXIMUM_CHANGES>            m_pendingChanges;
+
+    /*
+     * Device information
+     */
+    std::string   m_name;
+    std::string   m_vendor;
+    std::string   m_location;
+    std::string   m_serial;
+    std::string   m_description;
+
+    uint32_t      m_vendorId   = 0;
+    uint32_t      m_productId  = 0;
 
 };
 

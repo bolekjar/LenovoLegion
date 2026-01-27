@@ -123,7 +123,7 @@ public:
     /*--------------*\
     |ctor(s) and dtor|
     \*--------------*/
-    LenovoUSBController(hid_device* dev_handle, const char* path, uint16_t in_pid);
+    LenovoUSBController(hid_device* dev_handle, const char* path, uint16_t in_pid,uint16_t in_vid);
     virtual ~LenovoUSBController();
 
 
@@ -143,6 +143,7 @@ public:
     |Getters         |
     \*--------------*/
     uint16_t                                getPid()                const;
+    uint16_t                                getVid()                const;
     std::string                             getName()               const;
     std::string                             getLocation()           const;
     std::string                             getSerialString()       const;
@@ -178,8 +179,11 @@ private:
     \*--------------*/
     std::string        m_name;
     hid_device * const m_dev;
+
     const std::string  m_location;
     const uint16_t     m_pid;
+    const uint16_t     m_vid;
+
     std::string        m_version;
     std::string        m_serial;
 

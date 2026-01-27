@@ -191,6 +191,18 @@ namespace LenovoLegionDaemon {
                     rgbController.add_colors(color);
                 }
             }
+
+            // Serialize info
+            if(requestFlags & legion::messages::RGBControllerRequest::RequestFlags::RGBControllerRequest_RequestFlags_REQUEST_DEVICE_INFO)
+            {
+                rgbController.mutable_device_info()->set_name(m_rgbController->GetName());
+                rgbController.mutable_device_info()->set_vendor(m_rgbController->GetVendor());
+                rgbController.mutable_device_info()->set_description(m_rgbController->GetDescription());
+                rgbController.mutable_device_info()->set_serial(m_rgbController->GetSerial());
+                rgbController.mutable_device_info()->set_location(m_rgbController->GetLocation());
+                rgbController.mutable_device_info()->set_vendor_id(m_rgbController->GetVendorID());
+                rgbController.mutable_device_info()->set_product_id(m_rgbController->GetProductID());
+            }
         }
 
         byteArray.resize(rgbController.ByteSizeLong());

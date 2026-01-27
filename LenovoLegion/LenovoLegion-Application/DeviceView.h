@@ -30,7 +30,7 @@ public:
     virtual QSize sizeHint () const         override;
     virtual QSize minimumSizeHint () const  override;
 
-    void setController(LenovoLegionDaemon::RGBControllerInterface * controller_ptr);
+    void setController(LenovoLegionDaemon::RGBControllerInterface * controller_ptr,const uint32_t vendorId,const uint32_t productId);
     void setNumericalLabels(bool enable);
     void setPerLED(bool per_led_mode);
     void markLeds(const QMap<int,QColor> &leds);
@@ -79,6 +79,8 @@ private:
     QColor posColor(const QPoint &point);
     void InitDeviceView();
     void updateSelection();
+
+    std::string m_keyboardBackgroundImage;
 
 signals:
     void selectionChanged(QVector<int>);

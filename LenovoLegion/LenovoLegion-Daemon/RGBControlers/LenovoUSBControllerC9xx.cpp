@@ -12,8 +12,8 @@
 
 namespace LenovoLegionDaemon {
 
-LenovoUSBControllerC9xx::LenovoUSBControllerC9xx(hid_device *dev_handle, const char *path, uint16_t in_pid) :
-    LenovoUSBController(dev_handle,path,in_pid)
+LenovoUSBControllerC9xx::LenovoUSBControllerC9xx(hid_device *dev_handle, const char *path, uint16_t in_pid,uint16_t in_vid) :
+    LenovoUSBController(dev_handle,path,in_pid,in_vid)
 {}
 
 
@@ -43,11 +43,12 @@ void LenovoUSBControllerC9xx::setLedsDirect(const std::vector<RGBColor> &colors)
     sendFeatureReport(serializeToBuffer(LENOVO_SPECTRUM_OPERATION_TYPE::AuroraSendBitmap,{},[this,&colors](){
         ByteArray payload;
 
-
-
         for(size_t height = 0; height < getKeyMap().m_height; height++)
         {
             for (int width = 0; width < getKeyMap().m_width; ++width) {
+
+                if(getKeyMap().m_keyCodes[width][height])
+                    continue;
 
                 payload.push_back(getKeyMap().m_keyCodes[width][height] & 0xFF);
                 payload.push_back(getKeyMap().m_keyCodes[width][height] >> 8 & 0xFF);

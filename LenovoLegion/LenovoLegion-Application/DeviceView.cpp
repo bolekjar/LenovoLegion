@@ -42,6 +42,7 @@ DeviceView::DeviceView(QWidget *parent) :
     size = width();
 
     m_timerId = startTimer(50);
+    m_keyboardBackgroundImage = "keyboard-background.png";
 }
 
 DeviceView::~DeviceView()
@@ -233,12 +234,23 @@ static const std::map<std::string, led_label> led_label_lookup =
         { LenovoLegionDaemon::KEY_ES_ENIE,              { "ñ"     , "Ñ"                 }},
         };
 
-void DeviceView::setController(LenovoLegionDaemon::RGBControllerInterface *controller_ptr)
+void DeviceView::setController(LenovoLegionDaemon::RGBControllerInterface *controller_ptr,const uint32_t vendorId,const uint32_t productId)
 {
     /*-----------------------------------------------------*\
     | Store the controller pointer                          |
     \*-----------------------------------------------------*/
     controller = controller_ptr;
+
+
+    if(vendorId == 0x48d && productId == 0xc197)
+    {
+        m_keyboardBackgroundImage = "keyboard-background-048d-c197.png";
+    }
+
+    if(vendorId == 0x48d && ((productId >> 8) & 0xFF) == 0xc9)
+    {
+        m_keyboardBackgroundImage = "keyboard-background-0x17aa-0xc9xx.png";
+    }
 }
 
 void DeviceView::InitDeviceView()
@@ -441,8 +453,11 @@ void DeviceView::InitDeviceView()
                                 }
                             }
 
-                             if(!LenovoLegionDaemon::KeyCodesToName.contains(controller->GetLEDs().at(color_idx).value))
+                            if(!LenovoLegionDaemon::KeyCodesToName.contains(controller->GetLEDs().at(color_idx).value))
                             {
+                                /*
+                                 * Horizontal
+                                 */
                                 for(unsigned int map_idx2 = map_idx - 1; map_idx2 >= led_y * map->width && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2--)
                                 {
                                     led_pos[color_idx].matrix_x -= 1.0f;
@@ -452,6 +467,21 @@ void DeviceView::InitDeviceView()
                                 {
                                     led_pos[color_idx].matrix_w += 1.0f;
                                 }
+
+                                /*
+                                 * Vertical
+                                 */
+                                for(unsigned int map_idx2 = map_idx - map->width; map_idx2 < map->map.size() && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2 -= map->width)
+                                {
+                                    led_pos[color_idx].matrix_y -= 1.0f;
+                                    led_pos[color_idx].matrix_h += 1.0f;
+                                }
+
+                                for(unsigned int map_idx2 = map_idx + map->width; map_idx2 < map->map.size() && controller->GetLEDName(color_idx) == controller->GetLEDName(map->map[map_idx2] + controller->GetZones()[zone_idx].start_idx); map_idx2 += map->width)
+                                {
+                                    led_pos[color_idx].matrix_h += 1.0f;
+                                }
+
                             }
                         }
 
@@ -760,7 +790,7 @@ void DeviceView::paintEvent(QPaintEvent* /* event */)
     /*-----------------------------------------------------*\
      * Draw background image                                *
      * -----------------------------------------------------*/
-    QPixmap backgroundPixmap = QPixmap(":/images/keyboard-background.png").scaled(size + 50,height() - 10 , Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QPixmap backgroundPixmap = QPixmap(QString(":/images/").append(m_keyboardBackgroundImage)).scaled(size + 50,height() - 10 , Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     painter.drawPixmap((width() - backgroundPixmap.width()) / 2, (height() - backgroundPixmap.height()) / 2, backgroundPixmap);
 
     /*-----------------------------------------------------*\

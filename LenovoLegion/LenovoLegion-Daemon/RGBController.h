@@ -45,7 +45,6 @@ public:
     std::string             GetSerial()         const;
     std::string             GetLocation()       const;
     std::string             GetControllerName() const;
-
 public:
 
     /*---------------------------------------------------------*\
@@ -132,6 +131,9 @@ public:
     virtual void        DeviceRefresh(int expectedProfile = -1) =   0;
 
     virtual std::vector<RGBColor>        DeviceGetState() const =   0;
+
+    virtual uint16_t                GetVendorID()         const   = 0;
+    virtual uint16_t                GetProductID()        const   = 0;
 
 protected:
 

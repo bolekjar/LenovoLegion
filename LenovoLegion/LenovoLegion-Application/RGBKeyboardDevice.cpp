@@ -107,7 +107,7 @@ RGBKeyboardDevice::RGBKeyboardDevice(RGBController *dev, QWidget *parent) :
     /*-----------------------------------------------------*\
     | Set up the device view                                |
     \*-----------------------------------------------------*/
-    ui->DeviceViewBox->setController(device.get());
+    ui->DeviceViewBox->setController(device.get(),device->vendorId(),device->productId());
 
     connect(ui->DeviceViewBox, &DeviceView::selectionChanged, this, &RGBKeyboardDevice::on_DeviceViewBox_selectionChanged);
 

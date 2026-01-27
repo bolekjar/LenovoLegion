@@ -136,7 +136,6 @@ std::string RGBController::GetControllerName() const
     return m_name;
 }
 
-
 const std::vector<mode>& RGBController::GetModes() const
 {
     return m_modes;
