@@ -26,4 +26,5 @@ message GpuSwitchValue
     }
 
     HybridModeState   current     = 1;
+    bool              supported   = 2;
 }

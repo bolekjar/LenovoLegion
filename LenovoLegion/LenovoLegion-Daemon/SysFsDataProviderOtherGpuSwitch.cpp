@@ -28,6 +28,7 @@ QByteArray SysFsDataProviderOtherGpuSwitch::serializeAndGetData() const
 
     LOG_T(__PRETTY_FUNCTION__);
 
+    gpuSwitchMsg.set_supported(false);
 
     try {
         SysFSDriverLegionGameZone::GameZone gameZone(m_sysFsDriverManager->getDriverDesriptor(SysFSDriverLegionGameZone::DRIVER_NAME));
@@ -35,7 +36,7 @@ QByteArray SysFsDataProviderOtherGpuSwitch::serializeAndGetData() const
         if(getData(gameZone.m_gsync.m_supported).toUShort() > 0 && getData(gameZone.m_igpuMode.m_supported).toUShort() > 0)
         {
             gpuSwitchMsg = unPackGPUSettings({static_cast<GSyncState>(getData(gameZone.m_gsync.m_current_value).toUShort()),static_cast<IGPUModeState>(getData(gameZone.m_igpuMode.m_current_value).toShort())});
-
+            gpuSwitchMsg.set_supported(true);
         }
 
     } catch(SysFsDriver::exception_T& ex)

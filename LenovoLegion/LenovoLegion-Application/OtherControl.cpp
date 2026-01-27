@@ -33,26 +33,10 @@ OtherControl::OtherControl(DataProvider *dataProvider, QWidget *parent)
     readGpuSwitchData();
 
     if(!m_otherSettingsData.has_touch_pad() ||
-       !m_otherSettingsData.has_win_key())
+       !m_otherSettingsData.has_win_key() ||
+       !m_otherSettingsData.touch_pad().has_supported())
     {
         THROW_EXCEPTION(exception_T, ERROR_CODES::DATA_NOT_READY, "Other Settings data not available");
-    }
-
-    // Disable controls if not supported
-    if(!m_otherSettingsData.touch_pad().supported()) {
-        ui->checkBox_DisableTouchpad->setEnabled(false);
-        ui->checkBox_DisableTouchpad->setToolTip("Not supported by hardware");
-    }
-
-    if(!m_otherSettingsData.win_key().supported()) {
-        ui->checkBox_DisableWinKey->setEnabled(false);
-        ui->checkBox_DisableWinKey->setToolTip("Not supported by hardware");
-    }
-
-    // Check if GPU switch is available
-    if(!m_gpuSwitchData.has_current()) {
-        ui->groupBox_GPUControl->setEnabled(false);
-        ui->groupBox_GPUControl->setToolTip("GPU switch not supported by hardware");
     }
 
     refresh();
@@ -77,13 +61,21 @@ void OtherControl::refreshData()
     ui->checkBox_DisableTouchpad->blockSignals(true);
     ui->checkBox_DisableWinKey->blockSignals(true);
 
-    // Update UI from current data
-    ui->checkBox_DisableTouchpad->setChecked(m_otherSettingsData.touch_pad().current());
-    ui->checkBox_DisableWinKey->setChecked(m_otherSettingsData.win_key().current());
+    ui->checkBox_DisableTouchpad->setEnabled(m_otherSettingsData.touch_pad().supported());
+    ui->checkBox_DisableWinKey->setEnabled(m_otherSettingsData.win_key().supported());
 
-    // Unblock signals
-    ui->checkBox_DisableTouchpad->blockSignals(false);
-    ui->checkBox_DisableWinKey->blockSignals(false);
+    // Update UI from current data
+    if(m_otherSettingsData.touch_pad().supported())
+    {
+        ui->checkBox_DisableTouchpad->setChecked(m_otherSettingsData.touch_pad().current());
+        ui->checkBox_DisableTouchpad->blockSignals(false);
+    }
+
+    if(m_otherSettingsData.win_key().supported())
+    {
+        ui->checkBox_DisableWinKey->setChecked(m_otherSettingsData.win_key().current());
+        ui->checkBox_DisableWinKey->blockSignals(false);
+    }
 
     LOG_T("OtherControl: Refreshed data - TouchPad disabled: " +
           QString::number(m_otherSettingsData.touch_pad().current()) +
@@ -142,31 +134,35 @@ void OtherControl::refreshGpuSwitchData()
     ui->radioButton_HybridIGPUOnly->blockSignals(true);
     ui->radioButton_HybridOff->blockSignals(true);
 
-    // Update UI from current data
-    if(m_gpuSwitchData.has_current()) {
-        switch(m_gpuSwitchData.current()) {
-        case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_ON:
-            ui->radioButton_HybridOn->setChecked(true);
-            break;
-        case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_ONAUTO:
-            ui->radioButton_HybridAuto->setChecked(true);
-            break;
-        case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_ONIGPUONLY:
-            ui->radioButton_HybridIGPUOnly->setChecked(true);
-            break;
-        case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_OFF:
-            ui->radioButton_HybridOff->setChecked(true);
-            break;
-        default:
-            break;
-        }
-    }
+    ui->groupBox_GPUControl->setEnabled(m_gpuSwitchData.supported());
 
-    // Unblock signals
-    ui->radioButton_HybridOn->blockSignals(false);
-    ui->radioButton_HybridAuto->blockSignals(false);
-    ui->radioButton_HybridIGPUOnly->blockSignals(false);
-    ui->radioButton_HybridOff->blockSignals(false);
+    if(m_gpuSwitchData.supported()) {
+        // Update UI from current data
+        if(m_gpuSwitchData.has_current()) {
+            switch(m_gpuSwitchData.current()) {
+            case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_ON:
+                ui->radioButton_HybridOn->setChecked(true);
+                break;
+            case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_ONAUTO:
+                ui->radioButton_HybridAuto->setChecked(true);
+                break;
+            case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_ONIGPUONLY:
+                ui->radioButton_HybridIGPUOnly->setChecked(true);
+                break;
+            case legion::messages::GpuSwitchValue_HybridModeState_HYBRID_MODE_OFF:
+                ui->radioButton_HybridOff->setChecked(true);
+                break;
+            default:
+                break;
+            }
+        }
+
+        // Unblock signals
+        ui->radioButton_HybridOn->blockSignals(false);
+        ui->radioButton_HybridAuto->blockSignals(false);
+        ui->radioButton_HybridIGPUOnly->blockSignals(false);
+        ui->radioButton_HybridOff->blockSignals(false);
+    }
 
     LOG_T("OtherControl: Refreshed GPU switch data - Mode: " +
           QString::number(m_gpuSwitchData.current()));
