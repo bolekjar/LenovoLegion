@@ -75,7 +75,11 @@
              </layout>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageCore"/>
+             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageCore">
+              <property name="segmentStyle">
+               <enum>QLCDNumber::SegmentStyle::Flat</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -112,7 +116,11 @@
              </layout>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageUncore"/>
+             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageUncore">
+              <property name="segmentStyle">
+               <enum>QLCDNumber::SegmentStyle::Flat</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -149,7 +157,11 @@
              </layout>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageCache"/>
+             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageCache">
+              <property name="segmentStyle">
+               <enum>QLCDNumber::SegmentStyle::Flat</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -186,7 +198,11 @@
              </layout>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageGPU"/>
+             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageGPU">
+              <property name="segmentStyle">
+               <enum>QLCDNumber::SegmentStyle::Flat</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -223,7 +239,11 @@
              </layout>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageAnalogIO"/>
+             <widget class="QLCDNumber" name="lcdNumber_cpuVoltageAnalogIO">
+              <property name="segmentStyle">
+               <enum>QLCDNumber::SegmentStyle::Flat</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -327,7 +347,11 @@
          </layout>
         </item>
         <item>
-         <widget class="QLCDNumber" name="lcdNumber_GPUClockOffset"/>
+         <widget class="QLCDNumber" name="lcdNumber_GPUClockOffset">
+          <property name="segmentStyle">
+           <enum>QLCDNumber::SegmentStyle::Flat</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -364,7 +388,11 @@
          </layout>
         </item>
         <item>
-         <widget class="QLCDNumber" name="lcdNumber_GPUMemoryOffset"/>
+         <widget class="QLCDNumber" name="lcdNumber_GPUMemoryOffset">
+          <property name="segmentStyle">
+           <enum>QLCDNumber::SegmentStyle::Flat</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
