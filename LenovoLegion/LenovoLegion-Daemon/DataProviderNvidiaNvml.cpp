@@ -222,6 +222,11 @@ QByteArray DataProviderNvidiaNvml::deserializeAndSetData(const QByteArray &data)
     /*
       * Apply GPU offset
       */
+    if(m_device == nullptr)
+    {
+        LOG_W("No NVIDIA GPU device available to set data.");
+        return {};
+    }
 
     if(nvmlData.has_gpu_offset())
     {
@@ -261,110 +266,117 @@ QByteArray DataProviderNvidiaNvml::deserializeAndSetData(const QByteArray &data)
 
 void DataProviderNvidiaNvml::init()
 {
-    nvmlReturn_t result;
-    unsigned int device_count, i;
-
-    // Initialize NVML library
-    result = nvmlInit();
-    if (NVML_SUCCESS != result) {
-        THROW_EXCEPTION(exception_T,ERROR_NVML_INIT_FAILED, "NVML initialization failed");
-    }
-
-    // Get number of GPU devices
-    result = nvmlDeviceGetCount(&device_count);
-    if (NVML_SUCCESS != result) {
-        nvmlShutdown();
-        THROW_EXCEPTION(exception_T,ERROR_NVML_DEVICE_COUNT_FAILED, "Failed to get NVML device count");
-    }
+    try {
+        nvmlReturn_t result;
+        unsigned int device_count, i;
 
 
-    if(device_count == 0){
-        nvmlShutdown();
-        THROW_EXCEPTION(exception_T,ERROR_NVML_DEVICE_COUNT_FAILED, "Unusual NVML device count");
-    }
-
-    LOG_D(QString("NVIDIA NVML initialized with %1 device(s)").arg(device_count));
-
-    for (i = 0; i < device_count; i++) {
-        char name[NVML_DEVICE_NAME_BUFFER_SIZE];
-
-        // Get device handle
-        result = nvmlDeviceGetHandleByIndex(i, &m_device);
+        // Initialize NVML library
+        result = nvmlInit();
         if (NVML_SUCCESS != result) {
-            m_device = nullptr;
-            LOG_W(QString("Failed to get handle for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-            continue;
+            THROW_EXCEPTION(exception_T,ERROR_NVML_INIT_FAILED, "NVML initialization failed");
         }
 
-        // Get device name
-        result = nvmlDeviceGetName(m_device, name, NVML_DEVICE_NAME_BUFFER_SIZE);
+        // Get number of GPU devices
+        result = nvmlDeviceGetCount(&device_count);
         if (NVML_SUCCESS != result) {
-            m_device = nullptr;
-            LOG_W(QString("Failed to get name for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-            continue;
+            nvmlShutdown();
+            THROW_EXCEPTION(exception_T,ERROR_NVML_DEVICE_COUNT_FAILED, "Failed to get NVML device count");
         }
 
-        // Get max clocks
-        result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_GRAPHICS, &m_maxGraphicsClock);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get max graphics clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+
+        if(device_count == 0){
+            nvmlShutdown();
+            THROW_EXCEPTION(exception_T,ERROR_NVML_DEVICE_COUNT_FAILED, "Unusual NVML device count");
         }
 
-        result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_SM, &m_maxSmClock);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get max SM clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+        LOG_D(QString("NVIDIA NVML initialized with %1 device(s)").arg(device_count));
+
+        for (i = 0; i < device_count; i++) {
+            char name[NVML_DEVICE_NAME_BUFFER_SIZE];
+
+            // Get device handle
+            result = nvmlDeviceGetHandleByIndex(i, &m_device);
+            if (NVML_SUCCESS != result) {
+                m_device = nullptr;
+                LOG_W(QString("Failed to get handle for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+                continue;
+            }
+
+            // Get device name
+            result = nvmlDeviceGetName(m_device, name, NVML_DEVICE_NAME_BUFFER_SIZE);
+            if (NVML_SUCCESS != result) {
+                m_device = nullptr;
+                LOG_W(QString("Failed to get name for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+                continue;
+            }
+
+            // Get max clocks
+            result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_GRAPHICS, &m_maxGraphicsClock);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get max graphics clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_SM, &m_maxSmClock);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get max SM clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_MEM, &m_maxMemClock);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get max memory clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            // Get temperature thresholds
+            result = nvmlDeviceGetTemperatureThreshold(m_device, NVML_TEMPERATURE_THRESHOLD_SHUTDOWN, &m_shutdownTempThreshold);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get shutdown temperature for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+            result = nvmlDeviceGetTemperatureThreshold(m_device, NVML_TEMPERATURE_THRESHOLD_SLOWDOWN, &m_slowdownTempThreshold);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get slowdown temperature for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            result = nvmlDeviceGetPowerManagementLimitConstraints(m_device, &m_powerLimitMin, &m_powerLimitMax);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get power limit constraints for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            result = nvmlDeviceGetMaxPcieLinkGeneration(m_device, &m_pciGenerationMax);
+            if (NVML_SUCCESS != result){
+                LOG_W(QString("Failed to get PCIe generation max for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            result = nvmlDeviceGetMaxPcieLinkWidth(m_device, &m_pciWidthMax);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get PCIe width max for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            // Get GPU clock offset
+            result = nvmlDeviceGetGpcClkMinMaxVfOffset(m_device, &m_minGpuOffset, &m_maxGpuOffset);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get GPU clock offset for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            // Get Memory clock offset
+            result = nvmlDeviceGetMemClkMinMaxVfOffset(m_device, &m_minMemOffset, &m_maxMemOffset);
+            if (NVML_SUCCESS != result) {
+                LOG_W(QString("Failed to get Memory clock offset for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+            }
+
+            m_GPUName = QString(name);
+            break;
         }
 
-        result = nvmlDeviceGetMaxClockInfo(m_device, NVML_CLOCK_MEM, &m_maxMemClock);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get max memory clock for device %1: %2").arg(i).arg(nvmlErrorString(result)));
+        if(m_device == nullptr)
+        {
+            THROW_EXCEPTION(exception_T,ERROR_NVML_DEVICE_COUNT_FAILED, "No NVIDIA GPU found");
         }
 
-        // Get temperature thresholds
-        result = nvmlDeviceGetTemperatureThreshold(m_device, NVML_TEMPERATURE_THRESHOLD_SHUTDOWN, &m_shutdownTempThreshold);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get shutdown temperature for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-        result = nvmlDeviceGetTemperatureThreshold(m_device, NVML_TEMPERATURE_THRESHOLD_SLOWDOWN, &m_slowdownTempThreshold);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get slowdown temperature for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-
-        result = nvmlDeviceGetPowerManagementLimitConstraints(m_device, &m_powerLimitMin, &m_powerLimitMax);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get power limit constraints for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-
-        result = nvmlDeviceGetMaxPcieLinkGeneration(m_device, &m_pciGenerationMax);
-        if (NVML_SUCCESS != result){
-            LOG_W(QString("Failed to get PCIe generation max for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-
-        result = nvmlDeviceGetMaxPcieLinkWidth(m_device, &m_pciWidthMax);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get PCIe width max for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-
-        // Get GPU clock offset
-        result = nvmlDeviceGetGpcClkMinMaxVfOffset(m_device, &m_minGpuOffset, &m_maxGpuOffset);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get GPU clock offset for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-
-        // Get Memory clock offset
-        result = nvmlDeviceGetMemClkMinMaxVfOffset(m_device, &m_minMemOffset, &m_maxMemOffset);
-        if (NVML_SUCCESS != result) {
-            LOG_W(QString("Failed to get Memory clock offset for device %1: %2").arg(i).arg(nvmlErrorString(result)));
-        }
-
-        m_GPUName = QString(name);
-        break;
-    }
-
-    if(m_device == nullptr)
+    } catch(exception_T& ex)
     {
-        nvmlShutdown();
-        THROW_EXCEPTION(exception_T,ERROR_NVML_DEVICE_COUNT_FAILED, "No NVIDIA GPU found");
+        cleanUp();
+        LOG_W(QString("DataProviderNvidiaNvml initialization failed: %1").arg(ex.what()));
     }
 }
 
