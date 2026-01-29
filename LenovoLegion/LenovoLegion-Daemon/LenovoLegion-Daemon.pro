@@ -25,9 +25,9 @@ SOURCES +=  \
         RGBControlers/LenovoRGBControllerC9xx.cpp \
         RGBControlers/LenovoUSBControllerC9xx.cpp \
         RGBController.cpp \
-        SysFSDriverHWMon.cpp \
         SysFSDriverLegionFanMode.cpp \
         SysFSDriverLegionGameZone.cpp \
+        SysFSDriverLegionHWMon.cpp \
         SysFSDriverLegionIntelMSR.cpp \
         SysFsDataProvider.cpp \
         SysFsDataProviderBattery.cpp \
@@ -79,10 +79,10 @@ HEADERS += \
     RGBControlers/LenovoRGBControllerC197.h \
     RGBControlers/LenovoRGBControllerC9xx.h \
     RGBControlers/LenovoUSBControllerC9xx.h \
-    SysFSDriverHWMon.h \
     SysFSDriverLegionFanMode.h \
     SysFSDriverLegionGameZone.h \
     Settings.h \
+    SysFSDriverLegionHWMon.h \
     SysFSDriverLegionIntelMSR.h \
     SysFsDataProvider.h \
     SysFsDataProviderBattery.h \

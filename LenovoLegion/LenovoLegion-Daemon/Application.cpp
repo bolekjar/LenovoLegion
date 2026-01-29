@@ -24,7 +24,7 @@
 #include "SysFsDriverACPIPlatformProfile.h"
 #include "SysFsDriverIntelPowercapRapl.h"
 #include "SysFsDriverPowerSuplyBattery0.h"
-#include "SysFSDriverHWMon.h"
+#include "SysFSDriverLegionHWMon.h"
 #include "SysFSDriverLegionFanMode.h"
 #include "SysFSDriverLegionGameZone.h"
 #include "SysFsDriverLegionOther.h"
@@ -90,7 +90,7 @@ Application::Application(int &argc, char *argv[]) :
     m_sysFsDriverManager->addDriver(new SysFSDriverLegionFanMode(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFSDriverLegionGameZone(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverLegionOther(m_sysFsDriverManager));
-    m_sysFsDriverManager->addDriver(new SysFSDriverHWMon(m_sysFsDriverManager));
+    m_sysFsDriverManager->addDriver(new SysFSDriverLegionHWMon(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverCPU(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverCPUXList(m_sysFsDriverManager));
     m_sysFsDriverManager->addDriver(new SysFsDriverCPUCore(m_sysFsDriverManager));

@@ -37,7 +37,7 @@ void BateryStatus::refresh()
 
 void BateryStatus::renderData()
 {
-    if(m_bateryControlData.has_baterry_status())
+    if(m_bateryControlData.supported())
     {
         ui->label_bateryText->setText(QString(m_bateryControlData.baterry_status().data()).trimmed());
     }

@@ -33,8 +33,15 @@ PowerProfileControl::~PowerProfileControl()
 
 void PowerProfileControl::refresh()
 {
+    m_supportedProfiles.clear();
+
     m_powerProfileControlData = m_dataProvider->getDataMessage<legion::messages::PowerProfile > (LenovoLegionDaemon::SysFsDataProviderPowerProfile::dataType);
     m_batteryControlData      = m_dataProvider->getDataMessage<legion::messages::Battery> (LenovoLegionDaemon::SysFsDataProviderBattery::dataType);
+
+    for(int i = 0; i < m_powerProfileControlData.supported_profiles_size(); i++)
+    {
+        m_supportedProfiles.insert(m_powerProfileControlData.supported_profiles(i));
+    }
 
     renderData();
 }
@@ -90,15 +97,13 @@ void PowerProfileControl::renderData()
     ui->checkBox_customFnQ->blockSignals(true);
 
     ui->groupBox->setVisible(false);
-    ui->checkBox_customFnQ->setDisabled(true);
+    ui->checkBox_customFnQ->setVisible(true);
 
-    ui->radioButton_PPQuiet->setVisible(true);
-    ui->radioButton_PPBalanced->setVisible(true);
+    ui->radioButton_PPQuiet->setVisible(false);
+    ui->radioButton_PPBalanced->setVisible(false);
     ui->radioButton_PPPerformance->setVisible(false);
     ui->radioButton_PPCustom->setVisible(false);
     ui->radioButton_PPExtreme->setVisible(false);
-
-    ui->checkBox_customFnQ->setCheckState(Qt::Unchecked);
 
     if(!m_powerProfileControlData.has_current_value() || !m_powerProfileControlData.has_thermal_mode() || !m_powerProfileControlData.has_custom_fnq_enabled())
     {
@@ -109,6 +114,8 @@ void PowerProfileControl::renderData()
 
         return;
     }
+
+    ui->checkBox_customFnQ->setCheckState(Qt::Unchecked);
 
     switch (m_powerProfileControlData.thermal_mode()) {
     case legion::messages::PowerProfile::POWER_PROFILE_QUIET:
@@ -133,18 +140,36 @@ void PowerProfileControl::renderData()
     if(m_powerProfileControlData.mutable_custom_fnq_enabled()->supported())
     {
         ui->checkBox_customFnQ->setChecked(m_powerProfileControlData.mutable_custom_fnq_enabled()->current_value());
-        ui->checkBox_customFnQ->setDisabled(false);
+        ui->checkBox_customFnQ->setVisible(true);
         ui->checkBox_customFnQ->blockSignals(false);
     }
 
+    if(m_supportedProfiles.contains(legion::messages::PowerProfile::POWER_PROFILE_QUIET))
+    {
+        ui->radioButton_PPQuiet->setVisible(true);
+    }
+    if(m_supportedProfiles.contains(legion::messages::PowerProfile::POWER_PROFILE_BALANCED))
+    {
+        ui->radioButton_PPBalanced->setVisible(true);
+    }
 
-    ui->groupBox->setVisible(true);
     if(m_batteryControlData.current_charge_mode_value() == legion::messages::Battery::POWER_CHARGE_MODE_AC)
     {
-        ui->radioButton_PPCustom->setVisible(true);
-        ui->radioButton_PPPerformance->setVisible(true);
-        ui->radioButton_PPExtreme->setVisible(true);
+        if(m_supportedProfiles.contains(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM))
+        {
+            ui->radioButton_PPCustom->setVisible(true);
+        }
+        if(m_supportedProfiles.contains(legion::messages::PowerProfile::POWER_PROFILE_PERFORMANCE))
+        {
+            ui->radioButton_PPPerformance->setVisible(true);
+        }
+        if(m_supportedProfiles.contains(legion::messages::PowerProfile::POWER_PROFILE_EXTREME))
+        {
+            ui->radioButton_PPExtreme->setVisible(true);
+        }
     }
+
+    ui->groupBox->setVisible(true);
     ui->groupBox->blockSignals(false);
 
     emit widgetEvent( LenovoLegionGui::WidgetMessage {

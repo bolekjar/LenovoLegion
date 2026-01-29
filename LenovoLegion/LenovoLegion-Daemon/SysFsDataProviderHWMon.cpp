@@ -7,7 +7,7 @@
  */
 
 #include "SysFsDataProviderHWMon.h"
-#include "SysFSDriverHWMon.h"
+#include "SysFSDriverLegionHWMon.h"
 #include "SysFsDriverIntelPowercapRapl.h"
 #include "SysFsDriverCPUXList.h"
 
@@ -32,7 +32,7 @@ QByteArray SysFsDataProviderHWMon::serializeAndGetData() const
     LOG_T(__PRETTY_FUNCTION__);
 
     try {
-        SysFSDriverHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFSDriverHWMon::DRIVER_NAME));
+        SysFSDriverLegionHWMon::HWMon hwMon(m_sysFsDriverManager->getDriverDescriptorsInVector(SysFSDriverLegionHWMon::DRIVER_NAME));
 
         for(const auto& fanDesc : hwMon.m_legion.m_fans)
         {

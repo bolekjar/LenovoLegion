@@ -14,6 +14,7 @@
 #include "../LenovoLegion-PrepareBuild/Battery.pb.h"
 
 #include <QWidget>
+#include <QSet>
 
 namespace Ui {
 class PowerProfileControl;
@@ -64,6 +65,11 @@ private:
      */
     legion::messages::PowerProfile                         m_powerProfileControlData;
     legion::messages::Battery                              m_batteryControlData;
+
+    /*
+     * Supported, power profiles
+     */
+    QSet<legion::messages::PowerProfile::Profiles>         m_supportedProfiles;
 };
 
 }

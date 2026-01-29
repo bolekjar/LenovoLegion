@@ -148,6 +148,7 @@ static struct kobj_attribute kobj_attr_##_func  =                               
 static ssize_t func_##_name##_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) \
 {																												 \
 	struct lenovo_wmi_gz_priv *priv = dev_get_drvdata(kobj_to_dev(kobj->parent));								 \
+	s64 value = priv->preloaded_values._attr;																	 \
 																												 \
 	/* Critical: Prevent NULL pointer dereference and system freeze */   										 \
 	if (!priv) {																								 \
@@ -155,7 +156,7 @@ static ssize_t func_##_name##_show(struct kobject *kobj,struct kobj_attribute *k
 	}																											 \
 																												 \
 	/* Return cached value instead of calling WMI (prevents deadlock/freeze) */									 \
-	return sysfs_emit(buf, "%u\n", priv->preloaded_values._attr);												 \
+	return sysfs_emit(buf, "%lld\n", value);												 					 \
 }                                          																		 \
 static ssize_t func_##_name##_display_name_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) 	 \
 {																												 \

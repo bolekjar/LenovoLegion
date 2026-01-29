@@ -183,18 +183,18 @@ enum power_adapter_status
 
 struct game_zone_preloaded_method_values
 {
-	int IsSupportGpuOC;
-	int	IsSupportCpuOC;
-	int	IsSupportDisableWinKey;
-	int	IsSupportDisableTP;
-	int	IsSupportGSync;
-	int	IsSupportSmartFan;
-	int	IsSupportOD;
-	int	IsSupportIGPUMode;
+	unsigned int IsSupportGpuOC;
+	unsigned int IsSupportCpuOC;
+	unsigned int IsSupportDisableWinKey;
+	unsigned int IsSupportDisableTP;
+	unsigned int IsSupportGSync;
+	s64          IsSupportSmartFan; // negative value does not support extreme mode
+	unsigned int IsSupportOD;
+	unsigned int IsSupportIGPUMode;
 
 
-	int GetFanCount;
-	int GetFanMaxSpeed;
+	unsigned int GetFanCount;
+	unsigned int GetFanMaxSpeed;
 };
 
 struct lenovo_wmi_gz_priv {

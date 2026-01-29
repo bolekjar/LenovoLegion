@@ -13,4 +13,5 @@ message Battery
 
     PowerChargeMode current_charge_mode_value = 1;
     string          baterry_status            = 2;
+    bool            supported                 = 3;
 }

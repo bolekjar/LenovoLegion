@@ -41,6 +41,16 @@ QByteArray SysFsDataProviderPowerProfile::serializeAndGetData() const
         powerProfile.mutable_custom_fnq_enabled()->set_current_value(getData(otherInOther.m_god_mode_fnq_switchable.m_current_value).toShort() == 1);
         powerProfile.mutable_custom_fnq_enabled()->set_default_value(getData(otherInOther.m_god_mode_fnq_switchable.m_default_value).toShort() == 1);
 
+        powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_QUIET);
+        powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_BALANCED);
+        powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_PERFORMANCE);
+        powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM);
+
+        if(static_cast<legion::messages::PowerProfile::Profiles>(getData(smartFan.m_supported).toLongLong() > 0))
+        {
+            powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_EXTREME);
+        }
+
     } catch(SysFsDriver::exception_T& ex)
     {
         if(ex.errcodeInfo().value() == SysFsDriver::ERROR_CODES::DRIVER_NOT_AVAILABLE)

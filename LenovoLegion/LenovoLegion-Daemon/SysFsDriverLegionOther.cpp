@@ -27,7 +27,6 @@ void SysFsDriverLegionOther::init()
 
     auto buildSstandardAttributesCapData01 = [this] (std::filesystem::path path, const QString& prefix)
     {
-
         m_descriptor[prefix + "current_value"] = std::filesystem::path(path).append("current_value");
         m_descriptor[prefix + "default_value"] = std::filesystem::path(path).append("default_value");
         m_descriptor[prefix + "display_name"] = std::filesystem::path(path).append("display_name");
@@ -49,8 +48,10 @@ void SysFsDriverLegionOther::init()
     };
 
 
-    std::vector<QString> standardSttributesCapData01 = {"apus_pptp_limit","cpu_clp_limit","cpu_ltp_limit","cpu_pl1_tau","cpu_pp_limit","cpu_stp_limit","cpu_tmp_limit",
-                                               "gpu_configurable_tgp","gpu_power_boost","gpu_temperature_limit","gpu_to_cpu_dynamic_boost","gpu_total_onac"};
+    std::vector<QString> standardSttributesCapData01 = {
+                                                        "apus_pptp_limit","cpu_clp_limit","cpu_ltp_limit","cpu_pl1_tau","cpu_pp_limit","cpu_stp_limit","cpu_tmp_limit",
+                                                        "gpu_configurable_tgp","gpu_power_boost","gpu_temperature_limit","gpu_to_cpu_dynamic_boost","gpu_total_onac"
+                                                       };
 
     for (const auto& attr : standardSttributesCapData01)
     {

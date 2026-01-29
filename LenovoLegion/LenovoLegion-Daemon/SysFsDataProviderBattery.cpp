@@ -36,6 +36,7 @@ QByteArray SysFsDataProviderBattery::serializeAndGetData() const
 
         battery.set_current_charge_mode_value(static_cast<legion::messages::Battery::PowerChargeMode>(getData(other.get_power_charge_mode).toUShort()));
         battery.set_baterry_status(getData(batery0.m_powerSuplyBattery0).toStdString());
+        battery.set_supported(true);
 
     } catch(SysFsDriver::exception_T& ex)
     {

@@ -6,7 +6,7 @@
  *   Jaroslav Bolek <jaroslav.bolek@gmail.com>
  */
 
-#include "SysFSDriverHWMon.h"
+#include "SysFSDriverLegionHWMon.h"
 
 #include <Core/LoggerHolder.h>
 
@@ -17,10 +17,10 @@
 namespace LenovoLegionDaemon {
 
 
-SysFSDriverHWMon::SysFSDriverHWMon(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/class/hwmon/",{},parrent,MODULE_NAME)
+SysFSDriverLegionHWMon::SysFSDriverLegionHWMon(QObject *parrent) : SysFsDriver(DRIVER_NAME,"/sys/class/hwmon/",{},parrent,MODULE_NAME)
 {}
 
-void SysFSDriverHWMon::init()
+void SysFSDriverLegionHWMon::init()
 {
     LOG_T(__PRETTY_FUNCTION__);
 

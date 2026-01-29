@@ -497,7 +497,7 @@ static int legion_wmi_read_static_values(struct wmi_device *wdev,struct game_zon
 {
 	int ret = 0;
 
-	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportSmartFan,NULL,0, &cache->IsSupportSmartFan);
+	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportSmartFan,NULL,0, (u32*)(&cache->IsSupportSmartFan));
 	if (ret)
 		return ret;
 
@@ -506,7 +506,6 @@ static int legion_wmi_read_static_values(struct wmi_device *wdev,struct game_zon
 	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportDisableWinKey,NULL,0, &cache->IsSupportDisableWinKey);
 	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportDisableTP,NULL,0, &cache->IsSupportDisableTP);
 	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportGSync,NULL,0, &cache->IsSupportGSync);
-	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportSmartFan,NULL,0, &cache->IsSupportSmartFan);
 	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportOD,NULL,0, &cache->IsSupportOD);
 	ret = legion_wmi_dev_evaluate_int(wdev,0x0, IsSupportIGPUMode,NULL,0, &cache->IsSupportIGPUMode);
 
@@ -565,6 +564,11 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 	}
 
 	priv->extreme_supported = legion_wmi_gz_extreme_supported(priv->preloaded_values.IsSupportSmartFan);
+
+	if(!priv->extreme_supported)
+	{
+		priv->preloaded_values.IsSupportSmartFan  *= -1;
+	}
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	priv->ppdev = devm_platform_profile_register(&wdev->dev, "lenovo-wmi-gamezone",
