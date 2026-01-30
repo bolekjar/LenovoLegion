@@ -35,6 +35,7 @@ void SysFSDriverLegionGameZone::init()
         m_descriptor["smart_fan_current_value"] = std::filesystem::path(path).append("current_value");
         m_descriptor["smart_fan_display_name"] = std::filesystem::path(path).append("display_name");
         m_descriptor["smart_fan_supported"] = std::filesystem::path(path).append("supported");
+        m_descriptor["smart_fan_extreme_supported"] = std::filesystem::path(path).append("extreme_supported");
     }
 
     path = std::filesystem::path(m_path).append("disable_tp");

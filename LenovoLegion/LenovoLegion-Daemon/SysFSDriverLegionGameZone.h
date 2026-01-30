@@ -24,12 +24,14 @@ public:
             SmartFan(const SysFsDriver::DescriptorType& descriptor) :
                 m_current_value(descriptor["smart_fan_current_value"]),
                 m_display_name(descriptor["smart_fan_display_name"]),
-                m_supported(descriptor["smart_fan_supported"])
+                m_supported(descriptor["smart_fan_supported"]),
+                m_extreme_supported(descriptor["smart_fan_extreme_supported"])
             {}
 
             const std::filesystem::path m_current_value;
             const std::filesystem::path m_display_name;
             const std::filesystem::path m_supported;
+            const std::filesystem::path m_extreme_supported;
         };
 
         struct DisableTP {

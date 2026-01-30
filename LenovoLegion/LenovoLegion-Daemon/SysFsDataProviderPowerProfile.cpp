@@ -46,7 +46,7 @@ QByteArray SysFsDataProviderPowerProfile::serializeAndGetData() const
         powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_PERFORMANCE);
         powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM);
 
-        if(static_cast<legion::messages::PowerProfile::Profiles>(getData(smartFan.m_supported).toLongLong() > 0))
+        if(static_cast<legion::messages::PowerProfile::Profiles>(getData(smartFan.m_extreme_supported).toUShort() == 1))
         {
             powerProfile.add_supported_profiles(legion::messages::PowerProfile::POWER_PROFILE_EXTREME);
         }
