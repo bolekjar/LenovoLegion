@@ -33,12 +33,14 @@ package() {
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/blacklist-lenovo-legion.conf $pkgdir/etc/modprobe.d/
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/lenovo-legion.conf $pkgdir/etc/modules-load.d/
   cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/99-rapl-readonly.rules $pkgdir/etc/udev/rules.d
+  cp $srcdir/$pkgname-$pkgver/$pkgname-dkms/rapl-readonly.sh $pkgdir/opt/$pkgname-$pkgver/
+  chmod 755 $pkgdir/opt/$pkgname-$pkgver/rapl-readonly.sh
 
   #daemon, gui
   $qmake $srcdir/$pkgname-$pkgver/$pkgname/ -o $srcdir/$pkgname-$pkgver/$pkgname/Makefile
   make -C $srcdir/$pkgname-$pkgver/$pkgname/
 
-  #daemon, gui
+  #daemon, gui, dkms
   cp -r $srcdir/$pkgname-$pkgver/$pkgname/Installation/* $pkgdir/opt/$pkgname-$pkgver
   chmod 777 $pkgdir/opt/$pkgname-$pkgver/log
   chmod 777 $pkgdir/opt/$pkgname-$pkgver/data
