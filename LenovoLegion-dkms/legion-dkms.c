@@ -177,6 +177,17 @@ static int legion_probe(struct platform_device *pdev)
 
 
     /*
+     * WMI gamezone
+     */
+    err = legion_wmi_gamezone_driver_init(&pdev->dev);
+	if (err) {
+		dev_err(&pdev->dev, "\tFailed to create WMI game zone driver: %d\n", err);
+		goto err_wmi_gamezone;
+	}
+	dev_info(&pdev->dev,"\tWMI game zone driver was initialized \n");
+
+
+    /*
      * WMI events
      */
     err = legion_wmi_events_driver_init(&pdev->dev);
@@ -186,15 +197,6 @@ static int legion_probe(struct platform_device *pdev)
 	}
 	dev_info(&pdev->dev,"\tWMI events driver was initialized \n");
 
-    /*
-     * WMI gamezone
-     */
-    err = legion_wmi_gamezone_driver_init(&pdev->dev);
-	if (err) {
-		dev_err(&pdev->dev, "\tFailed to create WMI game zone driver: %d\n", err);
-		goto err_wmi_gamezone;
-	}
-	dev_info(&pdev->dev,"\tWMI game zone driver was initialized \n");
 
     /*
      * WMI cd00
@@ -377,10 +379,10 @@ err_wmi_dd:
 err_wmi_cd01:
 	legion_wmi_cd00_driver_exit();
 err_wmi_cd00:
-	legion_wmi_gamezone_driver_exit();
-err_wmi_gamezone:
 	legion_wmi_events_driver_exit();
 err_wmi_events:
+	legion_wmi_gamezone_driver_exit();
+err_wmi_gamezone:
 	machine_information_sysfs_exit(data);
 err_machine_information_sysfs:
 err_model_mismatach:

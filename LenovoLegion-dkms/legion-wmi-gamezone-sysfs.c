@@ -137,18 +137,10 @@ static struct kobj_attribute kobj_attr_##_func  =                               
 
 
 
-
-
-
-
-
-
-
 #define __LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED(_name,_attr,_attrget,_attrset,_dispname,_possible_inputs) \
 static ssize_t func_##_name##_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) \
 {																												 \
 	struct lenovo_wmi_gz_priv *priv = dev_get_drvdata(kobj_to_dev(kobj->parent));								 \
-	s64 value = priv->preloaded_values._attr;																	 \
 																												 \
 	/* Critical: Prevent NULL pointer dereference and system freeze */   										 \
 	if (!priv) {																								 \
@@ -156,7 +148,7 @@ static ssize_t func_##_name##_show(struct kobject *kobj,struct kobj_attribute *k
 	}																											 \
 																												 \
 	/* Return cached value instead of calling WMI (prevents deadlock/freeze) */									 \
-	return sysfs_emit(buf, "%lld\n", value);												 					 \
+	return sysfs_emit(buf, "%u\n", priv->preloaded_values._attr);						    					 \
 }                                          																		 \
 static ssize_t func_##_name##_display_name_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) 	 \
 {																												 \
@@ -212,6 +204,89 @@ static struct attribute *legion_sysfs_##_name##_attributes[] = {                
 	NULL                                                                                                         \
 };
 
+
+#define __LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED_SMARTFAN(_name,_attr,_attrget,_attrset,_dispname,_possible_inputs) \
+static ssize_t func_##_name##_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) \
+{																												 \
+	struct lenovo_wmi_gz_priv *priv = dev_get_drvdata(kobj_to_dev(kobj->parent));								 \
+																												 \
+	/* Critical: Prevent NULL pointer dereference and system freeze */   										 \
+	if (!priv) {																								 \
+		return -ENODEV;																							 \
+	}																											 \
+																												 \
+	/* Return cached value instead of calling WMI (prevents deadlock/freeze) */									 \
+	return sysfs_emit(buf, "%u\n", priv->preloaded_values._attr);						    					 \
+}																												 \
+static ssize_t func_##_name##_extreme_supported##_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf)\
+{																												 \
+	struct lenovo_wmi_gz_priv *priv = dev_get_drvdata(kobj_to_dev(kobj->parent));								 \
+																												 \
+	/* Critical: Prevent NULL pointer dereference and system freeze */   										 \
+	if (!priv) {																								 \
+		return -ENODEV;																							 \
+	}																											 \
+																												 \
+	/* Return cached value instead of calling WMI (prevents deadlock/freeze) */									 \
+	return sysfs_emit(buf, "%u\n", priv->extreme_supported);						    					 \
+}        																										 \
+static ssize_t func_##_name##_display_name_show(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) 	 \
+{																												 \
+	return sysfs_emit(buf, "%s\n", _dispname);																     \
+}																												 \
+static ssize_t func_##_name##_get(struct kobject *kobj,struct kobj_attribute *kattr, char *buf) 	 		     \
+{																												 \
+	u32 value;																									 \
+	struct lenovo_wmi_gz_priv *priv = dev_get_drvdata(kobj_to_dev(kobj->parent));								 \
+																												 \
+	/* Critical: Prevent NULL pointer dereference and system freeze */   										 \
+	if (!priv) {																								 \
+		return -ENODEV;																							 \
+	}																											 \
+    if(legion_wmi_gz_get(priv->wdev,_attrget,&value))		 											    	 \
+	    return -ENODEV;																							 \
+	return sysfs_emit(buf, "%u\n", value);																         \
+}																												 \
+static ssize_t func_##_name##_set(struct kobject *kobj, struct kobj_attribute *kattr,            				 \
+		const char *buf, size_t count)   																		 \
+{																												 \
+	int ret = 0,value = 0;																						 \
+	struct lenovo_wmi_gz_priv *priv = dev_get_drvdata(kobj_to_dev(kobj->parent));								 \
+	/* Critical: Prevent NULL pointer dereference and system freeze */   										 \
+	if (!priv) {																								 \
+		return -ENODEV;																							 \
+	}																											 \
+																											     \
+	ret = kstrtouint(buf, 10, &value);																			 \
+	if (ret)																									 \
+		return ret;																								 \
+		                                                                                                         \
+    ret = legion_wmi_validate_input(value,_possible_inputs,sizeof(_possible_inputs)/sizeof(_possible_inputs[0]));\
+	if (ret)																									 \
+		return ret;                                                                                              \
+                                                                                                                 \
+	ret = legion_wmi_gz_set(priv->wdev,_attrset,value); 														 \
+	if (ret)																									 \
+		return ret;																								 \
+		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 \
+	return count;																								 \
+}																												 \
+static struct kobj_attribute kobj_attr_##_name  = __LEGION_WMI_ATTR_RO(supported,_name);		            	 \
+static struct kobj_attribute kobj_attr_display_name_##_name  =                                                   \
+		__LEGION_WMI_ATTR_RO(display_name,_name##_display_name);	     		 								 \
+static struct kobj_attribute kobj_attr_current_value_##_name  =                                                  \
+		__LEGION_WMI_ATTR_RW(current_value,_name);	     				 						 			     \
+static struct kobj_attribute kobj_attr_extreme_supported_value_##_name  =                                        \
+		__LEGION_WMI_ATTR_RO(extreme_supported,_name##_extreme_supported);	     				 						 			 \
+																												 \
+static struct attribute *legion_sysfs_##_name##_attributes[] = {                                                 \
+	&kobj_attr_##_name.attr,																		             \
+	&kobj_attr_display_name_##_name.attr,																		 \
+	&kobj_attr_current_value_##_name.attr,																	     \
+	&kobj_attr_extreme_supported_value_##_name.attr,															 \
+	NULL                                                                                                         \
+};
+
 /*
  * Features: isSupported, Get, Set
  */
@@ -241,7 +316,7 @@ static u32 StateONOFF[] = {
 		1  //On
 };
 
-__LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED(smart_fan,IsSupportSmartFan,GetSmartFanMode,SetSmartFanMode,"Smart Fan feature",SmartFanPossibleValues);
+__LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED_SMARTFAN(smart_fan,IsSupportSmartFan,GetSmartFanMode,SetSmartFanMode,"Smart Fan feature",SmartFanPossibleValues);
 __LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED(igpu_mode,IsSupportIGPUMode,GetIGPUModeStatus,SetIGPUModeStatus,"IGPU mode",IGPUModeStates);
 __LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED(disable_win_key,IsSupportDisableWinKey,GetWinKeyStatus,SetWinKeyStatus,"EC disable/enable windows key capability",StateONOFF);
 __LEGION_WMI_RO_FEATURE_SET_GET_SUPPORTED(disable_tp,IsSupportDisableTP,GetTPStatus,SetTPStatus,"EC disable/enable touchpad capability",StateONOFF);

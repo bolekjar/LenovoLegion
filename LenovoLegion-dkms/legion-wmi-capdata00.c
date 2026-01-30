@@ -220,7 +220,7 @@ static const struct wmi_device_id legion_wmi_cd00_id_table[] = {
 static struct wmi_driver legion_wmi_cd00_driver = {
 	.driver = {
 		.name = "legion_wmi_cd00",
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+		.probe_type = PROBE_FORCE_SYNCHRONOUS,
 	},
 	.id_table = legion_wmi_cd00_id_table,
 	.probe = legion_wmi_cd00_probe,

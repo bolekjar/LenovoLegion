@@ -188,7 +188,7 @@ struct game_zone_preloaded_method_values
 	unsigned int IsSupportDisableWinKey;
 	unsigned int IsSupportDisableTP;
 	unsigned int IsSupportGSync;
-	s64          IsSupportSmartFan; // negative value does not support extreme mode
+	unsigned int IsSupportSmartFan;
 	unsigned int IsSupportOD;
 	unsigned int IsSupportIGPUMode;
 
@@ -204,7 +204,7 @@ struct lenovo_wmi_gz_priv {
 	enum thermal_mode current_mode_on_battery;
 
 	enum power_adapter_status current_adapter_status;
-	int  extreme_supported;
+	bool  extreme_supported;
 
 	struct notifier_block event_nb;
 	struct notifier_block other_nb;
@@ -232,7 +232,6 @@ struct device;
 int legion_wmi_gz_get(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,u32 *value);
 int legion_wmi_gz_set(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,u32 value);
 int legion_wmi_gz_get_string(struct wmi_device *wdev,enum LEGION_GAMEZONE_METHOD_ID method_id,char *retval,size_t max_retval_size);
-int legion_wmi_gz_match(struct device *dev, void *data);
 
 
 int  legion_wmi_gamezone_driver_init(struct device *parent);

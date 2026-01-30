@@ -23,8 +23,6 @@
 
 #define LEGION_GAMEZONE_GUID "887B54E3-DDDC-4B2C-8B88-68A26A8835D0"
 
-static BLOCKING_NOTIFIER_HEAD(gz_chain_head);
-
 struct quirk_entry {
 	bool extreme_supported;
 };
@@ -565,11 +563,6 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 
 	priv->extreme_supported = legion_wmi_gz_extreme_supported(priv->preloaded_values.IsSupportSmartFan);
 
-	if(!priv->extreme_supported)
-	{
-		priv->preloaded_values.IsSupportSmartFan  *= -1;
-	}
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	priv->ppdev = devm_platform_profile_register(&wdev->dev, "lenovo-wmi-gamezone",
 						     priv, &legion_wmi_gz_platform_profile_ops);
@@ -635,19 +628,6 @@ static struct wmi_driver lenovo_wmi_gz_driver = {
 	.remove = legion_wmi_gz_remove,
 	.no_singleton = true,
 };
-
-/**
- * legion_wmi_gz_match() - Match rule for the master driver.
- * @dev: Pointer to the capability data 01 parent device.
- * @data: Unused void pointer for passing match criteria.
- *
- * Return: int.
- */
-int legion_wmi_gz_match(struct device *dev, void *data)
-{
-	return dev->driver == &lenovo_wmi_gz_driver.driver;
-}
-
 
 int  legion_wmi_gamezone_driver_init(struct device *parent){
 	int ret;
