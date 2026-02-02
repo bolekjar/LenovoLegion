@@ -57,10 +57,8 @@ private slots:
 
 private:
 
-    void refreshData();
-    void refreshGpuSwitchData();
-    void readOtherSettingsData();
-    void readGpuSwitchData();
+    void renderData();
+    void renderGpuSwitchData();
     void applySettings();
     void applyGpuSwitchSettings();
     bool isRestartNeededForGpuSwitch(const legion::messages::GpuSwitchValue &newSettings);

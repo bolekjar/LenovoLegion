@@ -29,16 +29,27 @@ OtherControl::OtherControl(DataProvider *dataProvider, QWidget *parent)
 {
     ui->setupUi(this);
 
-    readOtherSettingsData();
-    readGpuSwitchData();
+    /*
+     * Read data
+     */
+    m_otherSettingsData = m_dataProvider->getDataMessage<legion::messages::OtherSettings>(
+        LenovoLegionDaemon::SysFsDataProviderOther::dataType);
+    m_gpuSwitchData = m_dataProvider->getDataMessage<legion::messages::GpuSwitchValue>(
+        LenovoLegionDaemon::SysFsDataProviderOtherGpuSwitch::dataType);
 
+    /*
+     * Check data availability
+     */
     if(!m_otherSettingsData.has_touch_pad() ||
-       !m_otherSettingsData.has_win_key() ||
-       !m_otherSettingsData.touch_pad().has_supported())
+       !m_otherSettingsData.has_win_key()
+        )
     {
         THROW_EXCEPTION(exception_T, ERROR_CODES::DATA_NOT_READY, "Other Settings data not available");
     }
 
+    /*
+     * Render data
+     */
     refresh();
 }
 
@@ -49,38 +60,34 @@ OtherControl::~OtherControl()
 
 void OtherControl::refresh()
 {
-    refreshData();
-    refreshGpuSwitchData();
+    renderData();
+    renderGpuSwitchData();
 }
 
-void OtherControl::refreshData()
+void OtherControl::renderData()
 {
-    readOtherSettingsData();
-
     // Block signals to prevent triggering applySettings during refresh
     ui->checkBox_DisableTouchpad->blockSignals(true);
     ui->checkBox_DisableWinKey->blockSignals(true);
 
-    ui->checkBox_DisableTouchpad->setEnabled(m_otherSettingsData.touch_pad().supported());
-    ui->checkBox_DisableWinKey->setEnabled(m_otherSettingsData.win_key().supported());
+    ui->checkBox_DisableTouchpad->setVisible(m_otherSettingsData.touch_pad().supported());
+    ui->checkBox_DisableWinKey->setVisible(m_otherSettingsData.win_key().supported());
+    ui->groupBox_OtherSettings->setVisible(false);
 
     // Update UI from current data
     if(m_otherSettingsData.touch_pad().supported())
     {
         ui->checkBox_DisableTouchpad->setChecked(m_otherSettingsData.touch_pad().current());
         ui->checkBox_DisableTouchpad->blockSignals(false);
+        ui->groupBox_OtherSettings->setVisible(true);
     }
 
     if(m_otherSettingsData.win_key().supported())
     {
         ui->checkBox_DisableWinKey->setChecked(m_otherSettingsData.win_key().current());
         ui->checkBox_DisableWinKey->blockSignals(false);
+        ui->groupBox_OtherSettings->setVisible(true);
     }
-
-    LOG_T("OtherControl: Refreshed data - TouchPad disabled: " +
-          QString::number(m_otherSettingsData.touch_pad().current()) +
-          ", WinKey disabled: " + 
-          QString::number(m_otherSettingsData.win_key().current()));
 }
 
 void OtherControl::applySettings()
@@ -90,28 +97,26 @@ void OtherControl::applySettings()
     // Create message with new settings
     legion::messages::OtherSettings newSettings;
 
-    newSettings.mutable_touch_pad()->set_current(ui->checkBox_DisableTouchpad->isChecked());
-    newSettings.mutable_win_key()->set_current(ui->checkBox_DisableWinKey->isChecked());
+
+    if(!ui->checkBox_DisableTouchpad->isHidden())
+    {
+        newSettings.mutable_touch_pad()->set_current(ui->checkBox_DisableTouchpad->isChecked());
+    }
+
+    if(!ui->checkBox_DisableWinKey->isHidden())
+    {
+        newSettings.mutable_win_key()->set_current(ui->checkBox_DisableWinKey->isChecked());
+    }
 
     // Send to daemon
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderOther::dataType, newSettings);
 
-    LOG_T("OtherControl: Settings applied - TouchPad disabled: " +
-          QString::number(newSettings.touch_pad().current()) +
-          ", WinKey disabled: " + 
-          QString::number(newSettings.win_key().current()));
-}
-
-void OtherControl::readOtherSettingsData()
-{
+    // Refresh data from daemon
     m_otherSettingsData = m_dataProvider->getDataMessage<legion::messages::OtherSettings>(
         LenovoLegionDaemon::SysFsDataProviderOther::dataType);
-}
 
-void OtherControl::readGpuSwitchData()
-{
-    m_gpuSwitchData = m_dataProvider->getDataMessage<legion::messages::GpuSwitchValue>(
-        LenovoLegionDaemon::SysFsDataProviderOtherGpuSwitch::dataType);
+    // Re-render UI
+    renderData();
 }
 
 void OtherControl::on_checkBox_DisableTouchpad_stateChanged(int)
@@ -124,17 +129,15 @@ void OtherControl::on_checkBox_DisableWinKey_stateChanged(int)
     applySettings();
 }
 
-void OtherControl::refreshGpuSwitchData()
+void OtherControl::renderGpuSwitchData()
 {
-    readGpuSwitchData();
-
     // Block signals to prevent triggering applyGpuSwitchSettings during refresh
     ui->radioButton_HybridOn->blockSignals(true);
     ui->radioButton_HybridAuto->blockSignals(true);
     ui->radioButton_HybridIGPUOnly->blockSignals(true);
     ui->radioButton_HybridOff->blockSignals(true);
 
-    ui->groupBox_GPUControl->setEnabled(m_gpuSwitchData.supported());
+    ui->groupBox_GPUControl->setVisible(m_gpuSwitchData.supported());
 
     if(m_gpuSwitchData.supported()) {
         // Update UI from current data
@@ -163,9 +166,6 @@ void OtherControl::refreshGpuSwitchData()
         ui->radioButton_HybridIGPUOnly->blockSignals(false);
         ui->radioButton_HybridOff->blockSignals(false);
     }
-
-    LOG_T("OtherControl: Refreshed GPU switch data - Mode: " +
-          QString::number(m_gpuSwitchData.current()));
 }
 
 void OtherControl::applyGpuSwitchSettings()
@@ -202,9 +202,13 @@ void OtherControl::applyGpuSwitchSettings()
         restartMsgBox.exec();
     }
 
+    // Refresh data from daemon
+    m_gpuSwitchData = m_dataProvider->getDataMessage<legion::messages::GpuSwitchValue>(
+        LenovoLegionDaemon::SysFsDataProviderOtherGpuSwitch::dataType);
 
-    LOG_T("OtherControl: GPU switch settings applied - Mode: " +
-          QString::number(newSettings.current()));
+
+    // Re-render UI
+    renderGpuSwitchData();
 }
 
 bool OtherControl::isRestartNeededForGpuSwitch(const legion::messages::GpuSwitchValue& newSettings)

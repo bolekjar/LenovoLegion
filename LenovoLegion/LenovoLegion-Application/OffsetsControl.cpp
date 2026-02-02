@@ -112,9 +112,15 @@ OffsetsControl::OffsetsControl(DataProvider *dataProvider,QWidget *parent)
     ui->comboBox_cpuVoltagePreset->view()->window()->setAttribute(Qt::WA_TranslucentBackground);
 
 
+    /*
+     * Redad Data
+     */
     readCpuIntelMsrData();
     readGpuNvmlData();
 
+    /*
+     * Validate Data
+     */
     if(!m_cpuIntelMSRData.has_analogio() ||
        !m_cpuIntelMSRData.has_cache()    ||
        !m_cpuIntelMSRData.has_cpu()      ||
@@ -125,34 +131,63 @@ OffsetsControl::OffsetsControl(DataProvider *dataProvider,QWidget *parent)
         THROW_EXCEPTION(exception_T, ERROR_CODES::DATA_NOT_READY, "Voltage Control data not available");
     }
 
-    if(!m_gpuNvmlData.has_gpu_offset() ||
-       !m_gpuNvmlData.has_memory_offset()
-       )
-    {
-        THROW_EXCEPTION(exception_T, ERROR_CODES::DATA_NOT_READY, "GPU Offset data not available");
-    }
+
+    /*
+     * Setup Sliders
+     */
+    ui->horizontalSlider_cpuVoltageCore->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageCache->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageGPU->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageUncore->blockSignals(true);
+    ui->horizontalSlider_cpuVoltageAnalogIO->blockSignals(true);
+
+    ui->horizontalSlider_GPUClockOffset->blockSignals(true);
+    ui->horizontalSlider_GPUMemoryOffset->blockSignals(true);
+
+    ui->comboBox_cpuVoltagePreset->blockSignals(true);
 
 
-    ui->horizontalSlider_cpuVoltageCore->setMinimum(-m_cpuIntelMSRData.cpu().max_undervolt());
-    ui->horizontalSlider_cpuVoltageCore->setMaximum(m_cpuIntelMSRData.cpu().max_overvolt());
+    ui->horizontalSlider_cpuVoltageCore->setVisible(false);
+    ui->horizontalSlider_cpuVoltageCache->setVisible(false);
+    ui->horizontalSlider_cpuVoltageGPU->setVisible(false);
+    ui->horizontalSlider_cpuVoltageUncore->setVisible(false);
+    ui->horizontalSlider_cpuVoltageAnalogIO->setVisible(false);
 
-    ui->horizontalSlider_cpuVoltageCache->setMinimum(-m_cpuIntelMSRData.cache().max_undervolt());
-    ui->horizontalSlider_cpuVoltageCache->setMaximum(m_cpuIntelMSRData.cache().max_overvolt());
+    ui->horizontalSlider_GPUClockOffset->setVisible(false);
+    ui->horizontalSlider_GPUMemoryOffset->setVisible(false);
 
-    ui->horizontalSlider_cpuVoltageGPU->setMinimum(-m_cpuIntelMSRData.gpu().max_undervolt());
-    ui->horizontalSlider_cpuVoltageGPU->setMaximum(m_cpuIntelMSRData.gpu().max_overvolt());
+    ui->comboBox_cpuVoltagePreset->setVisible(false);
+    ui->comboBox_GPUPreset->setVisible(false);
+    ui->groupBox_CPUVoltageOffsets->setVisible(false);
+    ui->groupBox_GPUOffsets->setVisible(false);
 
-    ui->horizontalSlider_cpuVoltageUncore->setMinimum(-m_cpuIntelMSRData.uncore().max_undervolt());
-    ui->horizontalSlider_cpuVoltageUncore->setMaximum(m_cpuIntelMSRData.uncore().max_overvolt());
+    ui->label_cpuVoltageCore->setVisible(false);
+    ui->label_cpuVoltageCache->setVisible(false);
+    ui->label_cpuVoltageGPU->setVisible(false);
+    ui->label_cpuVoltageUncore->setVisible(false);
+    ui->label_cpuVoltageAnalogIO->setVisible(false);
 
-    ui->horizontalSlider_cpuVoltageAnalogIO->setMinimum(-m_cpuIntelMSRData.analogio().max_undervolt());
-    ui->horizontalSlider_cpuVoltageAnalogIO->setMaximum(m_cpuIntelMSRData.analogio().max_overvolt());
+    ui->label_GPUClockOffset->setVisible(false);
+    ui->label_GPUMemoryOffset->setVisible(false);
 
-    ui->horizontalSlider_GPUClockOffset->setMinimum(m_gpuNvmlData.gpu_offset().min());
-    ui->horizontalSlider_GPUClockOffset->setMaximum(m_gpuNvmlData.gpu_offset().max());
+    ui->lcdNumber_cpuVoltageCore->setVisible(false);
+    ui->lcdNumber_cpuVoltageCache->setVisible(false);
+    ui->lcdNumber_cpuVoltageGPU->setVisible(false);
+    ui->lcdNumber_cpuVoltageUncore->setVisible(false);
+    ui->lcdNumber_cpuVoltageAnalogIO->setVisible(false);
 
-    ui->horizontalSlider_GPUMemoryOffset->setMinimum(m_gpuNvmlData.memory_offset().min());
-    ui->horizontalSlider_GPUMemoryOffset->setMaximum(m_gpuNvmlData.memory_offset().max());
+    ui->lcdNumber_GPUClockOffset->setVisible(false);
+    ui->lcdNumber_GPUMemoryOffset->setVisible(false);
+
+    ui->pushButton_cpuVoltageApply->setVisible(false);
+    ui->pushButton_cpuVoltageCancel->setVisible(false);
+
+
+    ui->pushButton_GPUApply->setVisible(false);
+    ui->pushButton_GPUCancel->setVisible(false);
+
+
+
 
 
     for (auto presetNameI = CPU_VOLTAGE_PRESETS.constBegin(); presetNameI != CPU_VOLTAGE_PRESETS.constEnd(); ++presetNameI)
@@ -166,6 +201,137 @@ OffsetsControl::OffsetsControl(DataProvider *dataProvider,QWidget *parent)
         ui->comboBox_GPUPreset->addItem(presetNameI.key());
     };
 
+    if(m_cpuIntelMSRData.cpu().supported())
+    {
+        ui->horizontalSlider_cpuVoltageCore->setMinimum(-m_cpuIntelMSRData.cpu().max_undervolt());
+        ui->horizontalSlider_cpuVoltageCore->setMaximum(m_cpuIntelMSRData.cpu().max_overvolt());
+
+        ui->horizontalSlider_cpuVoltageCore->setVisible(true);
+        ui->comboBox_cpuVoltagePreset->setVisible(true);
+        ui->groupBox_CPUVoltageOffsets->setVisible(true);
+        ui->lcdNumber_cpuVoltageCore->setVisible(true);
+        ui->label_cpuVoltageCore->setVisible(true);
+
+
+        ui->pushButton_cpuVoltageApply->setVisible(true);
+        ui->pushButton_cpuVoltageCancel->setVisible(true);
+
+        ui->horizontalSlider_cpuVoltageCore->blockSignals(false);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+    }
+
+    if(m_cpuIntelMSRData.cache().supported())
+    {
+        ui->horizontalSlider_cpuVoltageCache->setMinimum(-m_cpuIntelMSRData.cache().max_undervolt());
+        ui->horizontalSlider_cpuVoltageCache->setMaximum(m_cpuIntelMSRData.cache().max_overvolt());
+
+        ui->horizontalSlider_cpuVoltageCache->setVisible(true);
+        ui->comboBox_cpuVoltagePreset->setVisible(true);
+        ui->groupBox_CPUVoltageOffsets->setVisible(true);
+        ui->lcdNumber_cpuVoltageCache->setVisible(true);
+        ui->label_cpuVoltageCache->setVisible(true);
+
+
+        ui->pushButton_cpuVoltageApply->setVisible(true);
+        ui->pushButton_cpuVoltageCancel->setVisible(true);
+
+        ui->horizontalSlider_cpuVoltageCache->blockSignals(false);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+    }
+
+
+    if(m_cpuIntelMSRData.gpu().supported())
+    {
+        ui->horizontalSlider_cpuVoltageGPU->setMinimum(-m_cpuIntelMSRData.gpu().max_undervolt());
+        ui->horizontalSlider_cpuVoltageGPU->setMaximum(m_cpuIntelMSRData.gpu().max_overvolt());
+
+        ui->horizontalSlider_cpuVoltageGPU->setVisible(true);
+        ui->comboBox_cpuVoltagePreset->setVisible(true);
+        ui->groupBox_CPUVoltageOffsets->setVisible(true);
+        ui->lcdNumber_cpuVoltageGPU->setVisible(true);
+        ui->label_cpuVoltageGPU->setVisible(true);
+
+
+        ui->pushButton_cpuVoltageApply->setVisible(true);
+        ui->pushButton_cpuVoltageCancel->setVisible(true);
+
+        ui->horizontalSlider_cpuVoltageGPU->blockSignals(false);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+    }
+
+
+    if(m_cpuIntelMSRData.uncore().supported())
+    {
+        ui->horizontalSlider_cpuVoltageUncore->setMinimum(-m_cpuIntelMSRData.uncore().max_undervolt());
+        ui->horizontalSlider_cpuVoltageUncore->setMaximum(m_cpuIntelMSRData.uncore().max_overvolt());
+
+
+        ui->horizontalSlider_cpuVoltageUncore->setVisible(true);
+        ui->comboBox_cpuVoltagePreset->setVisible(true);
+        ui->groupBox_CPUVoltageOffsets->setVisible(true);
+        ui->lcdNumber_cpuVoltageUncore->setVisible(true);
+        ui->label_cpuVoltageUncore->setVisible(true);
+
+        ui->horizontalSlider_cpuVoltageUncore->blockSignals(false);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+    }
+
+    if(m_cpuIntelMSRData.analogio().supported())
+    {
+        ui->horizontalSlider_cpuVoltageAnalogIO->setMinimum(-m_cpuIntelMSRData.analogio().max_undervolt());
+        ui->horizontalSlider_cpuVoltageAnalogIO->setMaximum(m_cpuIntelMSRData.analogio().max_overvolt());
+
+        ui->horizontalSlider_cpuVoltageAnalogIO->setVisible(true);
+        ui->comboBox_cpuVoltagePreset->setVisible(true);
+        ui->groupBox_CPUVoltageOffsets->setVisible(true);
+        ui->lcdNumber_cpuVoltageAnalogIO->setVisible(true);
+        ui->label_cpuVoltageAnalogIO->setVisible(true);
+
+
+        ui->pushButton_cpuVoltageApply->setVisible(true);
+        ui->pushButton_cpuVoltageCancel->setVisible(true);
+
+
+        ui->horizontalSlider_cpuVoltageAnalogIO->blockSignals(false);
+        ui->comboBox_cpuVoltagePreset->blockSignals(false);
+    }
+
+    if(m_gpuNvmlData.has_gpu_offset())
+    {
+        ui->horizontalSlider_GPUClockOffset->setMinimum(m_gpuNvmlData.gpu_offset().min());
+        ui->horizontalSlider_GPUClockOffset->setMaximum(m_gpuNvmlData.gpu_offset().max());
+
+        ui->horizontalSlider_GPUClockOffset->setVisible(true);
+        ui->groupBox_GPUOffsets->setVisible(true);
+        ui->comboBox_GPUPreset->setVisible(true);
+        ui->lcdNumber_GPUClockOffset->setVisible(true);
+        ui->label_GPUClockOffset->setVisible(true);
+
+
+        ui->pushButton_GPUApply->setVisible(true);
+        ui->pushButton_GPUCancel->setVisible(true);
+
+        ui->horizontalSlider_GPUClockOffset->blockSignals(false);
+        ui->comboBox_GPUPreset->blockSignals(false);
+    }
+
+    if(m_gpuNvmlData.has_memory_offset())
+    {
+        ui->horizontalSlider_GPUMemoryOffset->setMinimum(m_gpuNvmlData.memory_offset().min());
+        ui->horizontalSlider_GPUMemoryOffset->setMaximum(m_gpuNvmlData.memory_offset().max());
+
+        ui->horizontalSlider_GPUMemoryOffset->setVisible(true);
+        ui->groupBox_GPUOffsets->setVisible(true);
+        ui->comboBox_GPUPreset->setVisible(true);
+        ui->lcdNumber_GPUMemoryOffset->setVisible(true);
+        ui->label_GPUMemoryOffset->setVisible(true);
+
+        ui->pushButton_GPUApply->setVisible(true);
+        ui->pushButton_GPUCancel->setVisible(true);
+
+        ui->horizontalSlider_GPUMemoryOffset->blockSignals(false);
+        ui->comboBox_GPUPreset->blockSignals(false);
+    }
 
     refresh();
 }
@@ -260,15 +426,15 @@ void OffsetsControl::on_pushButton_cpuVoltageApply_clicked()
 {
     legion::messages::CpuIntelMSR cpuIntelMSR;
 
-    if(m_cpuIntelMSRData.cpu().supported())
+    if(!ui->horizontalSlider_cpuVoltageCore->isHidden())
         cpuIntelMSR.mutable_cpu()->set_offset(ui->horizontalSlider_cpuVoltageCore->value() * 1000);
-    if(m_cpuIntelMSRData.uncore().supported())
+    if(!ui->horizontalSlider_cpuVoltageUncore->isHidden())
         cpuIntelMSR.mutable_uncore()->set_offset(ui->horizontalSlider_cpuVoltageUncore->value() * 1000);
-    if(m_cpuIntelMSRData.cache().supported())
+    if(!ui->horizontalSlider_cpuVoltageCache->isHidden())
         cpuIntelMSR.mutable_cache()->set_offset(ui->horizontalSlider_cpuVoltageCache->value() * 1000);
-    if(m_cpuIntelMSRData.gpu().supported())
+    if(!ui->horizontalSlider_cpuVoltageGPU->isHidden())
         cpuIntelMSR.mutable_gpu()->set_offset(ui->horizontalSlider_cpuVoltageGPU->value()* 1000);
-    if(m_cpuIntelMSRData.analogio().supported())
+    if(!ui->horizontalSlider_cpuVoltageAnalogIO->isHidden())
         cpuIntelMSR.mutable_analogio()->set_offset(ui->horizontalSlider_cpuVoltageAnalogIO->value() * 1000);
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderIntelMSR::dataType,cpuIntelMSR);
@@ -443,7 +609,7 @@ void OffsetsControl::refreshCpuVoltageOffsetData()
     ui->comboBox_cpuVoltagePreset->setCurrentText("None");
 
 
-    if(m_cpuIntelMSRData.cpu().supported())
+    if(!ui->horizontalSlider_cpuVoltageCore->isHidden())
     {
         ui->horizontalSlider_cpuVoltageCore->setValue(m_cpuIntelMSRData.cpu().offset());
         ui->lcdNumber_cpuVoltageCore->display(m_cpuIntelMSRData.cpu().offset());
@@ -456,7 +622,7 @@ void OffsetsControl::refreshCpuVoltageOffsetData()
         ui->lcdNumber_cpuVoltageCore->setEnabled(true);
     }
 
-    if(m_cpuIntelMSRData.cache().supported())
+    if(!ui->horizontalSlider_cpuVoltageCache->isHidden())
     {
         ui->horizontalSlider_cpuVoltageCache->setValue(m_cpuIntelMSRData.cache().offset());
         ui->lcdNumber_cpuVoltageCache->display(m_cpuIntelMSRData.cache().offset());
@@ -469,7 +635,7 @@ void OffsetsControl::refreshCpuVoltageOffsetData()
         ui->lcdNumber_cpuVoltageCache->setEnabled(true);
     }
 
-    if(m_cpuIntelMSRData.gpu().supported())
+    if(!ui->horizontalSlider_cpuVoltageGPU->isHidden())
     {
         ui->horizontalSlider_cpuVoltageGPU->setValue(m_cpuIntelMSRData.gpu().offset());
         ui->lcdNumber_cpuVoltageGPU->display(m_cpuIntelMSRData.gpu().offset());
@@ -482,7 +648,7 @@ void OffsetsControl::refreshCpuVoltageOffsetData()
         ui->lcdNumber_cpuVoltageGPU->setEnabled(true);
     }
 
-    if(m_cpuIntelMSRData.uncore().supported())
+    if(!ui->horizontalSlider_cpuVoltageUncore->isHidden())
     {
         ui->horizontalSlider_cpuVoltageUncore->setValue(m_cpuIntelMSRData.uncore().offset());
         ui->lcdNumber_cpuVoltageUncore->display(m_cpuIntelMSRData.uncore().offset());
@@ -495,7 +661,7 @@ void OffsetsControl::refreshCpuVoltageOffsetData()
         ui->lcdNumber_cpuVoltageUncore->setEnabled(true);
     }
 
-    if(m_cpuIntelMSRData.analogio().supported())
+    if(!ui->horizontalSlider_cpuVoltageAnalogIO->isHidden())
     {
         ui->horizontalSlider_cpuVoltageAnalogIO->setValue(m_cpuIntelMSRData.analogio().offset());
         ui->lcdNumber_cpuVoltageAnalogIO->display(m_cpuIntelMSRData.analogio().offset());
@@ -515,8 +681,15 @@ void OffsetsControl::refreshGpuOffsetData()
 {
     ui->comboBox_GPUPreset->setCurrentText("None");
 
-    ui->horizontalSlider_GPUClockOffset->setValue(m_gpuNvmlData.gpu_offset().value());
-    ui->horizontalSlider_GPUMemoryOffset->setValue(m_gpuNvmlData.memory_offset().value());
+    if(!ui->horizontalSlider_GPUClockOffset->isHidden())
+    {
+        ui->horizontalSlider_GPUClockOffset->setValue(m_gpuNvmlData.gpu_offset().value());
+    }
+
+    if(!ui->horizontalSlider_GPUMemoryOffset->isHidden())
+    {
+        ui->horizontalSlider_GPUMemoryOffset->setValue(m_gpuNvmlData.memory_offset().value());
+    }
 
     markChangesGpuOffsetData();
 }
@@ -530,8 +703,15 @@ void OffsetsControl::on_pushButton_GPUApply_clicked()
 {
     legion::messages::NvidiaNvml gpuNvml;
 
-    gpuNvml.mutable_gpu_offset()->set_value(ui->horizontalSlider_GPUClockOffset->value());
-    gpuNvml.mutable_memory_offset()->set_value(ui->horizontalSlider_GPUMemoryOffset->value());
+    if(!ui->horizontalSlider_GPUClockOffset->isHidden())
+    {
+        gpuNvml.mutable_gpu_offset()->set_value(ui->horizontalSlider_GPUClockOffset->value());
+    }
+
+    if(!ui->horizontalSlider_GPUMemoryOffset->isHidden())
+    {
+       gpuNvml.mutable_memory_offset()->set_value(ui->horizontalSlider_GPUMemoryOffset->value());
+    }
 
     m_dataProvider->setDataMessage(LenovoLegionDaemon::DataProviderNvidiaNvml::dataType,gpuNvml);
 
