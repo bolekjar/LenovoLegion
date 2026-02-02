@@ -800,6 +800,11 @@ void PowerControl::on_comboBox_PresetConfiguration_currentTextChanged(const QStr
 
     if(!ui->horizontalSlider_STPowerLimitPowerControl->isHidden())
     {
+        ui->horizontalSlider_STPowerLimitPowerControl->setValue(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    }
+
+    if(!ui->horizontalSlider_CrossLPowerLimitPowerControl->isHidden())
+    {
         ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
     }
 
