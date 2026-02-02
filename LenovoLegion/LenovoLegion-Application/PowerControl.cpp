@@ -98,54 +98,232 @@ PowerControl::PowerControl(DataProvider *dataProvider,QWidget *parent)
     /*
      * Setup GUI elements
      */
-    ui->comboBox_CPUBoostPowerControl->clear();
-    ui->comboBox_CPUBoostPowerControl->addItems(qlistToQStringList(QList<int>(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
-                                                                              m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
-                                                                              )
-                                                                   )
-                                                );
-
-    ui->comboBox_PL1TauPowerControl->clear();
-    ui->comboBox_PL1TauPowerControl->addItems(qlistToQStringList(QList<int>(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
-                                                                              m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
-                                                                              )
-                                                                   )
-                                                );
+    ui->comboBox_CPUBoostPowerControl->blockSignals(true);
+    ui->comboBox_PL1TauPowerControl->blockSignals(true);
+    ui->comboBox_GPUTargetPowerPowerControl->blockSignals(true);
+    ui->comboBox_GPUBoostClockPowerControl->blockSignals(true);
 
 
-    ui->comboBox_GPUTargetPowerPowerControl->clear();
-    ui->comboBox_GPUTargetPowerPowerControl->addItems(qlistToQStringList(QList<int>(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
-                                                                            m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
+
+    ui->horizontalSlider_PowerTargetInACPowerControl->blockSignals(true);
+    ui->horizontalSlider_LTPowerLimitPowerControl->blockSignals(true);
+    ui->horizontalSlider_STPowerLimitPowerControl->blockSignals(true);
+    ui->horizontalSlider_CrossLPowerLimitPowerControl->blockSignals(true);
+    ui->horizontalSlider_CPUTempLimitPowerControl->blockSignals(true);
+    ui->horizontalSlider_GPUTempLimitPowerControl->blockSignals(true);
+    ui->comboBox_PresetConfiguration->blockSignals(true);
+
+
+    ui->comboBox_CPUBoostPowerControl->setVisible(false);
+    ui->comboBox_PL1TauPowerControl->setVisible(false);
+    ui->comboBox_GPUTargetPowerPowerControl->setVisible(false);
+    ui->comboBox_GPUBoostClockPowerControl->setVisible(false);
+
+
+
+    ui->horizontalSlider_PowerTargetInACPowerControl->setVisible(false);
+    ui->horizontalSlider_LTPowerLimitPowerControl->setVisible(false);
+    ui->horizontalSlider_STPowerLimitPowerControl->setVisible(false);
+    ui->horizontalSlider_CrossLPowerLimitPowerControl->setVisible(false);
+    ui->horizontalSlider_CPUTempLimitPowerControl->setVisible(false);
+    ui->horizontalSlider_GPUTempLimitPowerControl->setVisible(false);
+    ui->comboBox_PresetConfiguration->setVisible(false);
+
+
+    ui->lcdNumber_CPUTempLimitPowerControl->setVisible(false);
+    ui->lcdNumber_GPUTempLimitPowerControl->setVisible(false);
+    ui->lcdNumber_LTPowerLimitPowerControl->setVisible(false);
+    ui->lcdNumber_STPowerLimitPowerControl->setVisible(false);
+    ui->lcdNumber_CrossLPowerLimitPowerControl->setVisible(false);
+    ui->lcdNumber_PowerTargetInACPowerControl->setVisible(false);
+
+    ui->label_GPUTargetPowerPowerControl->setVisible(false);
+    ui->label_GPUBoostClockPowerControl->setVisible(false);
+    ui->label_PresetConfiguration->setVisible(false);
+    ui->label_PL1TauPowerControl->setVisible(false);
+    ui->label_CPUBoostPowerControl->setVisible(false);
+    ui->label_CPUTempLimitPowerControl->setVisible(false);
+    ui->label_GPUTempLimitPowerControl->setVisible(false);
+    ui->label_LTPowerLimitPowerControl->setVisible(false);
+    ui->label_STPowerLimitPowerControl->setVisible(false);
+    ui->label_CrossLPowerLimitPowerControl->setVisible(false);
+    ui->label_PowerTargetInACPowerControl->setVisible(false);
+
+    ui->pushButton_CPUPowerControlApply->setVisible(false);
+    ui->pushButton_CPUPwoerControlCancel->setVisible(false);
+    ui->pushButton_GPUPowerControlApply->setVisible(false);
+    ui->pushButton_GPUPowerControlCancel->setVisible(false);
+    ui->groupBox_CPUPowerControl->setVisible(false);
+    ui->groupBox_GPUPowerControl->setVisible(false);
+
+
+
+    if(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+
+        ui->comboBox_CPUBoostPowerControl->clear();
+        ui->comboBox_CPUBoostPowerControl->addItems(qlistToQStringList(QList<int>(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
+                                                                                  m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
+                                                                                  )
+                                                                       )
+                                                    );
+
+        ui->comboBox_CPUBoostPowerControl->setVisible(true);
+        ui->label_CPUBoostPowerControl->setVisible(true);
+        ui->comboBox_CPUBoostPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
+
+
+    if(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+
+        ui->comboBox_PL1TauPowerControl->clear();
+        ui->comboBox_PL1TauPowerControl->addItems(qlistToQStringList(QList<int>(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
+                                                                                m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
+                                                                                )
+                                                                     )
+                                                  );
+        ui->comboBox_PL1TauPowerControl->setVisible(true);
+        ui->label_PL1TauPowerControl->setVisible(true);
+        ui->comboBox_PL1TauPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
+
+
+
+    if(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->comboBox_GPUTargetPowerPowerControl->clear();
+        ui->comboBox_GPUTargetPowerPowerControl->addItems(qlistToQStringList(QList<int>(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
+                                                                                        m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
+                                                                                        )
+                                                                             )
+                                                          );
+
+        ui->comboBox_GPUTargetPowerPowerControl->setVisible(true);
+        ui->label_GPUTargetPowerPowerControl->setVisible(true);
+        ui->comboBox_GPUTargetPowerPowerControl->blockSignals(false);
+
+        ui->pushButton_GPUPowerControlApply->setVisible(true);
+        ui->pushButton_GPUPowerControlCancel->setVisible(true);
+        ui->groupBox_GPUPowerControl->setVisible(true);
+
+    }
+
+
+    if(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->comboBox_GPUBoostClockPowerControl->clear();
+        ui->comboBox_GPUBoostClockPowerControl->addItems(qlistToQStringList(QList<int>(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
+                                                                                       m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
+                                                                                       )
                                                                             )
-                                                                 )
-                                              );
+                                                         );
+
+        ui->comboBox_GPUBoostClockPowerControl->setVisible(true);
+        ui->label_GPUBoostClockPowerControl->setVisible(true);
+        ui->comboBox_GPUBoostClockPowerControl->blockSignals(false);
+
+        ui->pushButton_GPUPowerControlApply->setVisible(true);
+        ui->pushButton_GPUPowerControlCancel->setVisible(true);
+        ui->groupBox_GPUPowerControl->setVisible(true);
+    }
 
 
-    ui->comboBox_GPUBoostClockPowerControl->clear();
-    ui->comboBox_GPUBoostClockPowerControl->addItems(qlistToQStringList(QList<int>(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().begin(),
-                                                                                    m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).steps().end()
-                                                                                    )
-                                                                         )
-                                                      );
+    if(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+
+        ui->horizontalSlider_PowerTargetInACPowerControl->setMinimum(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
+        ui->horizontalSlider_PowerTargetInACPowerControl->setMaximum(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+
+        ui->horizontalSlider_PowerTargetInACPowerControl->setVisible(true);
+        ui->lcdNumber_PowerTargetInACPowerControl->setVisible(true);
+        ui->label_PowerTargetInACPowerControl->setVisible(true);
+        ui->horizontalSlider_PowerTargetInACPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
 
 
-    ui->horizontalSlider_PowerTargetInACPowerControl->setMinimum(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
-    ui->horizontalSlider_PowerTargetInACPowerControl->setMaximum(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+    if(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->horizontalSlider_LTPowerLimitPowerControl->setMinimum(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
+        ui->horizontalSlider_LTPowerLimitPowerControl->setMaximum(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
 
-    ui->horizontalSlider_LTPowerLimitPowerControl->setMinimum(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
-    ui->horizontalSlider_LTPowerLimitPowerControl->setMaximum(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+        ui->horizontalSlider_LTPowerLimitPowerControl->setVisible(true);
+        ui->lcdNumber_LTPowerLimitPowerControl->setVisible(true);
+        ui->label_LTPowerLimitPowerControl->setVisible(true);
+        ui->horizontalSlider_LTPowerLimitPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
 
-    ui->horizontalSlider_STPowerLimitPowerControl->setMinimum(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
-    ui->horizontalSlider_STPowerLimitPowerControl->setMaximum(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
 
-    ui->horizontalSlider_CrossLPowerLimitPowerControl->setMinimum(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
-    ui->horizontalSlider_CrossLPowerLimitPowerControl->setMaximum(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+    if(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->horizontalSlider_STPowerLimitPowerControl->setMinimum(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
+        ui->horizontalSlider_STPowerLimitPowerControl->setMaximum(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
 
-    ui->horizontalSlider_CPUTempLimitPowerControl->setMinimum(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
-    ui->horizontalSlider_CPUTempLimitPowerControl->setMaximum(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+        ui->horizontalSlider_STPowerLimitPowerControl->setVisible(true);
+        ui->lcdNumber_STPowerLimitPowerControl->setVisible(true);
+        ui->label_STPowerLimitPowerControl->setVisible(true);
+        ui->horizontalSlider_STPowerLimitPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
 
-    ui->horizontalSlider_GPUTempLimitPowerControl->setMinimum(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
-    ui->horizontalSlider_GPUTempLimitPowerControl->setMaximum(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+
+    if(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->horizontalSlider_CrossLPowerLimitPowerControl->setMinimum(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
+        ui->horizontalSlider_CrossLPowerLimitPowerControl->setMaximum(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+
+        ui->horizontalSlider_CrossLPowerLimitPowerControl->setVisible(true);
+        ui->lcdNumber_CrossLPowerLimitPowerControl->setVisible(true);
+        ui->label_CrossLPowerLimitPowerControl->setVisible(true);
+        ui->horizontalSlider_CrossLPowerLimitPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
+
+
+    if(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->horizontalSlider_CPUTempLimitPowerControl->setMinimum(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
+        ui->horizontalSlider_CPUTempLimitPowerControl->setMaximum(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+
+        ui->horizontalSlider_CPUTempLimitPowerControl->setVisible(true);
+        ui->lcdNumber_CPUTempLimitPowerControl->setVisible(true);
+        ui->label_CPUTempLimitPowerControl->setVisible(true);
+        ui->horizontalSlider_CPUTempLimitPowerControl->blockSignals(false);
+        ui->pushButton_CPUPowerControlApply->setVisible(true);
+        ui->pushButton_CPUPwoerControlCancel->setVisible(true);
+        ui->groupBox_CPUPowerControl->setVisible(true);
+    }
+
+
+    if(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).supported())
+    {
+        ui->horizontalSlider_GPUTempLimitPowerControl->setMinimum(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).min_value());
+        ui->horizontalSlider_GPUTempLimitPowerControl->setMaximum(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::POWER_PROFILE_CUSTOM).max_value());
+
+        ui->horizontalSlider_GPUTempLimitPowerControl->setVisible(true);
+        ui->lcdNumber_GPUTempLimitPowerControl->setVisible(true);
+        ui->label_GPUTempLimitPowerControl->setVisible(true);
+        ui->horizontalSlider_GPUTempLimitPowerControl->blockSignals(false);
+        ui->pushButton_GPUPowerControlApply->setVisible(true);
+        ui->pushButton_GPUPowerControlCancel->setVisible(true);
+        ui->groupBox_GPUPowerControl->setVisible(true);
+    }
 
 
     ui->comboBox_PresetConfiguration->addItem("NONE");
@@ -154,6 +332,11 @@ PowerControl::PowerControl(DataProvider *dataProvider,QWidget *parent)
         ui->comboBox_PresetConfiguration->addItem(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByNumber(clpI->first)->name().data());
     }
     ui->comboBox_PresetConfiguration->setCurrentText("NONE");
+    ui->comboBox_PresetConfiguration->setVisible(true);
+    ui->label_PresetConfiguration->setVisible(true);
+    ui->comboBox_PresetConfiguration->blockSignals(false);
+    ui->groupBox_GPUPowerControl->setVisible(true);
+
 
     renderData();
     markChanges();
@@ -173,13 +356,43 @@ void PowerControl::on_pushButton_CPUPowerControlApply_clicked()
 {
     legion::messages::CPUPower cpuPower;
 
-    cpuPower.mutable_cpu_clp_limit()->set_current_value((quint8)ui->horizontalSlider_CrossLPowerLimitPowerControl->value());
-    cpuPower.mutable_cpu_ltp_limit()->set_current_value((quint8)ui->horizontalSlider_LTPowerLimitPowerControl->value());
-    cpuPower.mutable_cpu_stp_limit()->set_current_value((quint8)ui->horizontalSlider_STPowerLimitPowerControl->value());
-    cpuPower.mutable_cpu_tmp_limit()->set_current_value((quint8)ui->horizontalSlider_CPUTempLimitPowerControl->value());
-    cpuPower.mutable_gpu_total_onac()->set_current_value((quint8)ui->horizontalSlider_PowerTargetInACPowerControl->value());
-    cpuPower.mutable_gpu_to_cpu_dynamic_boost()->set_current_value((quint8)ui->comboBox_CPUBoostPowerControl->currentText().toUShort());
-    cpuPower.mutable_cpu_pl1_tau()->set_current_value((quint8)ui->comboBox_PL1TauPowerControl->currentText().toUShort());
+    if(!ui->horizontalSlider_CrossLPowerLimitPowerControl->isHidden())
+    {
+        cpuPower.mutable_cpu_clp_limit()->set_current_value((quint8)ui->horizontalSlider_CrossLPowerLimitPowerControl->value());
+    }
+
+    if(!ui->horizontalSlider_LTPowerLimitPowerControl->isHidden())
+    {
+        cpuPower.mutable_cpu_ltp_limit()->set_current_value((quint8)ui->horizontalSlider_LTPowerLimitPowerControl->value());
+    }
+
+    if(!ui->horizontalSlider_STPowerLimitPowerControl->isHidden())
+    {
+        cpuPower.mutable_cpu_stp_limit()->set_current_value((quint8)ui->horizontalSlider_STPowerLimitPowerControl->value());
+    }
+
+
+    if(!ui->horizontalSlider_CPUTempLimitPowerControl->isHidden())
+    {
+        cpuPower.mutable_cpu_tmp_limit()->set_current_value((quint8)ui->horizontalSlider_CPUTempLimitPowerControl->value());
+    }
+
+
+    if(!ui->horizontalSlider_PowerTargetInACPowerControl->isHidden())
+    {
+        cpuPower.mutable_gpu_total_onac()->set_current_value((quint8)ui->horizontalSlider_PowerTargetInACPowerControl->value());
+    }
+
+
+    if(!ui->comboBox_CPUBoostPowerControl->isHidden())
+    {
+        cpuPower.mutable_gpu_to_cpu_dynamic_boost()->set_current_value((quint8)ui->comboBox_CPUBoostPowerControl->currentText().toUShort());
+    }
+
+    if(!ui->comboBox_PL1TauPowerControl->isHidden())
+    {
+        cpuPower.mutable_cpu_pl1_tau()->set_current_value((quint8)ui->comboBox_PL1TauPowerControl->currentText().toUShort());
+    }
 
 
     //CPU Power Control Apply
@@ -257,9 +470,20 @@ void PowerControl::on_pushButton_GPUPowerControlApply_clicked()
 {
     legion::messages::GPUPower gpuPower;
 
-    gpuPower.mutable_gpu_power_boost()->set_current_value((quint8)ui->comboBox_GPUBoostClockPowerControl->currentText().toUShort());
-    gpuPower.mutable_gpu_configurable_tgp()->set_current_value((quint8)ui->comboBox_GPUTargetPowerPowerControl->currentText().toUShort());
-    gpuPower.mutable_gpu_temperature_limit()->set_current_value((quint8)ui->horizontalSlider_GPUTempLimitPowerControl->value());
+    if(!ui->comboBox_GPUBoostClockPowerControl->isHidden())
+    {
+        gpuPower.mutable_gpu_power_boost()->set_current_value((quint8)ui->comboBox_GPUBoostClockPowerControl->currentText().toUShort());
+    }
+
+    if(!ui->comboBox_GPUTargetPowerPowerControl->isHidden())
+    {
+        gpuPower.mutable_gpu_configurable_tgp()->set_current_value((quint8)ui->comboBox_GPUTargetPowerPowerControl->currentText().toUShort());
+    }
+
+    if(!ui->horizontalSlider_GPUTempLimitPowerControl->isHidden())
+    {
+        gpuPower.mutable_gpu_temperature_limit()->set_current_value((quint8)ui->horizontalSlider_GPUTempLimitPowerControl->value());
+    }
 
     //GPU Power Control Apply
     m_dataProvider->setDataMessage(LenovoLegionDaemon::SysFsDataProviderGPUPower::dataType,gpuPower);
@@ -277,42 +501,68 @@ void PowerControl::renderData()
 {
     renderCpuControlData();
     renderGpuControlData();
-
-    if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
-    {
-        ui->comboBox_PresetConfiguration->setEnabled(true);
-    }
-    else
-    {
-        ui->comboBox_PresetConfiguration->setEnabled(false);
-    }
 }
 
 void PowerControl::renderGpuControlData()
 {
+    ui->groupBox_GPUPowerControl->blockSignals(true);
+    ui->groupBox_GPUPowerControl->setEnabled(false);
+    ui->comboBox_PresetConfiguration->blockSignals(true);
+    ui->comboBox_PresetConfiguration->setEnabled(false);
+    ui->comboBox_PresetConfiguration->setCurrentText("NONE");
+
     if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
     {
-        ui->comboBox_GPUTargetPowerPowerControl->setCurrentIndex(ui->comboBox_GPUTargetPowerPowerControl->findText(QString::number(m_gpuControlData.gpu_configurable_tgp().current_value())));
-        ui->comboBox_GPUBoostClockPowerControl->setCurrentIndex(ui->comboBox_GPUBoostClockPowerControl->findText(QString::number(m_gpuControlData.gpu_power_boost().current_value())));
+        if(!ui->comboBox_GPUTargetPowerPowerControl->isHidden())
+        {
+            ui->comboBox_GPUTargetPowerPowerControl->setCurrentIndex(ui->comboBox_GPUTargetPowerPowerControl->findText(QString::number(m_gpuControlData.gpu_configurable_tgp().current_value())));
+        }
 
-        ui->horizontalSlider_GPUTempLimitPowerControl->setValue(m_gpuControlData.gpu_temperature_limit().current_value());
-        ui->lcdNumber_GPUTempLimitPowerControl->display(static_cast<int>(m_gpuControlData.gpu_temperature_limit().current_value()));
+        if(!ui->comboBox_GPUBoostClockPowerControl->isHidden())
+        {
+            ui->comboBox_GPUBoostClockPowerControl->setCurrentIndex(ui->comboBox_GPUBoostClockPowerControl->findText(QString::number(m_gpuControlData.gpu_power_boost().current_value())));
+        }
 
+
+        if(!ui->horizontalSlider_GPUTempLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_GPUTempLimitPowerControl->setValue(m_gpuControlData.gpu_temperature_limit().current_value());
+            ui->lcdNumber_GPUTempLimitPowerControl->display(static_cast<int>(m_gpuControlData.gpu_temperature_limit().current_value()));
+        }
 
         ui->groupBox_GPUPowerControl->setEnabled(true);
+        ui->groupBox_GPUPowerControl->blockSignals(false);
     }
     else
     {
-        ui->comboBox_GPUTargetPowerPowerControl->setCurrentIndex(ui->comboBox_GPUTargetPowerPowerControl->findText(QString::number(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
-        ui->comboBox_GPUBoostClockPowerControl->setCurrentIndex(ui->comboBox_GPUBoostClockPowerControl->findText(QString::number(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
 
-        ui->horizontalSlider_GPUTempLimitPowerControl->setValue(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
-        ui->lcdNumber_GPUTempLimitPowerControl->display(static_cast<int>(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        if(!ui->comboBox_GPUTargetPowerPowerControl->isHidden())
+        {
+            ui->comboBox_GPUTargetPowerPowerControl->setCurrentIndex(ui->comboBox_GPUTargetPowerPowerControl->findText(QString::number(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
 
-        ui->groupBox_GPUPowerControl->setEnabled(false);
+        }
+
+
+        if(!ui->comboBox_GPUBoostClockPowerControl->isHidden())
+        {
+            ui->comboBox_GPUBoostClockPowerControl->setCurrentIndex(ui->comboBox_GPUBoostClockPowerControl->findText(QString::number(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
+
+        }
+
+        if(!ui->horizontalSlider_GPUTempLimitPowerControl->isHidden())
+        {
+
+            ui->horizontalSlider_GPUTempLimitPowerControl->setValue(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
+            ui->lcdNumber_GPUTempLimitPowerControl->display(static_cast<int>(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        }
     }
 
-    ui->comboBox_PresetConfiguration->setCurrentText("NONE");
+
+    if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
+    {
+        ui->comboBox_PresetConfiguration->setEnabled(true);
+        ui->comboBox_PresetConfiguration->blockSignals(false);
+    }
 }
 
 void PowerControl::markChanges()
@@ -428,54 +678,114 @@ void PowerControl::markChangesGpuControlData()
 
 void PowerControl::renderCpuControlData()
 {
+    ui->groupBox_CPUPowerControl->blockSignals(true);
+    ui->groupBox_CPUPowerControl->setEnabled(false);
+    ui->comboBox_PresetConfiguration->blockSignals(true);
+    ui->comboBox_PresetConfiguration->setEnabled(false);
+    ui->comboBox_PresetConfiguration->setCurrentText("NONE");
+
     if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
     {
-        ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().current_value());
-        ui->lcdNumber_LTPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_ltp_limit().current_value()));
+        if(!ui->horizontalSlider_LTPowerLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().current_value());
+            ui->lcdNumber_LTPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_ltp_limit().current_value()));
+        }
 
-        ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().current_value());
-        ui->lcdNumber_CrossLPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_clp_limit().current_value()));
 
-        ui->horizontalSlider_STPowerLimitPowerControl->setValue(m_cpuControlData.cpu_stp_limit().current_value() );
-        ui->lcdNumber_STPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_stp_limit().current_value()));
+        if(!ui->horizontalSlider_CrossLPowerLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().current_value());
+            ui->lcdNumber_CrossLPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_clp_limit().current_value()));
+        }
 
-        ui->horizontalSlider_CPUTempLimitPowerControl->setValue(m_cpuControlData.cpu_tmp_limit().current_value());
-        ui->lcdNumber_CPUTempLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_tmp_limit().current_value()));
 
-        ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().current_value());
-        ui->lcdNumber_PowerTargetInACPowerControl->display(static_cast<int>(m_cpuControlData.gpu_total_onac().current_value()));
+        if(!ui->horizontalSlider_STPowerLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_STPowerLimitPowerControl->setValue(m_cpuControlData.cpu_stp_limit().current_value());
+            ui->lcdNumber_STPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_stp_limit().current_value()));
+        }
 
-        ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number((m_cpuControlData.gpu_to_cpu_dynamic_boost().current_value()))));
-        ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number((m_cpuControlData.cpu_pl1_tau().current_value()))));
 
+        if(!ui->horizontalSlider_CPUTempLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_CPUTempLimitPowerControl->setValue(m_cpuControlData.cpu_tmp_limit().current_value());
+            ui->lcdNumber_CPUTempLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_tmp_limit().current_value()));
+        }
+
+
+        if(!ui->horizontalSlider_PowerTargetInACPowerControl->isHidden())
+        {
+            ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().current_value());
+            ui->lcdNumber_PowerTargetInACPowerControl->display(static_cast<int>(m_cpuControlData.gpu_total_onac().current_value()));
+        }
+
+
+        if(!ui->comboBox_CPUBoostPowerControl->isHidden())
+        {
+            ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number((m_cpuControlData.gpu_to_cpu_dynamic_boost().current_value()))));
+        }
+
+        if(!ui->comboBox_PL1TauPowerControl->isHidden())
+        {
+            ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number((m_cpuControlData.cpu_pl1_tau().current_value()))));
+        }
 
         ui->groupBox_CPUPowerControl->setEnabled(true);
+        ui->groupBox_CPUPowerControl->blockSignals(false);
     }
     else
     {
-        ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
-        ui->lcdNumber_LTPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        if(!ui->horizontalSlider_LTPowerLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
+            ui->lcdNumber_LTPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        }
 
-        ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
-        ui->lcdNumber_CrossLPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
-
-        ui->horizontalSlider_STPowerLimitPowerControl->setValue(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
-        ui->lcdNumber_STPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
-
-        ui->horizontalSlider_CPUTempLimitPowerControl->setValue(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
-        ui->lcdNumber_CPUTempLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
-
-        ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
-        ui->lcdNumber_PowerTargetInACPowerControl->display(static_cast<int>(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        if(!ui->horizontalSlider_CrossLPowerLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
+            ui->lcdNumber_CrossLPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        }
 
 
-        ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
-        ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
+        if(!ui->horizontalSlider_STPowerLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_STPowerLimitPowerControl->setValue(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
+            ui->lcdNumber_STPowerLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        }
 
-        ui->groupBox_CPUPowerControl->setEnabled(false);
+
+        if(!ui->horizontalSlider_CPUTempLimitPowerControl->isHidden())
+        {
+            ui->horizontalSlider_CPUTempLimitPowerControl->setValue(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
+            ui->lcdNumber_CPUTempLimitPowerControl->display(static_cast<int>(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        }
+
+        if(!ui->horizontalSlider_PowerTargetInACPowerControl->isHidden())
+        {
+            ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value());
+            ui->lcdNumber_PowerTargetInACPowerControl->display(static_cast<int>(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value()));
+        }
+
+
+        if(!ui->comboBox_CPUBoostPowerControl->isHidden())
+        {
+            ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
+        }
+
+        if(!ui->comboBox_PL1TauPowerControl->isHidden())
+        {
+            ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(m_powerProfileData.current_value()).default_value())));
+
+        }
     }
 
-    ui->comboBox_PresetConfiguration->setCurrentText("NONE");
+    if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM)
+    {
+        ui->comboBox_PresetConfiguration->setEnabled(true);
+        ui->comboBox_PresetConfiguration->blockSignals(false);
+    }
 }
 
 void PowerControl::on_comboBox_PresetConfiguration_currentTextChanged(const QString &arg1)
@@ -483,17 +793,51 @@ void PowerControl::on_comboBox_PresetConfiguration_currentTextChanged(const QStr
     if(arg1 == "NONE")
         return;
 
-    ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
-    ui->horizontalSlider_STPowerLimitPowerControl->setValue(m_cpuControlData.cpu_stp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
-    ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
-    ui->horizontalSlider_CPUTempLimitPowerControl->setValue(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
-    ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
-    ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
+    if(!ui->horizontalSlider_LTPowerLimitPowerControl->isHidden())
+    {
+        ui->horizontalSlider_LTPowerLimitPowerControl->setValue(m_cpuControlData.cpu_ltp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    }
 
-    ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
-    ui->comboBox_GPUTargetPowerPowerControl->setCurrentIndex(ui->comboBox_GPUTargetPowerPowerControl->findText(QString::number(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
-    ui->comboBox_GPUBoostClockPowerControl->setCurrentIndex(ui->comboBox_GPUBoostClockPowerControl->findText(QString::number(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
-    ui->horizontalSlider_GPUTempLimitPowerControl->setValue(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    if(!ui->horizontalSlider_STPowerLimitPowerControl->isHidden())
+    {
+        ui->horizontalSlider_CrossLPowerLimitPowerControl->setValue(m_cpuControlData.cpu_clp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    }
+
+    if(!ui->horizontalSlider_CPUTempLimitPowerControl->isHidden())
+    {
+        ui->horizontalSlider_CPUTempLimitPowerControl->setValue(m_cpuControlData.cpu_tmp_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    }
+
+    if(!ui->horizontalSlider_PowerTargetInACPowerControl->isHidden())
+    {
+       ui->horizontalSlider_PowerTargetInACPowerControl->setValue(m_cpuControlData.gpu_total_onac().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    }
+
+    if(!ui->comboBox_PL1TauPowerControl->isHidden())
+    {
+        ui->comboBox_PL1TauPowerControl->setCurrentIndex(ui->comboBox_PL1TauPowerControl->findText(QString::number(m_cpuControlData.cpu_pl1_tau().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
+    }
+
+
+    if(!ui->comboBox_CPUBoostPowerControl->isHidden())
+    {
+       ui->comboBox_CPUBoostPowerControl->setCurrentIndex(ui->comboBox_CPUBoostPowerControl->findText(QString::number(m_cpuControlData.gpu_to_cpu_dynamic_boost().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
+    }
+
+    if(!ui->comboBox_GPUTargetPowerPowerControl->isHidden())
+    {
+        ui->comboBox_GPUTargetPowerPowerControl->setCurrentIndex(ui->comboBox_GPUTargetPowerPowerControl->findText(QString::number(m_gpuControlData.gpu_configurable_tgp().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
+    }
+
+    if(!ui->comboBox_GPUBoostClockPowerControl->isHidden())
+    {
+        ui->comboBox_GPUBoostClockPowerControl->setCurrentIndex(ui->comboBox_GPUBoostClockPowerControl->findText(QString::number(m_gpuControlData.gpu_power_boost().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value())));
+    }
+
+    if(!ui->horizontalSlider_GPUTempLimitPowerControl->isHidden())
+    {
+        ui->horizontalSlider_GPUTempLimitPowerControl->setValue(m_gpuControlData.gpu_temperature_limit().mode_descriptor_map().at(legion::messages::PowerProfile::Profiles_descriptor()->FindValueByName(arg1.toStdString().c_str())->number()).default_value());
+    }
 }
 
 
