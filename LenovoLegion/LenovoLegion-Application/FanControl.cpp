@@ -218,7 +218,6 @@ void FanControl::renderFanCurveControlData()
     renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve9,8);
     renderToolTipsFanCurveControlData(*ui->verticalSlider_FanCurve10,9);
 
-
     if(m_powerProfileData.thermal_mode() == legion::messages::PowerProfile::POWER_PROFILE_CUSTOM && ui->pushButton_Custom->isChecked())
     {
         ui->groupBox_fanCurve->setEnabled(true);
@@ -514,21 +513,6 @@ void FanControl::refreshData()
 
     m_localFanCurveControlData = m_fanCurveControlData;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }

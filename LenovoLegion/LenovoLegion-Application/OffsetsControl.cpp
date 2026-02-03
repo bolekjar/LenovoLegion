@@ -684,11 +684,13 @@ void OffsetsControl::refreshGpuOffsetData()
     if(!ui->horizontalSlider_GPUClockOffset->isHidden())
     {
         ui->horizontalSlider_GPUClockOffset->setValue(m_gpuNvmlData.gpu_offset().value());
+        ui->lcdNumber_GPUClockOffset->display(m_gpuNvmlData.gpu_offset().value());
     }
 
     if(!ui->horizontalSlider_GPUMemoryOffset->isHidden())
     {
         ui->horizontalSlider_GPUMemoryOffset->setValue(m_gpuNvmlData.memory_offset().value());
+        ui->lcdNumber_GPUMemoryOffset->display(m_gpuNvmlData.memory_offset().value());
     }
 
     markChangesGpuOffsetData();
