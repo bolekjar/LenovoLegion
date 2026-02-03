@@ -152,6 +152,7 @@ namespace LenovoLegionDaemon {
                             pbMatrixMap->add_map(val);
                         }
                     }
+                    pbZone->set_start_idx(zone.start_idx);
                 }
             }
 

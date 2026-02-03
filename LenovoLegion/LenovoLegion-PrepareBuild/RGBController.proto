@@ -65,6 +65,7 @@ message RGBController
         uint32            leds_max   = 6;
         MatrixMap         matrix_map = 7;
         uint32            flags      = 9;
+        uint32            start_idx  = 10;
     }
 
     message Britness {

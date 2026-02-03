@@ -2,6 +2,7 @@
 
 #include "RGBControllerKeyNames.h"
 
+#include <Core/LoggerHolder.h>
 
 namespace LenovoLegionDaemon {
 
@@ -291,7 +292,82 @@ LenovoRGBControllerC197::LenovoRGBControllerC197(LenovoUSBController *controller
                                     }()
                                 },
                                 0 /* start_idx */,
-                            }
+                            },
+                           {
+                            "Logo",
+                            ZONE_TYPE_LINEAR,
+                            0,
+                               [controller_ptr](){
+                                   unsigned int leds_count = 0;
+
+                                   for(auto led : controller_ptr->getKeyMap().m_additionalKeyCodes)
+                                   {
+                                       if(led != 0x0000)
+                                       {
+                                           leds_count++;
+                                       }
+                                   }
+                                   return leds_count;
+                               }(),
+                               [controller_ptr](){
+                                   unsigned int leds_count = 0;
+
+                                   for(auto led : controller_ptr->getKeyMap().m_additionalKeyCodes)
+                                   {
+                                       if(led != 0x0000)
+                                       {
+                                           leds_count++;
+                                       }
+                                   }
+                                   return leds_count;
+                               }(),
+                               [controller_ptr](){
+                                   unsigned int leds_count = 0;
+
+                                   for(auto led : controller_ptr->getKeyMap().m_additionalKeyCodes)
+                                   {
+                                       if(led != 0x0000)
+                                       {
+                                           leds_count++;
+                                       }
+                                   }
+                                   return leds_count;
+                               }(),
+                            {
+                               [controller_ptr](){
+                                   std::vector<led> leds;
+
+                                   for(auto led : controller_ptr->getKeyMap().m_additionalKeyCodes)
+                                   {
+                                       if(led != 0x0000)
+                                       {
+                                           leds.push_back({QString::number(led).toStdString(), led});
+                                       }
+                                   }
+                                   return leds;
+                               }(),
+                            },
+                            {
+                             0,
+                             0,
+                             {}
+                            },
+                            [controller_ptr](){
+                                unsigned int leds_count = 0;
+
+                                for (int y = 0; y < controller_ptr->getKeyMap().m_height; y++)
+                                {
+                                    for (int x = 0; x < controller_ptr->getKeyMap().m_width; x++)
+                                    {
+                                        if(controller_ptr->getKeyMap().m_keyCodes[x][y] != 0x0000)
+                                        {
+                                            leds_count++;
+                                        }
+                                    }
+                                }
+                                return leds_count;
+                            }()
+                           }
                         },
                         20 /* max effects */
                         )
@@ -299,6 +375,7 @@ LenovoRGBControllerC197::LenovoRGBControllerC197(LenovoUSBController *controller
     /*
      * Read active profile settings
      */
+
     DeviceRefresh();
 }
 

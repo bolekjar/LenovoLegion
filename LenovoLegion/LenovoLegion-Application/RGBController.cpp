@@ -158,7 +158,7 @@ void RGBController::readRGBControllerData(const uint32_t requestFlags)
 
                     return matrix;
                 }(),
-                .start_idx         = 0,
+                .start_idx         = pbZone.start_idx(),
             });
         }
     }
