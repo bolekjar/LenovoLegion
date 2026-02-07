@@ -587,19 +587,29 @@ static int legion_wmi_gz_probe(struct wmi_device *wdev, const void *context)
 	priv->event_nb.notifier_call = legion_wmi_gz_event_call;
 	ret = devm_legion_wmi_events_register_notifier(&wdev->dev, &priv->event_nb);
 	if (ret)
-		return ret;
+		goto err_unregister_platform_profile;
 
 	priv->other_nb.notifier_call = legion_wmi_other_gz_call;
 	ret = devm_lenovo_wmi_other_register_notifier(&wdev->dev, &priv->other_nb);
 	if (ret)
-		return ret;
+		goto err_unregister_platform_profile;
 
 	priv->fm_nb.notifier_call = legion_wmi_fm_gz_call;
 	ret = devm_lenovo_wmi_fm_register_notifier(&wdev->dev, &priv->fm_nb);
 	if (ret)
-		return ret;
+		goto err_unregister_platform_profile;
 
-	return legion_wmi_gamezone_sysfs_init(priv);
+	ret = legion_wmi_gamezone_sysfs_init(priv);
+	if (ret)
+		goto err_unregister_platform_profile;
+
+	return 0;
+
+err_unregister_platform_profile:
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 14, 0)
+	platform_profile_remove();
+#endif
+	return ret;
 }
 
 static const struct wmi_device_id legion_wmi_gz_id_table[] = {
@@ -615,7 +625,11 @@ static void legion_wmi_gz_remove(struct wmi_device *wdev)
 	/* Remove sysfs first before devres cleanup */
 	legion_wmi_gamezone_sysfs_exit(priv);
 	
-	/* Platform profile device will be automatically cleaned up by devres */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 14, 0)
+	/* Unregister platform profile for older kernels (not devres-managed) */
+	platform_profile_remove();
+#endif
+	/* For kernels >= 6.14.0, platform profile device is automatically cleaned up by devres */
 }
 
 static struct wmi_driver lenovo_wmi_gz_driver = {

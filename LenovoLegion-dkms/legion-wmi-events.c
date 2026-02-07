@@ -17,6 +17,8 @@
 
 #define THERMAL_MODE_EVENT_GUID "D320289E-8FEA-41E0-86F9-911D83151B5F"
 #define CHARGE_MODE_EVENT_GUID  "D320289E-8FEA-41E0-86F9-711D83151B5F"
+#define UNKNOWN_EVENT_GUID      "D320289E-8FEA-41E0-86F9-811D83151B5F"
+#define UNKNOWN_EVENT2_GUID     "D320289E-8FEA-41E1-86F9-611D83151B5F"
 #define SMART_FAN_MODE_GUID		"D320289E-8FEA-41E0-86F9-611D83151B5F"
 #define KEYLOCK_STATUS_GUID     "10AFC6D9-EA8B-4590-A2E7-1CD3C84BB4B1"
 #define UTILITY_GUID    		"8fc0de0c-b4e4-43fd-b0f3-8871711c1294"
@@ -123,17 +125,20 @@ static void legion_wmi_events_notify(struct wmi_device *wdev, union acpi_object 
 	char event_value[64] = {0};
 	char *envp[] = { event_type,event_value ,NULL };
 
-	sprintf(event_type,"EVENT_TYPE=%d" ,priv->type);
-	if(obj->type == ACPI_TYPE_INTEGER)
+	if(priv->type != LEGION_WMI_EVENT_UNKNOWN)
 	{
-		sprintf(event_value,"EVENT_VALUE=%llu",obj->integer.value);
-	}
-	else
-	{
-		sprintf(event_value,"EVENT_VALUE=N/A");
-	}
+		sprintf(event_type,"EVENT_TYPE=%d" ,priv->type);
+		if(obj->type == ACPI_TYPE_INTEGER)
+		{
+			sprintf(event_value,"EVENT_VALUE=%llu",obj->integer.value);
+		}
+		else
+		{
+			sprintf(event_value,"EVENT_VALUE=N/A");
+		}
 
-	kobject_uevent_env(&wdev->dev.kobj, KOBJ_CHANGE,envp);
+		kobject_uevent_env(&wdev->dev.kobj, KOBJ_CHANGE,envp);
+	}
 
 	switch (priv->type) {
 	case LEGION_WMI_EVENT_THERMAL_MODE:
@@ -214,6 +219,8 @@ static int legion_wmi_events_probe(struct wmi_device *wdev, const void *context)
 static const struct wmi_device_id legion_wmi_events_id_table[] = {
 	{ LEGION_WMI_EVENT_DEVICE(THERMAL_MODE_EVENT_GUID, LEGION_WMI_EVENT_THERMAL_MODE) },
 	{ LEGION_WMI_EVENT_DEVICE(CHARGE_MODE_EVENT_GUID, LEGION_WMI_EVENT_POWER_CHARGE_MODE) },
+	{ LEGION_WMI_EVENT_DEVICE(UNKNOWN_EVENT_GUID, LEGION_WMI_EVENT_UNKNOWN) },
+	{ LEGION_WMI_EVENT_DEVICE(UNKNOWN_EVENT2_GUID, LEGION_WMI_EVENT_UNKNOWN) },
 	{ LEGION_WMI_EVENT_DEVICE(SMART_FAN_MODE_GUID,LEGION_WMI_EVENT_SMART_FAN_MODE) },
 	{ LEGION_WMI_EVENT_DEVICE(KEYLOCK_STATUS_GUID,LEGION_WMI_EVENT_KEYLOCK_STATUS) },
 	{ LEGION_WMI_EVENT_DEVICE(UTILITY_GUID,LENOVO_WMI_EVENT_UTILITY) },

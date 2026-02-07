@@ -203,9 +203,13 @@ static void read_voltage_limits(struct legion_intel_msr_private *intel_msr_priva
         }
     }
     
-    // Core Ultra CPUs (275HX, etc.) don't support uncore and analogio voltage offset writes
-    // These planes can be read but writes are silently ignored by hardware
-    if (boot_cpu_data.x86_model >= 0xAA) {
+    // Core Ultra CPUs (Arrow Lake: 0xC5, 0xC6, 0xB5 and Meteor Lake: 0xAA, 0xAC) don't support 
+    // uncore and analogio voltage offset writes. These planes can be read but writes are 
+    // silently ignored by hardware.
+    // Raptor Lake (0xB7, 0xBA, 0xBF) still supports all plane writes.
+    if (boot_cpu_data.x86_model == 0xAA || boot_cpu_data.x86_model == 0xAC ||  // Meteor Lake
+        boot_cpu_data.x86_model == 0xC5 || boot_cpu_data.x86_model == 0xC6 ||  // Arrow Lake
+        boot_cpu_data.x86_model == 0xB5) {  // Arrow Lake U
         intel_msr_private->plane_limits[PLANE_UNCORE].write_supported = 0;
         intel_msr_private->plane_limits[PLANE_ANALOGIO].write_supported = 0;
     }

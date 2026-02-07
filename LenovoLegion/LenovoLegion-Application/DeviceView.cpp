@@ -249,7 +249,7 @@ void DeviceView::setController(LenovoLegionDaemon::RGBControllerInterface *contr
 
     if(vendorId == 0x48d && ((productId >> 8) & 0xFF) == 0xc9)
     {
-        m_keyboardBackgroundImage = "keyboard-background-0x17aa-0xc9xx.png";
+        m_keyboardBackgroundImage = "keyboard-background-048d-c9xx.png";
     }
 }
 

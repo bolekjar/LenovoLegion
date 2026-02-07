@@ -97,7 +97,7 @@ void PowerProfileControl::renderData()
     ui->checkBox_customFnQ->blockSignals(true);
 
     ui->groupBox->setVisible(false);
-    ui->checkBox_customFnQ->setVisible(true);
+    ui->checkBox_customFnQ->setVisible(false);
 
     ui->radioButton_PPQuiet->setVisible(false);
     ui->radioButton_PPBalanced->setVisible(false);

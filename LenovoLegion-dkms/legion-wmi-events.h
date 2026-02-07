@@ -17,7 +17,8 @@ enum legion_wmi_events_type {
 	LEGION_WMI_EVENT_THERMAL_MODE 		= 1,
 	LEGION_WMI_EVENT_POWER_CHARGE_MODE 	= 2,
 	LEGION_WMI_EVENT_SMART_FAN_MODE     = 3,
-	LEGION_WMI_EVENT_KEYLOCK_STATUS     = 4
+	LEGION_WMI_EVENT_KEYLOCK_STATUS     = 4,
+	LEGION_WMI_EVENT_UNKNOWN			= 5
 };
 
 int legion_wmi_events_register_notifier(struct notifier_block *nb);

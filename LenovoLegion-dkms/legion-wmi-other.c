@@ -167,31 +167,45 @@ static int legion_wmi_other_dkms_call(struct notifier_block *nb,unsigned long ac
 	struct legion_wmi_other_priv *priv 	  = container_of(nb, struct legion_wmi_other_priv, dkms_nb);
 	struct other_events_data * event_data = data;
 
-	unsigned int pl1_uw 	 = 0,
-				 pl1_time_us = 0,
-				 pl2_uw 	 = 0;
+	unsigned int pl1_w 	 = 0,
+				 pl1_time_s = 0,
+				 pl2_w 	 = 0;
 
 	if(action == LEGION_WMI_OTHER_SET_THERMAL_MODE_RAPL_AND_MMIO)
 	{
 		struct legion_wmi_capdata01 capdata;
+		struct legion_wmi_ddata     lddata[48] = {{0,0}};
 
 		if (legion_wmi_cd01_get_data(priv->cd01_list,(CPULongTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
 			return NOTIFY_BAD;
 		}
-		pl1_uw = capdata.max_value;
+		pl1_w = capdata.max_value;
 
 
 		if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUShortTermPowerLimit & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
 			return NOTIFY_BAD;
 		}
-		pl2_uw = capdata.max_value;
+		pl2_w = capdata.max_value;
 
-		if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUPL1Tau & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
-			return NOTIFY_BAD;
+
+		if (legion_wmi_dd_get_data(priv->dd_list,(CPUPL1Tau & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), lddata,sizeof(lddata)/sizeof(lddata[0]) - 1)) {
+
+			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUPL1Tau & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
+				return NOTIFY_BAD;
+			}
+
+			pl1_time_s = capdata.default_value;
 		}
-		pl1_time_us = capdata.default_value;
+		else
+		{
+			pl1_time_s = 0;
+			for(int i = 0;i < (sizeof(lddata)/sizeof(lddata[0])) && lddata[i].id != 0;++i)
+			{
+				pl1_time_s = max(pl1_time_s,lddata[i].value);
+			}
+		}
 
-		if(legion_set_power_and_time_sysfs(event_data->rapl_private, pl1_uw * 1000, pl1_time_us * 1000000, pl2_uw * 1000))
+		if(legion_set_power_and_time_sysfs(event_data->rapl_private, pl1_w * 1000000, pl1_time_s * 1000000, pl2_w * 1000000))
 		{
 			return NOTIFY_BAD;
 		}
@@ -207,19 +221,19 @@ static int legion_wmi_other_dkms_call(struct notifier_block *nb,unsigned long ac
 			struct wmi_method_args_32 args;
 
 			args.arg0 = CPULongTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK);
-			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl1_uw))
+			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl1_w))
 			{
 				return NOTIFY_BAD;
 			}
 
 			args.arg0 = CPUShortTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK);
-			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl2_uw))
+			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl2_w))
 			{
 				return NOTIFY_BAD;
 			}
 
 			args.arg0 = CPUPL1Tau  & (~LEGION_WMI_MODE_ID_MASK);
-			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl1_time_us))
+			if(legion_wmi_dev_evaluate_int(priv->wdev, 0x0, LEGION_WMI_OTHER_FEATURE_VALUE_GET,(unsigned char *)&args, sizeof(args),&pl1_time_s))
 			{
 				return NOTIFY_BAD;
 			}
@@ -231,21 +245,21 @@ static int legion_wmi_other_dkms_call(struct notifier_block *nb,unsigned long ac
 			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPULongTermPowerLimit  & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
 				return NOTIFY_BAD;
 			}
-			pl1_uw = capdata.default_value;
+			pl1_w = capdata.default_value;
 
 
 			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUShortTermPowerLimit & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
 				return NOTIFY_BAD;
 			}
-			pl2_uw = capdata.default_value;
+			pl2_w = capdata.default_value;
 
 			if (legion_wmi_cd01_get_data(priv->cd01_list,(CPUPL1Tau & (~LEGION_WMI_MODE_ID_MASK)) | FIELD_PREP(LEGION_WMI_MODE_ID_MASK, event_data->mode), &capdata)) {
 				return NOTIFY_BAD;
 			}
-			pl1_time_us = capdata.default_value;
+			pl1_time_s = capdata.default_value;
 		}
 
-		if(legion_set_power_and_time(event_data->rapl_mmio_private,pl1_uw * 1000,pl1_time_us * 1000000,pl2_uw * 1000))
+		if(legion_set_power_and_time(event_data->rapl_mmio_private,pl1_w * 1000,pl1_time_s * 1000000,pl2_w * 1000))
 		{
 			return NOTIFY_BAD;
 		}
